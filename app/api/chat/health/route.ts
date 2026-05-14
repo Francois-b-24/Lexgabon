@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
-/** Cold start Render : Vercel Pro autorise des fonctions longues — laisser ~2 min au backend. */
-export const maxDuration = 120;
+/** Cold start lourd (embeddings/Chroma) : Vercel Pro — jusqu’à 5 min pour le premier octet depuis Render. */
+export const maxDuration = 300;
 
 function backendBase(): string | null {
   const b = process.env.LEGAL_AGENT_API_BASE_URL?.trim();
@@ -36,8 +36,8 @@ export async function GET() {
 
   try {
     const ac = new AbortController();
-    /** Render en veille : TCP + boot + TLS peuvent dépasser 55 s ; laisser ~110 s avant abort. */
-    const to = setTimeout(() => ac.abort(), 110_000);
+    /** Cold start Render (gratuit / peu de RAM) peut dépasser 2 min avant la première réponse HTTP. */
+    const to = setTimeout(() => ac.abort(), 280_000);
     const r = await fetch(url, {
       cache: "no-store",
       signal: ac.signal,
@@ -71,7 +71,7 @@ export async function GET() {
       {
         ok: false,
         detail: aborted
-          ? `Délai dépassé (~110 s) en joignant ${host}. Le service Render ne répond pas assez vite (veille, surcharge ou incident). Ouvrez https://${host}/health dans le navigateur ; consultez les logs Render. Si le problème persiste, passez à une instance toujours active ou vérifiez la RAM au démarrage.`
+          ? `Délai dépassé (~4 min 40) en joignant ${host}. Render n’a pas renvoyé /health à temps (veille très longue, démarrage bloqué ou OOM). Ouvrez https://${host}/health : si le navigateur ne reçoit jamais {"status":"ok"}, corrigez Render (logs, RAM/instance, plan toujours actif). Sinon augmentez la RAM ou désactivez la mise en veille.`
           : `Connexion impossible vers ${host} : ${msg}. Vérifiez LEGAL_AGENT_API_BASE_URL (https, pas d’espace).`,
       },
       { status: 502 },

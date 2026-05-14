@@ -90,7 +90,7 @@
     "title": "Ama'IA",
     "welcome": "Hello. I am Ama'IA, a Gabonese law assistant for the general public (LexGabon). Ask your question in French — I use the indexed legal base and search tools when relevant. Answers follow the required format ([Source : …] citations, plain text without markdown, closing disclaimer).",
     "subtitle": "Gabonese law · General public · Please verify answers",
-    "serviceChecking": "Checking service… (up to ~2 min if the server was asleep)",
+    "serviceChecking": "Checking service… (up to ~5 min if Render was asleep)",
     "healthClientTimeout": "The connection test timed out in the browser. Check your network or try again; if the Render backend is sleeping, open its /health URL in a tab to wake it.",
     "serviceReady": "Legal backend reachable",
     "serviceDegraded": "Backend unavailable or not configured",

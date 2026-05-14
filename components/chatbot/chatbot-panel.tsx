@@ -69,7 +69,7 @@ export default function ChatbotPanel({ welcome }: { welcome: string }) {
     setHealth("checking");
     setHealthDetail(null);
     const ac = new AbortController();
-    const tid = window.setTimeout(() => ac.abort(), 125_000);
+    const tid = window.setTimeout(() => ac.abort(), 310_000);
     fetch("/api/chat/health", { cache: "no-store", signal: ac.signal })
       .then(async (r) => {
         let data: { ok?: boolean; detail?: string } = {};

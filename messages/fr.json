@@ -90,7 +90,7 @@
     "title": "Ama'IA",
     "welcome": "Bonjour. Je suis Ama'IA, assistant en droit gabonais pour le grand public (LexGabon). Posez votre question en français — je m'appuie sur la base juridique indexée et les outils de recherche lorsque c'est pertinent. Les réponses respectent le format demandé (citations [Source : …], texte brut sans markdown, avertissement en fin de réponse).",
     "subtitle": "Droit gabonais · Grand public · Vérification recommandée",
-    "serviceChecking": "Vérification du service… (jusqu’à ~2 min si le serveur était en veille)",
+    "serviceChecking": "Vérification du service… (jusqu’à ~5 min si Render était en veille)",
     "healthClientTimeout": "Le test de connexion a expiré côté navigateur. Vérifiez le réseau ou réessayez ; si le backend Render dort, ouvrez son URL /health dans un onglet pour le réveiller.",
     "serviceReady": "Backend juridique joignable",
     "serviceDegraded": "Backend indisponible ou non configuré",
