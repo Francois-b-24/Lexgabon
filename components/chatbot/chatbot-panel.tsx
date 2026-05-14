@@ -68,7 +68,9 @@ export default function ChatbotPanel({ welcome }: { welcome: string }) {
   const refreshHealth = useCallback(() => {
     setHealth("checking");
     setHealthDetail(null);
-    fetch("/api/chat/health", { cache: "no-store" })
+    const ac = new AbortController();
+    const tid = window.setTimeout(() => ac.abort(), 125_000);
+    fetch("/api/chat/health", { cache: "no-store", signal: ac.signal })
       .then(async (r) => {
         let data: { ok?: boolean; detail?: string } = {};
         try {
@@ -88,11 +90,19 @@ export default function ChatbotPanel({ welcome }: { welcome: string }) {
         setHealth(data.ok ? "ready" : "degraded");
         setHealthDetail(typeof data.detail === "string" ? data.detail : null);
       })
-      .catch(() => {
+      .catch((e) => {
+        const aborted =
+          (typeof DOMException !== "undefined" && e instanceof DOMException && e.name === "AbortError") ||
+          (e instanceof Error && e.name === "AbortError");
         setHealth("degraded");
-        setHealthDetail("Impossible d’atteindre /api/chat/health (réseau ou page hors ligne).");
+        setHealthDetail(
+          aborted ? t("healthClientTimeout") : "Impossible d’atteindre /api/chat/health (réseau ou page hors ligne).",
+        );
+      })
+      .finally(() => {
+        window.clearTimeout(tid);
       });
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     refreshHealth();
