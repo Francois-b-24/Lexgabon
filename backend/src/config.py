@@ -41,6 +41,9 @@ class Settings(BaseSettings):
     # Mode CDC complet (multi-tours + outils) : plus lent ; désactivé par défaut en prod.
     use_full_agent_chat: bool = False
 
+    # Préchauffage Chroma au boot (déconseillé sur petites instances Render).
+    warm_rag_on_startup: bool = False
+
 
 @lru_cache
 def get_settings() -> Settings:
