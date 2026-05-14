@@ -3,6 +3,7 @@
 import { IconAlertTriangle, IconArrowUp, IconRefresh } from "@tabler/icons-react";
 import { useTranslations } from "next-intl";
 import { FormEvent, KeyboardEvent, useCallback, useEffect, useRef, useState } from "react";
+import { Link } from "@/i18n/navigation";
 
 type Role = "user" | "assistant";
 type ChatMsg = { role: Role; content: string };
@@ -227,7 +228,7 @@ export default function ChatbotPanel({ welcome }: { welcome: string }) {
         ref={messageContainerRef}
         aria-live="polite"
         onScroll={handleMessageScroll}
-        className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto overscroll-y-contain px-3 py-3 sm:gap-3.5 sm:px-6 sm:py-4"
+        className="flex min-h-0 flex-1 touch-pan-y flex-col gap-3 overflow-y-auto px-3 py-3 sm:gap-3.5 sm:px-6 sm:py-4"
       >
         {messages.map((m, i) => (
           <div
@@ -274,11 +275,31 @@ export default function ChatbotPanel({ welcome }: { welcome: string }) {
           <div className="max-w-full self-start rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-[11px] text-white/70">
             <p className="mb-1.5 font-medium text-lg-gold/90">{t("sourcesTitle")}</p>
             <p className="mb-1.5 text-white/45">{t("sourcesCount", { count: lastSources.length })}</p>
-            <ul className="space-y-1.5">
+            <ul className="space-y-2.5">
               {lastSources.slice(0, 8).map((s, idx) => (
                 <li key={idx} className="border-l border-lg-gold/30 pl-2">
-                  <span className="text-lg-gold/80">[{s.badge}]</span> {s.citation}
-                  <span className="text-white/35"> · score {(s.score ?? 0).toFixed(2)}</span>
+                  <div className="flex flex-col gap-1.5">
+                    <div>
+                      <span className="text-lg-gold/80">[{s.badge}]</span> {s.citation}
+                      <span className="text-white/35"> · score {(s.score ?? 0).toFixed(2)}</span>
+                    </div>
+                    {s.text?.trim() ? (
+                      <details className="group rounded border border-white/10 bg-black/20">
+                        <summary className="cursor-pointer select-none px-2 py-1 text-[10px] text-white/55 hover:text-white/80">
+                          {t("sourceExcerptSummary")}
+                        </summary>
+                        <p className="max-h-40 overflow-y-auto whitespace-pre-wrap border-t border-white/10 px-2 py-1.5 text-[10px] font-light leading-snug text-white/65">
+                          {s.text}
+                        </p>
+                      </details>
+                    ) : null}
+                    <Link
+                      href={`/recherche?q=${encodeURIComponent(s.citation)}`}
+                      className="w-fit text-[10px] text-lg-gold/90 underline-offset-2 hover:underline"
+                    >
+                      {t("verifySourceSearch")}
+                    </Link>
+                  </div>
                 </li>
               ))}
             </ul>
@@ -345,8 +366,7 @@ export default function ChatbotPanel({ welcome }: { welcome: string }) {
               disabled={loading}
               className="max-h-40 min-h-11 w-full resize-none bg-transparent text-[13px] font-light text-white outline-none placeholder:text-white/25 disabled:opacity-50"
             />
-            <div className="flex items-center justify-between gap-2 border-t border-white/5 pt-2">
-              <p className="text-[10px] font-light text-white/35">{t("inputNote")}</p>
+            <div className="flex items-center justify-end gap-2 border-t border-white/5 pt-2">
               <button
                 type="submit"
                 className="grid h-9 w-9 shrink-0 touch-manipulation place-items-center rounded-md bg-lg-gold text-lg-navy disabled:opacity-40"

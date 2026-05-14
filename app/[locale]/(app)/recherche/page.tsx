@@ -1,17 +1,24 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { IconSearch } from "@tabler/icons-react";
 import { useTranslations } from "next-intl";
+import { useSearchParams } from "next/navigation";
 import { Link } from "@/i18n/navigation";
 import { mockVeille } from "@/lib/mock/veille";
 
 type Hit = { slug: string; titre: string; resume: string; source: string };
 
-export default function RecherchePage() {
+function RecherchePageInner() {
   const t = useTranslations("Recherche");
+  const searchParams = useSearchParams();
   const [q, setQ] = useState("");
   const [hits, setHits] = useState<Hit[]>([]);
+
+  useEffect(() => {
+    const fromUrl = searchParams.get("q");
+    if (fromUrl != null) setQ(fromUrl);
+  }, [searchParams]);
 
   useEffect(() => {
     const ctrl = new AbortController();
@@ -68,5 +75,20 @@ export default function RecherchePage() {
         ))}
       </ul>
     </div>
+  );
+}
+
+export default function RecherchePage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen flex-col p-5">
+          <div className="h-7 w-40 animate-pulse rounded bg-white/10" />
+          <div className="mt-4 h-10 max-w-xl animate-pulse rounded-lg bg-white/10" />
+        </div>
+      }
+    >
+      <RecherchePageInner />
+    </Suspense>
   );
 }

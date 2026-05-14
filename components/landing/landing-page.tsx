@@ -12,6 +12,9 @@ import { CustomCursor } from "@/components/animations/custom-cursor";
 import { Marquee } from "@/components/animations/marquee";
 import { GabonMap } from "@/components/landing/gabon-map";
 
+/** Affichage marketing : volume indexé annoncé sur la landing (hors agrégation temps réel). */
+const LANDING_INDEXED_DISPLAY = "2500+";
+
 export async function LandingPage() {
   const t = await getTranslations("Landing");
   const n = await getTranslations("Nav");
@@ -92,7 +95,7 @@ export async function LandingPage() {
                     {t("metaIndexed")}
                   </span>
                   <span className="font-landing-serif text-[26px] text-lg-paper">
-                    {stats.indexedDisplay}
+                    {LANDING_INDEXED_DISPLAY}
                   </span>
                 </div>
                 <div>
@@ -195,7 +198,7 @@ export async function LandingPage() {
           </Reveal>
           <div className="mt-12 grid border-y border-[var(--lg-gold-faint)] sm:grid-cols-2 lg:grid-cols-4">
             {[
-              [stats.indexedDisplay, t("metaIndexed")],
+              [LANDING_INDEXED_DISPLAY, t("metaIndexed")],
               [String(stats.officialSourcesCount), t("metaSources")],
               [
                 stats.lastUpdatePrimary === "—" && stats.lastUpdateSecondary === "curated"
