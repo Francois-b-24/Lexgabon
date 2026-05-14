@@ -6,16 +6,16 @@
  */
 const hits = new Map<string, { count: number; reset: number }>();
 const WINDOW_MS = 60_000;
-const MAX = 30;
+const DEFAULT_MAX = 30;
 
-export function rateLimit(key: string): boolean {
+export function rateLimit(key: string, maxPerWindow: number = DEFAULT_MAX): boolean {
   const now = Date.now();
   const e = hits.get(key);
   if (!e || now > e.reset) {
     hits.set(key, { count: 1, reset: now + WINDOW_MS });
     return true;
   }
-  if (e.count >= MAX) return false;
+  if (e.count >= maxPerWindow) return false;
   e.count += 1;
   return true;
 }

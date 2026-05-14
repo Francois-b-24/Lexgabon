@@ -21,10 +21,20 @@ Sur **Render** ou toute instance avec **peu de RAM**, laisser `WARM_RAG_ON_START
 
 Script : `scripts/ingest_chroma.py`. Chaque ligne du fichier JSONL est un JSON avec au minimum `"text"` ; `"citation"` ou `"titre"` est recommandé ; `"id"` optionnel (sinon `ingest-<ligne>`).
 
+**Jeu de données initial (RAG)** : `scripts/build_rag_seed_jsonl.py` régénère `data/rag_seed.jsonl` à partir d’entrées alignées sur `lib/veille/official-feed.ts` (veille officielle + une fiche démo code électoral). Pour tout faire en une commande (rebuild JSONL + ingestion) :
+
 ```bash
 cd backend
 export PYTHONPATH=.
-python scripts/ingest_chroma.py --jsonl ./chemin/vers/fichier.jsonl
+python3 scripts/ingest_rag_seed.py
+```
+
+Ingestion d’un fichier JSONL arbitraire :
+
+```bash
+cd backend
+export PYTHONPATH=.
+python3 scripts/ingest_chroma.py --jsonl ./chemin/vers/fichier.jsonl
 ```
 
 ## Variables principales

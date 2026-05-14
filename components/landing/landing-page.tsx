@@ -2,7 +2,6 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { getLandingStats, type LandingStats } from "@/lib/landing-stats";
 import { OFFICIAL_LANDING_SOURCES } from "@/lib/official-sources";
-import { mockVeille } from "@/lib/mock/veille";
 import { Eyebrow } from "@/components/brand/eyebrow";
 import { SectionTitle } from "@/components/brand/section-title";
 import { Reveal } from "@/components/animations/reveal";
@@ -26,8 +25,6 @@ export async function LandingPage() {
   } catch (e) {
     console.error("[landing] stats", e);
     stats = {
-      indexedCount: mockVeille.length,
-      indexedDisplay: mockVeille.length.toLocaleString(locale === "en" ? "en-US" : "fr-FR"),
       officialSourcesCount: OFFICIAL_LANDING_SOURCES.length,
       lastUpdatePrimary: "—",
       lastUpdateSecondary: "curated",
