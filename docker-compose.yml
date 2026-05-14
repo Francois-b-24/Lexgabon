@@ -20,6 +20,20 @@ services:
     volumes:
       - meili_data:/meili_data
 
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    environment:
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-claude-sonnet-4-20250514}
+      FRONTEND_ORIGINS: http://localhost:3000,http://127.0.0.1:3000
+      CHROMA_PATH: /data/chroma
+      REDIS_URL: ${REDIS_URL:-}
+    volumes:
+      - chroma_data:/data/chroma
+
 volumes:
   pgdata:
   meili_data:
+  chroma_data:

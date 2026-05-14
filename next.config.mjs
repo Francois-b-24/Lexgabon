@@ -5,6 +5,9 @@ const withNextIntl = createNextIntlPlugin("./i18n/request.ts");
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   poweredByHeader: false,
+  async redirects() {
+    return [{ source: "/:locale/amaia", destination: "/:locale/chatbot", permanent: false }];
+  },
   async headers() {
     return [
       {

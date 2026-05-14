@@ -31,6 +31,13 @@ yarn-error.log*
 # vercel
 .vercel
 
+# python / backend
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

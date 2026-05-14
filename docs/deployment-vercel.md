@@ -46,7 +46,7 @@ git push -u origin main
 ### Étape 5 — Vérifications post-déploiement
 
 - Page d’accueil et navigation.
-- `GET https://VOTRE_URL/api/amaia` → JSON avec `anthropicConfigured` (voir [amaia-smoke-test.md](./amaia-smoke-test.md)).
+- `GET https://VOTRE_URL/api/chat/health` → vérifie que le proxy Next joint le backend FastAPI (voir [chatbot-smoke-test.md](./chatbot-smoke-test.md)).
 - Si vous utilisez le cron : variable `CRON_SECRET` définie sur Vercel (voir section Cron ci-dessous).
 
 ---
@@ -56,10 +56,10 @@ git push -u origin main
 1. **Variables d’environnement** (Vercel → Project → Settings → Environment Variables), pour **Production** (et **Preview** si besoin) :
    - `NEXT_PUBLIC_SITE_URL` : URL canonique du site (sans `/` final).
    - `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` : projet Supabase production.
-   - `ANTHROPIC_API_KEY` : obligatoire pour Ama'IA ; `ANTHROPIC_MODEL` si vous ne voulez pas le défaut du code.
+   - `LEGAL_AGENT_API_BASE_URL` : URL **HTTPS** du service FastAPI (hébergement séparé de Vercel), sans slash final — obligatoire pour `/api/chat` et `/chatbot`.
+   - **Backend FastAPI** : `ANTHROPIC_API_KEY`, `FRONTEND_ORIGINS`, `CHROMA_PATH`, `REDIS_URL` (voir `backend/README.md` et `docker-compose.yml`).
    - `DATABASE_URL` : si base Postgres utilisée (textes, retrieval).
    - `MEILISEARCH_HOST`, `MEILISEARCH_API_KEY` : si index « textes » utilisé.
-   - `AMAIA_FETCH_ALLOWLIST` (optionnel) : hôtes supplémentaires pour le fetch HTML Ama’IA, séparés par des virgules (sans `https://`).
    - `CRON_SECRET` : secret pour `POST /api/ingest/cron` (`Authorization: Bearer <CRON_SECRET>`).
    - `SUPABASE_WEBHOOK_SECRET` : si vous appelez `/api/webhooks/supabase` (voir [supabase-production.md](./supabase-production.md)).
 
@@ -71,7 +71,18 @@ git push -u origin main
 
 5. **Observabilité** : activer **Vercel Analytics** dans le dashboard (le package `@vercel/analytics` est intégré au layout racine).
 
-6. **Ama'IA** : checklist et tests manuels dans [`docs/amaia-smoke-test.md`](./amaia-smoke-test.md) ; état de configuration via `GET /api/amaia` (`anthropicConfigured`, `model`).
+6. **Chatbot juridique** : checklist dans [`docs/chatbot-smoke-test.md`](./chatbot-smoke-test.md) ; santé via `GET /api/chat/health`. Parité des variables d’environnement CDC ↔ LexGabon : [`docs/chatbot-env-parity.md`](./chatbot-env-parity.md).
+
+## Guide express — première mise en ligne (ordre recommandé)
+
+1. **Code sur GitHub** : dépôt créé, branche `main` (ou `master`) poussée avec le code LexGabon à jour (`git status` propre ou commits intentionnels).
+2. **Backend FastAPI** : héberger le dossier `backend/` (Docker, **Render**, Railway, Fly.io, VM, etc.) avec une URL **HTTPS** publique. Définir au minimum `ANTHROPIC_API_KEY`, `FRONTEND_ORIGINS` (y compris l’URL Vercel temporaire puis le domaine final), `CHROMA_PATH` persistant si vous utilisez le RAG. Vérifier `GET https://VOTRE_BACKEND/health`.
+3. **Vercel — nouveau projet** : [vercel.com](https://vercel.com) → *Add New…* → *Project* → importer le dépôt GitHub. Framework **Next.js**, racine `.`, build `npm run build`.
+4. **Variables d’environnement Vercel** (Production, et Preview si besoin) : au minimum `NEXT_PUBLIC_SITE_URL` (URL du site, sans `/` final), `LEGAL_AGENT_API_BASE_URL` = URL du backend à l’étape 2 (sans `/` final). Renseigner Supabase / DB / Meilisearch / `CRON_SECRET` selon les fonctionnalités que vous activez (voir checklist ci-dessus et [`.env.example`](../.env.example)).
+5. **Déployer** : lancer un déploiement ; corriger les erreurs de build éventuelles dans les logs Vercel.
+6. **Post-déploiement** : ouvrir `https://VOTRE_URL/fr` et `/en` ; tester `GET /api/chat/health` ; une question courte sur `/fr/chatbot` ; upload PDF optionnel si le backend est joignable depuis Vercel (limite de taille côté serverless — gros fichiers plutôt en self-host direct sur le backend).
+7. **Domaine personnalisé** : Vercel → *Settings* → *Domains* ; mettre à jour `NEXT_PUBLIC_SITE_URL`, les redirections Supabase et `FRONTEND_ORIGINS` sur le backend pour inclure le nouveau domaine.
+8. **Cron** : si `CRON_SECRET` est défini sur Vercel, le job décrit dans `vercel.json` pourra appeler `/api/ingest/cron` ; sinon le cron recevra 401 (comportement attendu tant que le secret n’est pas configuré).
 
 ## Rate limiting (MVP)
 

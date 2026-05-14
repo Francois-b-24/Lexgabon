@@ -14,7 +14,7 @@ export default async function AuthLayout({
   setRequestLocale(locale);
   const t = await getTranslations("Landing");
   return (
-    <div className="flex min-h-screen flex-col bg-lg-navy font-app-sans text-white">
+    <div className="flex min-h-dvh min-h-screen flex-col bg-lg-navy font-app-sans text-white">
       <header className="flex shrink-0 items-center justify-between border-b border-[var(--lg-gold-faint)] bg-lg-navy px-6 py-4 md:px-9">
         <Link href="/">
           <Logo tagline={t("tagline")} />

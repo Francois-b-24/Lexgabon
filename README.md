@@ -1,12 +1,13 @@
 # LexGabon
 
-Application [Next.js](https://nextjs.org) (App Router, `next-intl`) pour la plateforme juridique LexGabon — landing, veille, recherche, textes, et assistant **Ama’IA** (droit gabonais, contexte indexé + fetch sur liste blanche d’institutions).
+Application [Next.js](https://nextjs.org) (App Router, `next-intl`) pour la plateforme juridique LexGabon — landing, veille, recherche, textes, et assistant **Ama’IA** (`/chatbot`) : proxy Next vers un **backend FastAPI** (agent juridique, Chroma, Anthropic), conforme au cahier des charges fonctionnel.
 
 ## Démarrage local
 
 ```bash
 npm install
-cp .env.example .env.local   # puis renseigner les variables
+cp .env.example .env.local   # LEGAL_AGENT_API_BASE_URL=http://127.0.0.1:8000 si le backend tourne en local
+# Terminal 2 : démarrer le backend (Docker ou uvicorn) — voir backend/README.md
 npm run dev
 ```
 
@@ -26,7 +27,8 @@ npm run build
 | [`.env.example`](.env.example) | Liste des variables d’environnement |
 | [`docs/deployment-vercel.md`](docs/deployment-vercel.md) | **GitHub**, Vercel, domaine, cron, checklist prod |
 | [`docs/supabase-production.md`](docs/supabase-production.md) | Supabase (URLs, redirections) |
-| [`docs/amaia-smoke-test.md`](docs/amaia-smoke-test.md) | Tests manuels `/api/amaia` |
+| [`docs/chatbot-smoke-test.md`](docs/chatbot-smoke-test.md) | Tests proxy `/api/chat` + page `/chatbot` |
+| [`docs/chatbot-env-parity.md`](docs/chatbot-env-parity.md) | Variables CDC ↔ LexGabon (backend, embeddings) |
 
 ## Licence
 
