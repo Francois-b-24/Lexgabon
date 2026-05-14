@@ -86,36 +86,46 @@ async def api_chat(request: Request, body: ChatRequest):
     else:
         hist = _prepare_history(body)
 
-    from src.agent.agent import LegalAgent
-
-    agent = LegalAgent()
+    s = get_settings()
     try:
-        # Ne pas bloquer la boucle asyncio : sinon /health et les autres requêtes
-        # attendent la fin du chat (~2 min) et les proxies Vercel timeout.
-        out = await asyncio.to_thread(
-            agent.answer,
-            body.question,
-            body.domaine,
-            hist,
-            session_id=sid,
-            include_uploads=body.include_uploads,
-        )
+        if s.use_full_agent_chat:
+            from src.agent.agent import LegalAgent
+
+            agent = LegalAgent()
+            out = await asyncio.to_thread(
+                agent.answer,
+                body.question,
+                body.domaine,
+                hist,
+                session_id=sid,
+                include_uploads=body.include_uploads,
+            )
+        else:
+            from src.agent.fast_chat import run_fast_chat
+
+            out = await asyncio.to_thread(
+                run_fast_chat,
+                body.question,
+                body.domaine,
+                hist,
+                session_id=sid,
+                include_uploads=body.include_uploads,
+            )
     except Exception as e:
         logger.exception("agent failed")
         return JSONResponse({"detail": str(e)}, status_code=502)
 
     sources = [
         SourceItem(
-            citation=s.get("citation", ""),
-            text=s.get("text", ""),
-            score=float(s.get("score", 0)),
-            badge=str(s.get("badge", "doc")),
+            citation=src.get("citation", ""),
+            text=src.get("text", ""),
+            score=float(src.get("score", 0)),
+            badge=str(src.get("badge", "doc")),
         )
-        for s in out.sources[:20]
+        for src in out.sources[:20]
     ]
     quality = Quality(has_citation=answer_has_citation(out.text), has_disclaimer=answer_has_disclaimer(out.text))
     warnings = collect_server_warnings(out.text, out.sources)
-    s = get_settings()
     citations: list[StructuredCitation] | None = None
     if s.rag_structured_citations:
         citations = _build_citations(out.sources)
@@ -204,29 +214,58 @@ async def api_chat_stream(request: Request, body: ChatRequest):
     else:
         hist = _prepare_history(body)
 
-    async def gen() -> AsyncIterator[bytes]:
-        from src.agent.agent import LegalAgent
+    settings = get_settings()
 
+    async def gen() -> AsyncIterator[bytes]:
         out_holder: dict[str, Any] = {}
         try:
-            ag = LegalAgent()
-            for token in ag.stream_final_answer(
-                body.question,
-                body.domaine,
-                hist,
-                session_id=sid,
-                include_uploads=body.include_uploads,
-                out=out_holder,
-            ):
-                yield f"data: {json.dumps({'type': 'token', 'text': token}, ensure_ascii=False)}\n\n".encode()
+            if settings.use_full_agent_chat:
+                from src.agent.agent import LegalAgent
+
+                ag = LegalAgent()
+                for token in ag.stream_final_answer(
+                    body.question,
+                    body.domaine,
+                    hist,
+                    session_id=sid,
+                    include_uploads=body.include_uploads,
+                    out=out_holder,
+                ):
+                    yield f"data: {json.dumps({'type': 'token', 'text': token}, ensure_ascii=False)}\n\n".encode()
+            else:
+                from src.agent import fast_chat as fc
+
+                def drain_fast() -> tuple[list[str], dict[str, Any]]:
+                    holder: dict[str, Any] = {}
+                    parts: list[str] = []
+                    for t in fc.stream_fast_tokens(
+                        body.question,
+                        body.domaine,
+                        hist,
+                        session_id=sid,
+                        include_uploads=body.include_uploads,
+                        holder=holder,
+                    ):
+                        parts.append(t)
+                    return parts, holder
+
+                token_chunks, out_holder = await asyncio.to_thread(drain_fast)
+                for token in token_chunks:
+                    yield f"data: {json.dumps({'type': 'token', 'text': token}, ensure_ascii=False)}\n\n".encode()
+
             ans = out_holder.get("answer")
             if not ans:
                 yield f"data: {json.dumps({'type': 'error', 'detail': 'empty_response'})}\n\n".encode()
                 return
             text = ans.text
             sources = [
-                {"citation": s.get("citation", ""), "text": s.get("text", ""), "score": s.get("score", 0), "badge": s.get("badge", "doc")}
-                for s in ans.sources[:20]
+                {
+                    "citation": src.get("citation", ""),
+                    "text": src.get("text", ""),
+                    "score": src.get("score", 0),
+                    "badge": src.get("badge", "doc"),
+                }
+                for src in ans.sources[:20]
             ]
             quality = {
                 "has_citation": answer_has_citation(text),
@@ -242,12 +281,12 @@ async def api_chat_stream(request: Request, body: ChatRequest):
                 "tools_used": ans.tools_used,
                 "warnings": warnings,
             }
-            if get_settings().rag_structured_citations:
+            if settings.rag_structured_citations:
                 meta["citations"] = [c.model_dump() for c in _build_citations(ans.sources)]
             yield f"data: {json.dumps(meta, ensure_ascii=False)}\n\n".encode()
             clean = [{"role": m["role"], "content": m["content"]} for m in hist]
             clean.append({"role": "assistant", "content": text})
-            max_m = get_settings().session_max_messages
+            max_m = settings.session_max_messages
             store.set_history(sid, clean[-max_m:])
         except Exception as e:
             logger.exception("stream failed")

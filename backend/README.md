@@ -29,6 +29,7 @@ python scripts/ingest_chroma.py --jsonl ./chemin/vers/fichier.jsonl
 
 ## Variables principales
 
-Voir `src/config.py` et la racine `.env.example` (`LEGAL_AGENT_API_BASE_URL` côté Next). Côté backend utiles : `CHROMA_PATH`, `CHROMA_COLLECTION`, `CHROMA_UPLOADS_COLLECTION`, `CHROMA_EMBEDDING_MODEL`, `USE_HYBRID_RAG`, `USE_RERANK`, `RAG_STRUCTURED_CITATIONS`, `MAX_UPLOAD_PDF_BYTES`.
+- **`USE_FULL_AGENT_CHAT`** : `false` par défaut — chemin **rapide** (une passe RAG + un appel LLM, sans boucle outils). Mettre `true` pour le **mode CDC complet** (plus lent).
+- Voir `src/config.py` et la racine `.env.example` (`LEGAL_AGENT_API_BASE_URL` côté Next). Côté backend utiles : `CHROMA_PATH`, `CHROMA_COLLECTION`, `CHROMA_UPLOADS_COLLECTION`, `CHROMA_EMBEDDING_MODEL`, `USE_HYBRID_RAG`, `USE_RERANK`, `RAG_STRUCTURED_CITATIONS`, `MAX_UPLOAD_PDF_BYTES`.
 
-Parité CDC / noms de variables : [`../docs/chatbot-env-parity.md`](../docs/chatbot-env-parity.md).
+Parité CDC / noms de variables : [`../docs/chatbot-env-parity.md`](../docs/chatbot-env-parity.md). Checklist Render : [`../docs/chatbot-render-production.md`](../docs/chatbot-render-production.md). RAG externe (cible) : [`../docs/chat-rag-external.md`](../docs/chat-rag-external.md).

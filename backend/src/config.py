@@ -38,8 +38,8 @@ class Settings(BaseSettings):
 
     rag_structured_citations: bool = False
 
-    # Sur Render 512 Mo, le préchauffage Chroma au boot peut saturer la RAM et empêcher /health de répondre.
-    warm_rag_on_startup: bool = False
+    # Mode CDC complet (multi-tours + outils) : plus lent ; désactivé par défaut en prod.
+    use_full_agent_chat: bool = False
 
 
 @lru_cache

@@ -23,13 +23,26 @@ curl -sS -X POST "http://localhost:3000/api/chat" \
   -d '{"question":"Qu est-ce que le droit OHADA au Gabon ?","history":[{"role":"assistant","content":"Bonjour."}],"session_id":null}' | jq .
 ```
 
-Vérifier : `answer`, `sources`, `quality`, `session_id`, `tools_used`.
+Vérifier : `answer`, `sources`, `quality`, `session_id`, `tools_used` (en mode rapide par défaut, `tools_used` contient souvent `["fast_rag"]`).
+
+## Flux SSE (proxy Next → backend)
+
+L’interface utilise **`POST /api/chat/stream`** via le proxy [`app/api/chat/stream/route.ts`](../app/api/chat/stream/route.ts).
+
+```bash
+curl -sS -N -X POST "http://localhost:3000/api/chat/stream" \
+  -H "Content-Type: application/json" \
+  -H "Accept: text/event-stream" \
+  -d '{"question":"Qu est-ce que l OHADA ?","history":[],"session_id":null}' | head -c 2000
+```
+
+Attendu : lignes `data: {"type":"token",...}` puis un événement `data: {"type":"done",...}`.
 
 ## UI
 
 1. Ouvrir **`/fr/chatbot`** (ou `/en/chatbot`).
 2. Vérifier le bandeau d’état (backend joignable).
-3. Poser une question (≥ 3 caractères) ; la réponse doit s’afficher en texte brut avec sources et indicateurs de qualité.
+3. Poser une question (≥ 3 caractères) ; le texte de la réponse doit apparaître **au fil de l’eau** (SSE), puis sources et indicateurs de qualité une fois le flux terminé.
 
 ## Effacer la session
 

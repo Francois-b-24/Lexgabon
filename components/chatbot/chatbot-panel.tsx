@@ -38,6 +38,67 @@ const DOMAIN_ENTRIES = [
 
 const CHAT_TIMEOUT_MS = 300_000;
 
+/** Parse le flux SSE `data: {...}\\n\\n` renvoyé par `/api/chat/stream`. */
+async function consumeChatSse(
+  res: Response,
+  signal: AbortSignal,
+  onToken: (t: string) => void,
+  onDone: (meta: Record<string, unknown>) => void,
+  onError: (msg: string) => void,
+): Promise<void> {
+  const reader = res.body?.getReader();
+  if (!reader) {
+    onError("Réponse vide du serveur (stream).");
+    return;
+  }
+  const dec = new TextDecoder();
+  let buf = "";
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      if (signal.aborted) break;
+      buf += dec.decode(value, { stream: true });
+      for (;;) {
+        const sep = buf.indexOf("\n\n");
+        if (sep < 0) break;
+        const raw = buf.slice(0, sep).trim();
+        buf = buf.slice(sep + 2);
+        if (!raw.startsWith("data:")) continue;
+        const payload = raw.slice(5).trim();
+        if (!payload || signal.aborted) continue;
+        let ev: Record<string, unknown>;
+        try {
+          ev = JSON.parse(payload) as Record<string, unknown>;
+        } catch {
+          continue;
+        }
+        const typ = ev.type;
+        if (typ === "token" && typeof ev.text === "string") onToken(ev.text);
+        else if (typ === "done") onDone(ev);
+        else if (typ === "error") onError(typeof ev.detail === "string" ? ev.detail : "stream_error");
+      }
+    }
+  } finally {
+    reader.releaseLock();
+  }
+  if (signal.aborted) return;
+  const tail = buf.trim();
+  if (tail.startsWith("data:")) {
+    const payload = tail.slice(5).trim();
+    if (payload) {
+      try {
+        const ev = JSON.parse(payload) as Record<string, unknown>;
+        const typ = ev.type;
+        if (typ === "done") onDone(ev);
+        else if (typ === "error") onError(typeof ev.detail === "string" ? ev.detail : "stream_error");
+      } catch {
+        /* ignore */
+      }
+    }
+  }
+}
+
 function parseErrorDetail(raw: unknown): string {
   if (typeof raw === "string") return raw;
   if (raw && typeof raw === "object" && "detail" in raw) {
@@ -182,19 +243,22 @@ export default function ChatbotPanel({ welcome }: { welcome: string }) {
         }
       }
 
-      const res = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        signal: controller.signal,
-        body: JSON.stringify({
-          question: text,
-          history,
-          session_id: sid,
-          include_uploads: includeUploads,
-          ...(domain ? { domaine: domain } : {}),
-        }),
+      const payload = JSON.stringify({
+        question: text,
+        history,
+        session_id: sid,
+        include_uploads: includeUploads,
+        ...(domain ? { domaine: domain } : {}),
       });
-      clearTimeout(timer);
+
+      setMessages((m) => [...m, { role: "assistant", content: "" }]);
+
+      const res = await fetch("/api/chat/stream", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "text/event-stream" },
+        signal: controller.signal,
+        body: payload,
+      });
 
       if (!res.ok) {
         let errText = t("error");
@@ -206,33 +270,77 @@ export default function ChatbotPanel({ welcome }: { welcome: string }) {
           if (res.status === 429) errText = t("errorRateLimited");
           else if (raw.trim()) errText = raw.trim().slice(0, 800);
         }
-        setMessages((m) => [...m, { role: "assistant", content: errText }]);
-        setLoading(false);
+        setMessages((m) => {
+          const copy = [...m];
+          const last = copy[copy.length - 1];
+          if (last?.role === "assistant") copy[copy.length - 1] = { role: "assistant", content: errText };
+          else copy.push({ role: "assistant", content: errText });
+          return copy;
+        });
         bottomRef.current?.scrollIntoView({ behavior: "smooth" });
         queueMicrotask(() => refreshHealth());
         return;
       }
 
-      const data = (await res.json()) as ChatApiResponse;
-      setSessionId(data.session_id);
-      setLastSources(data.sources ?? []);
-      setLastQuality(data.quality ?? null);
-      setLastWarnings(data.warnings ?? []);
-      setMessages((m) => [...m, { role: "assistant", content: data.answer ?? "" }]);
-      setPdfFile(null);
-    } catch (e) {
-      clearTimeout(timer);
-      const aborted = e instanceof Error && e.name === "AbortError";
-      setMessages((m) => [
-        ...m,
-        {
-          role: "assistant",
-          content: aborted ? t("errorTimeout") : t("errorNetwork"),
+      await consumeChatSse(
+        res,
+        controller.signal,
+        (tok) => {
+          setMessages((m) => {
+            const copy = [...m];
+            const last = copy[copy.length - 1];
+            if (last?.role === "assistant") {
+              copy[copy.length - 1] = { role: "assistant", content: last.content + tok };
+            }
+            return copy;
+          });
         },
-      ]);
+        (meta) => {
+          const data = meta as unknown as ChatApiResponse;
+          setSessionId(typeof data.session_id === "string" ? data.session_id : sid);
+          setLastSources((data.sources as ChatApiSource[]) ?? []);
+          setLastQuality((data.quality as ChatApiResponse["quality"]) ?? null);
+          setLastWarnings(Array.isArray(data.warnings) ? (data.warnings as string[]) : []);
+          const ans = typeof data.answer === "string" ? data.answer : "";
+          setMessages((m) => {
+            const copy = [...m];
+            const last = copy[copy.length - 1];
+            if (last?.role === "assistant") copy[copy.length - 1] = { role: "assistant", content: ans };
+            return copy;
+          });
+          setPdfFile(null);
+        },
+        (msg) => {
+          setMessages((m) => {
+            const copy = [...m];
+            const last = copy[copy.length - 1];
+            if (last?.role === "assistant") copy[copy.length - 1] = { role: "assistant", content: msg };
+            return copy;
+          });
+        },
+      );
+    } catch (e) {
+      const aborted = e instanceof Error && e.name === "AbortError";
+      setMessages((m) => {
+        const copy = [...m];
+        const last = copy[copy.length - 1];
+        if (last?.role === "assistant") {
+          copy[copy.length - 1] = {
+            role: "assistant",
+            content: aborted ? t("errorTimeout") : t("errorNetwork"),
+          };
+          return copy;
+        }
+        return [
+          ...m,
+          { role: "assistant", content: aborted ? t("errorTimeout") : t("errorNetwork") },
+        ];
+      });
+    } finally {
+      clearTimeout(timer);
+      setLoading(false);
+      bottomRef.current?.scrollIntoView({ behavior: "smooth" });
     }
-    setLoading(false);
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [input, loading, messages, sessionId, t, domain, includeUploads, pdfFile, refreshHealth]);
 
   return (
