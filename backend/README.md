@@ -15,6 +15,8 @@ uvicorn main:app --reload --host 0.0.0.0 --port 8000
 
 Avec Docker : `docker compose up backend` depuis la racine du monorepo.
 
+Sur **Render** ou toute instance avec **peu de RAM**, laisser `WARM_RAG_ON_STARTUP` désactivé (défaut) : un préchauffage Chroma au démarrage peut monopoliser CPU/RAM et faire **timeout** sur `GET /health` depuis les proxies (Vercel).
+
 ## Ingestion Chroma (JSONL)
 
 Script : `scripts/ingest_chroma.py`. Chaque ligne du fichier JSONL est un JSON avec au minimum `"text"` ; `"citation"` ou `"titre"` est recommandé ; `"id"` optionnel (sinon `ingest-<ligne>`).

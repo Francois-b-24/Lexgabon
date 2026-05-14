@@ -38,6 +38,9 @@ class Settings(BaseSettings):
 
     rag_structured_citations: bool = False
 
+    # Sur Render 512 Mo, le préchauffage Chroma au boot peut saturer la RAM et empêcher /health de répondre.
+    warm_rag_on_startup: bool = False
+
 
 @lru_cache
 def get_settings() -> Settings:
