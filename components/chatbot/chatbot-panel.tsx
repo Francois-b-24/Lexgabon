@@ -1,110 +1,38 @@
 "use client";
 
-import {
-  IconAlertCircle,
-  IconAlertTriangle,
-  IconArrowUp,
-  IconRefresh,
-} from "@tabler/icons-react";
+import { IconAlertTriangle, IconArrowUp, IconRefresh } from "@tabler/icons-react";
 import { useTranslations } from "next-intl";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { FormEvent, KeyboardEvent, useCallback, useEffect, useRef, useState } from "react";
 
 type Role = "user" | "assistant";
-
 type ChatMsg = { role: Role; content: string };
-
-type ChatApiSource = { citation: string; text: string; score: number; badge: string };
-
-type ChatApiResponse = {
-  answer: string;
-  sources: ChatApiSource[];
-  quality?: { has_citation?: boolean; has_disclaimer?: boolean };
-  session_id: string;
-  tools_used?: string[];
+type SourceBadge = { citation: string; text: string; score: number; badge: string };
+type ChatQuality = { has_citation?: boolean; has_disclaimer?: boolean };
+type BackendChatPayload = {
+  answer?: string;
+  error?: string;
+  sources?: SourceBadge[];
+  quality?: ChatQuality;
+  session_id?: string;
   warnings?: string[];
 };
 
-const DOMAIN_ENTRIES = [
-  { value: "", labelKey: "domainAuto" },
-  { value: "general", labelKey: "domainGeneral" },
-  { value: "civil", labelKey: "domainCivil" },
-  { value: "penal", labelKey: "domainPenal" },
-  { value: "commercial", labelKey: "domainCommercial" },
-  { value: "travail", labelKey: "domainTravail" },
-  { value: "administratif", labelKey: "domainAdministratif" },
-  { value: "fiscal", labelKey: "domainFiscal" },
-  { value: "famille", labelKey: "domainFamille" },
-] as const;
-
-const CHAT_TIMEOUT_MS = 300_000;
-
-/** Parse le flux SSE `data: {...}\\n\\n` renvoyé par `/api/chat/stream`. */
-async function consumeChatSse(
-  res: Response,
-  signal: AbortSignal,
-  onToken: (t: string) => void,
-  onDone: (meta: Record<string, unknown>) => void,
-  onError: (msg: string) => void,
-): Promise<void> {
-  const reader = res.body?.getReader();
-  if (!reader) {
-    onError("Réponse vide du serveur (stream).");
-    return;
-  }
-  const dec = new TextDecoder();
-  let buf = "";
-  try {
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      if (signal.aborted) break;
-      buf += dec.decode(value, { stream: true });
-      for (;;) {
-        const sep = buf.indexOf("\n\n");
-        if (sep < 0) break;
-        const raw = buf.slice(0, sep).trim();
-        buf = buf.slice(sep + 2);
-        if (!raw.startsWith("data:")) continue;
-        const payload = raw.slice(5).trim();
-        if (!payload || signal.aborted) continue;
-        let ev: Record<string, unknown>;
-        try {
-          ev = JSON.parse(payload) as Record<string, unknown>;
-        } catch {
-          continue;
-        }
-        const typ = ev.type;
-        if (typ === "token" && typeof ev.text === "string") onToken(ev.text);
-        else if (typ === "done") onDone(ev);
-        else if (typ === "error") onError(typeof ev.detail === "string" ? ev.detail : "stream_error");
-      }
-    }
-  } finally {
-    reader.releaseLock();
-  }
-  if (signal.aborted) return;
-  const tail = buf.trim();
-  if (tail.startsWith("data:")) {
-    const payload = tail.slice(5).trim();
-    if (payload) {
-      try {
-        const ev = JSON.parse(payload) as Record<string, unknown>;
-        const typ = ev.type;
-        if (typ === "done") onDone(ev);
-        else if (typ === "error") onError(typeof ev.detail === "string" ? ev.detail : "stream_error");
-      } catch {
-        /* ignore */
-      }
-    }
-  }
-}
+const CHAT_REQUEST_TIMEOUT_MS = 300_000;
+const CHAT_PROXY_PATH = "/api/chat";
 
 function parseErrorDetail(raw: unknown): string {
   if (typeof raw === "string") return raw;
   if (raw && typeof raw === "object" && "detail" in raw) {
     const d = (raw as { detail: unknown }).detail;
     if (typeof d === "string") return d;
-    if (Array.isArray(d)) return d.map((x) => JSON.stringify(x)).join(" ");
+    if (Array.isArray(d))
+      return d
+        .map((x) => (typeof x === "object" && x && "msg" in x ? String((x as { msg?: unknown }).msg) : ""))
+        .filter(Boolean)
+        .join(" ");
+  }
+  if (raw && typeof raw === "object" && "error" in raw && typeof (raw as { error: unknown }).error === "string") {
+    return (raw as { error: string }).error;
   }
   return "";
 }
@@ -112,236 +40,153 @@ function parseErrorDetail(raw: unknown): string {
 export default function ChatbotPanel({ welcome }: { welcome: string }) {
   const t = useTranslations("Chatbot");
   const [messages, setMessages] = useState<ChatMsg[]>([{ role: "assistant", content: welcome }]);
-  const [input, setInput] = useState("");
+  const [question, setQuestion] = useState("");
   const [loading, setLoading] = useState(false);
-  const [sessionId, setSessionId] = useState<string | null>(null);
-  const [health, setHealth] = useState<"checking" | "ready" | "degraded">("checking");
-  const [healthDetail, setHealthDetail] = useState<string | null>(null);
-  const [lastSources, setLastSources] = useState<ChatApiSource[]>([]);
-  const [lastQuality, setLastQuality] = useState<ChatApiResponse["quality"] | null>(null);
-  const [lastWarnings, setLastWarnings] = useState<string[]>([]);
-  const [domain, setDomain] = useState<string>("");
-  const [includeUploads, setIncludeUploads] = useState(false);
-  const [pdfFile, setPdfFile] = useState<File | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [hint, setHint] = useState<string | null>(null);
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [lastSources, setLastSources] = useState<SourceBadge[]>([]);
+  const [lastQuality, setLastQuality] = useState<ChatQuality | null>(null);
+  const [lastWarnings, setLastWarnings] = useState<string[]>([]);
+  const messageContainerRef = useRef<HTMLDivElement | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
-
-  const refreshHealth = useCallback(() => {
-    setHealth("checking");
-    setHealthDetail(null);
-    const ac = new AbortController();
-    const tid = window.setTimeout(() => ac.abort(), 310_000);
-    fetch("/api/chat/health", { cache: "no-store", signal: ac.signal })
-      .then(async (r) => {
-        let data: { ok?: boolean; detail?: string } = {};
-        try {
-          data = (await r.json()) as { ok?: boolean; detail?: string };
-        } catch {
-          data = {
-            ok: false,
-            detail: `Réponse invalide du proxy (HTTP ${r.status}). Vérifiez les logs Vercel pour cette route.`,
-          };
-        }
-        if (!r.ok && !data.detail) {
-          data.detail = `HTTP ${r.status} depuis /api/chat/health.`;
-        }
-        return data;
-      })
-      .then((data) => {
-        setHealth(data.ok ? "ready" : "degraded");
-        setHealthDetail(typeof data.detail === "string" ? data.detail : null);
-      })
-      .catch((e) => {
-        const aborted =
-          (typeof DOMException !== "undefined" && e instanceof DOMException && e.name === "AbortError") ||
-          (e instanceof Error && e.name === "AbortError");
-        setHealth("degraded");
-        setHealthDetail(
-          aborted ? t("healthClientTimeout") : "Impossible d’atteindre /api/chat/health (réseau ou page hors ligne).",
-        );
-      })
-      .finally(() => {
-        window.clearTimeout(tid);
-      });
-  }, [t]);
+  const shouldAutoScrollRef = useRef(true);
 
   useEffect(() => {
-    refreshHealth();
-  }, [refreshHealth]);
+    const container = messageContainerRef.current;
+    if (!container || !shouldAutoScrollRef.current) return;
+    container.scrollTo({ top: container.scrollHeight, behavior: "smooth" });
+  }, [messages, loading]);
+
+  function handleMessageScroll() {
+    const container = messageContainerRef.current;
+    if (!container) return;
+    const distanceFromBottom = container.scrollHeight - container.scrollTop - container.clientHeight;
+    shouldAutoScrollRef.current = distanceFromBottom < 80;
+  }
+
+  useEffect(() => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+    textarea.style.height = "auto";
+    textarea.style.height = `${Math.min(textarea.scrollHeight, 160)}px`;
+  }, [question]);
 
   const clearConversation = useCallback(async () => {
-    if (sessionId) {
-      try {
-        await fetch("/api/session/clear", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ session_id: sessionId }),
-        });
-      } catch {
-        /* CDC : réinitialiser l'état même si l'appel échoue */
-      }
-    }
-    setSessionId(null);
-    setMessages([{ role: "assistant", content: welcome }]);
+    if (loading) return;
+    setError(null);
+    setHint(null);
+    setQuestion("");
     setLastSources([]);
     setLastQuality(null);
     setLastWarnings([]);
-    setDomain("");
-    setIncludeUploads(false);
-    setPdfFile(null);
-    setHint(null);
-  }, [sessionId, welcome]);
+    setMessages([{ role: "assistant", content: welcome }]);
 
-  useEffect(() => {
-    if (!loading) return;
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [loading, messages.length]);
+    if (!sessionId) {
+      setSessionId(null);
+      return;
+    }
 
-  const send = useCallback(async () => {
-    const text = input.trim();
-    if (loading) return;
-    if (text.length < 3) {
+    try {
+      await fetch("/api/session/clear", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ session_id: sessionId }),
+      });
+    } catch {
+      /* reset local state even if server clear fails */
+    } finally {
+      setSessionId(null);
+    }
+  }, [loading, sessionId, welcome]);
+
+  async function handleSubmit(event?: FormEvent<HTMLFormElement>) {
+    event?.preventDefault();
+    const prompt = question.trim();
+    if (!prompt || loading) return;
+    if (prompt.length < 3) {
       setHint(t("minLengthHint"));
       window.setTimeout(() => setHint(null), 4000);
       return;
     }
+
+    setQuestion("");
+    setError(null);
     setHint(null);
-    setInput("");
     setLoading(true);
-    const nextMsgs: ChatMsg[] = [...messages, { role: "user", content: text }];
-    setMessages(nextMsgs);
+    setLastSources([]);
+    setLastQuality(null);
+    setLastWarnings([]);
 
-    const history = nextMsgs.map((m) => ({ role: m.role, content: m.content }));
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), CHAT_TIMEOUT_MS);
-
-    const sid = sessionId ?? crypto.randomUUID();
+    const history: ChatMsg[] = [...messages, { role: "user", content: prompt }];
+    setMessages(history);
 
     try {
-      if (pdfFile) {
-        const fd = new FormData();
-        fd.append("session_id", sid);
-        fd.append("file", pdfFile);
-        const up = await fetch("/api/upload-pdf", {
-          method: "POST",
-          body: fd,
-          signal: controller.signal,
-        });
-        if (!up.ok) {
-          clearTimeout(timer);
-          let errText = t("uploadFailed");
-          try {
-            const j = (await up.json()) as unknown;
-            errText = parseErrorDetail(j) || errText;
-          } catch {
-            /* ignore */
-          }
-          setMessages((m) => [...m, { role: "assistant", content: errText }]);
-          setLoading(false);
-          bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+      const controller = new AbortController();
+      const timeoutId = window.setTimeout(() => controller.abort("chat-timeout"), CHAT_REQUEST_TIMEOUT_MS);
+
+      const response = await fetch(CHAT_PROXY_PATH, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          question: prompt,
+          history,
+          session_id: sessionId,
+        }),
+        signal: controller.signal,
+      }).finally(() => {
+        window.clearTimeout(timeoutId);
+      });
+
+      const payload = (await response.json()) as BackendChatPayload & {
+        detail?: string | { msg?: string }[];
+      };
+
+      if (!response.ok) {
+        const detailStr = parseErrorDetail(payload);
+        throw new Error(
+          (typeof payload.error === "string" && payload.error.trim()
+            ? payload.error.trim()
+            : detailStr.trim()) || t("error"),
+        );
+      }
+
+      setLastSources(payload.sources ?? []);
+      setLastQuality(payload.quality ?? null);
+      setLastWarnings(Array.isArray(payload.warnings) ? payload.warnings : []);
+      if (payload.session_id) {
+        setSessionId(payload.session_id);
+      }
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: payload.answer?.trim() ? payload.answer : t("noAnswer") },
+      ]);
+    } catch (err) {
+      if (err instanceof DOMException && err.name === "AbortError") {
+        setError(t("errorTimeout"));
+        return;
+      }
+      if (err instanceof TypeError) {
+        const raw = String(err.message ?? "");
+        if (/failed to fetch|load failed|networkerror/i.test(raw)) {
+          setError(t("errorNetwork"));
           return;
         }
       }
-
-      const payload = JSON.stringify({
-        question: text,
-        history,
-        session_id: sid,
-        include_uploads: includeUploads,
-        ...(domain ? { domaine: domain } : {}),
-      });
-
-      setMessages((m) => [...m, { role: "assistant", content: "" }]);
-
-      const res = await fetch("/api/chat/stream", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "text/event-stream" },
-        signal: controller.signal,
-        body: payload,
-      });
-
-      if (!res.ok) {
-        let errText = t("error");
-        const raw = await res.text();
-        try {
-          const j = JSON.parse(raw) as unknown;
-          errText = parseErrorDetail(j) || errText;
-        } catch {
-          if (res.status === 429) errText = t("errorRateLimited");
-          else if (raw.trim()) errText = raw.trim().slice(0, 800);
-        }
-        setMessages((m) => {
-          const copy = [...m];
-          const last = copy[copy.length - 1];
-          if (last?.role === "assistant") copy[copy.length - 1] = { role: "assistant", content: errText };
-          else copy.push({ role: "assistant", content: errText });
-          return copy;
-        });
-        bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-        queueMicrotask(() => refreshHealth());
-        return;
-      }
-
-      await consumeChatSse(
-        res,
-        controller.signal,
-        (tok) => {
-          setMessages((m) => {
-            const copy = [...m];
-            const last = copy[copy.length - 1];
-            if (last?.role === "assistant") {
-              copy[copy.length - 1] = { role: "assistant", content: last.content + tok };
-            }
-            return copy;
-          });
-        },
-        (meta) => {
-          const data = meta as unknown as ChatApiResponse;
-          setSessionId(typeof data.session_id === "string" ? data.session_id : sid);
-          setLastSources((data.sources as ChatApiSource[]) ?? []);
-          setLastQuality((data.quality as ChatApiResponse["quality"]) ?? null);
-          setLastWarnings(Array.isArray(data.warnings) ? (data.warnings as string[]) : []);
-          const ans = typeof data.answer === "string" ? data.answer : "";
-          setMessages((m) => {
-            const copy = [...m];
-            const last = copy[copy.length - 1];
-            if (last?.role === "assistant") copy[copy.length - 1] = { role: "assistant", content: ans };
-            return copy;
-          });
-          setPdfFile(null);
-        },
-        (msg) => {
-          setMessages((m) => {
-            const copy = [...m];
-            const last = copy[copy.length - 1];
-            if (last?.role === "assistant") copy[copy.length - 1] = { role: "assistant", content: msg };
-            return copy;
-          });
-        },
-      );
-    } catch (e) {
-      const aborted = e instanceof Error && e.name === "AbortError";
-      setMessages((m) => {
-        const copy = [...m];
-        const last = copy[copy.length - 1];
-        if (last?.role === "assistant") {
-          copy[copy.length - 1] = {
-            role: "assistant",
-            content: aborted ? t("errorTimeout") : t("errorNetwork"),
-          };
-          return copy;
-        }
-        return [
-          ...m,
-          { role: "assistant", content: aborted ? t("errorTimeout") : t("errorNetwork") },
-        ];
-      });
+      setError(err instanceof Error ? err.message : t("error"));
     } finally {
-      clearTimeout(timer);
       setLoading(false);
       bottomRef.current?.scrollIntoView({ behavior: "smooth" });
     }
-  }, [input, loading, messages, sessionId, t, domain, includeUploads, pdfFile, refreshHealth]);
+  }
+
+  function onTextareaKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      void handleSubmit();
+    }
+  }
 
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden pb-[max(0.5rem,env(safe-area-inset-bottom,0px))]">
@@ -357,40 +202,15 @@ export default function ChatbotPanel({ welcome }: { welcome: string }) {
             </p>
           </div>
         </div>
-        <div className="flex flex-wrap items-center gap-2 sm:justify-end">
-          <button
-            type="button"
-            onClick={() => void clearConversation()}
-            className="flex touch-manipulation items-center gap-1 rounded-md border border-white/10 px-2 py-1.5 text-[10px] text-white/70 hover:border-lg-gold/30 hover:text-white sm:text-[11px]"
-          >
-            <IconRefresh size={14} className="shrink-0" />
-            <span className="whitespace-nowrap">{t("newChat")}</span>
-          </button>
-          <div className="min-w-0 text-[10px] sm:text-[11px]">
-            {health === "checking" && <span className="text-white/40">{t("serviceChecking")}</span>}
-            {health === "ready" && <span className="text-emerald-400/90">{t("serviceReady")}</span>}
-            {health === "degraded" && (
-              <div className="flex max-w-full flex-col gap-1.5">
-                <span className="flex items-center gap-1 text-amber-400/90">
-                  <IconAlertCircle size={14} className="shrink-0" />
-                  <span className="break-words">{t("serviceDegraded")}</span>
-                </span>
-                {healthDetail && (
-                  <p className="max-h-28 overflow-y-auto rounded border border-white/10 bg-black/25 px-2 py-1.5 text-[10px] font-light leading-snug text-amber-100/85">
-                    {healthDetail}
-                  </p>
-                )}
-                <button
-                  type="button"
-                  onClick={() => refreshHealth()}
-                  className="self-start rounded border border-white/15 px-2 py-1 text-[10px] text-white/70 hover:border-lg-gold/30 hover:text-white"
-                >
-                  {t("retryHealth")}
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
+        <button
+          type="button"
+          onClick={() => void clearConversation()}
+          disabled={loading}
+          className="flex touch-manipulation items-center gap-1 self-start rounded-md border border-white/10 px-2 py-1.5 text-[10px] text-white/70 hover:border-lg-gold/30 hover:text-white disabled:opacity-40 sm:self-auto sm:text-[11px]"
+        >
+          <IconRefresh size={14} className="shrink-0" />
+          <span className="whitespace-nowrap">{t("newChat")}</span>
+        </button>
       </header>
 
       <div
@@ -399,15 +219,19 @@ export default function ChatbotPanel({ welcome }: { welcome: string }) {
       >
         <IconAlertTriangle size={16} className="mt-0.5 shrink-0 text-lg-gold" />
         <p className="text-[11px] leading-snug text-white/70">
-          <strong className="font-medium text-lg-gold-light">{t("disclaimerExact")}</strong>{" "}
-          {t("disclaimerLegal")}
+          <strong className="font-medium text-lg-gold-light">{t("disclaimerExact")}</strong> {t("disclaimerLegal")}
         </p>
       </div>
 
-      <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto overscroll-y-contain px-3 py-3 sm:gap-3.5 sm:px-6 sm:py-4">
+      <div
+        ref={messageContainerRef}
+        aria-live="polite"
+        onScroll={handleMessageScroll}
+        className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto overscroll-y-contain px-3 py-3 sm:gap-3.5 sm:px-6 sm:py-4"
+      >
         {messages.map((m, i) => (
           <div
-            key={`${i}-${m.role}-${m.content.slice(0, 12)}`}
+            key={`${m.role}-${i}-${m.content.slice(0, 24)}`}
             className={`flex max-w-[min(92%,28rem)] flex-col gap-1 sm:max-w-[78%] ${m.role === "user" ? "self-end items-end" : "self-start items-start"}`}
           >
             <span className="px-1 text-[10px] text-white/25">{m.role === "user" ? t("you") : t("bot")}</span>
@@ -418,12 +242,7 @@ export default function ChatbotPanel({ welcome }: { welcome: string }) {
                   : "rounded-bl-sm border border-white/10 bg-white/[0.05] text-white"
               }`}
             >
-              {m.content.split("\n").map((line, j) => (
-                <span key={j}>
-                  {line}
-                  <br />
-                </span>
-              ))}
+              <p className="whitespace-pre-wrap [overflow-wrap:anywhere]">{m.content}</p>
             </div>
           </div>
         ))}
@@ -454,9 +273,10 @@ export default function ChatbotPanel({ welcome }: { welcome: string }) {
         {lastSources.length > 0 && (
           <div className="max-w-full self-start rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-[11px] text-white/70">
             <p className="mb-1.5 font-medium text-lg-gold/90">{t("sourcesTitle")}</p>
+            <p className="mb-1.5 text-white/45">{t("sourcesCount", { count: lastSources.length })}</p>
             <ul className="space-y-1.5">
-              {lastSources.slice(0, 8).map((s, i) => (
-                <li key={i} className="border-l border-lg-gold/30 pl-2">
+              {lastSources.slice(0, 8).map((s, idx) => (
+                <li key={idx} className="border-l border-lg-gold/30 pl-2">
                   <span className="text-lg-gold/80">[{s.badge}]</span> {s.citation}
                   <span className="text-white/35"> · score {(s.score ?? 0).toFixed(2)}</span>
                 </li>
@@ -465,7 +285,13 @@ export default function ChatbotPanel({ welcome }: { welcome: string }) {
           </div>
         )}
 
-        {lastQuality && (
+        {lastQuality && (!lastQuality.has_citation || !lastQuality.has_disclaimer) && (
+          <div className="max-w-full self-start rounded-xl border border-amber-500/35 bg-amber-500/10 px-3 py-2 text-[11px] text-amber-100/90">
+            {t("qualityPrudence")}
+          </div>
+        )}
+
+        {lastQuality && (lastQuality.has_citation || lastQuality.has_disclaimer) && (
           <div className="flex flex-wrap gap-2 self-start text-[10px] text-white/50">
             <span
               className={
@@ -500,80 +326,45 @@ export default function ChatbotPanel({ welcome }: { welcome: string }) {
         <div ref={bottomRef} />
       </div>
 
-      {loading && (
-        <div
-          className="shrink-0 border-y border-lg-gold/25 bg-lg-gold/15 px-3 py-2.5 text-center text-[11px] font-light leading-snug text-white/90 sm:px-6"
-          role="status"
-          aria-live="polite"
-        >
-          {t("thinkingSticky")}
-        </div>
-      )}
-
       <div className="shrink-0 border-t border-white/10 px-3 py-3 sm:px-6">
-        <div className="mb-2.5 flex flex-col gap-2 text-[11px] text-white/70">
-          <label className="flex min-w-0 flex-col gap-1">
-            <span className="text-white/45">{t("domainLabel")}</span>
-            <select
-              value={domain}
-              onChange={(e) => setDomain(e.target.value)}
-              className="min-h-11 w-full max-w-full rounded-md border border-white/15 bg-white/5 px-2 py-2 text-[12px] text-white outline-none focus:border-lg-gold/30"
-            >
-              {DOMAIN_ENTRIES.map((d) => (
-                <option key={d.value || "auto"} value={d.value}>
-                  {t(d.labelKey)}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="flex cursor-pointer items-start gap-2 sm:items-center">
-            <input
-              type="checkbox"
-              checked={includeUploads}
-              onChange={(e) => setIncludeUploads(e.target.checked)}
-              className="mt-0.5 size-4 shrink-0 rounded border-white/20 bg-white/10 touch-manipulation sm:mt-0"
+        <form onSubmit={(e) => void handleSubmit(e)} className="flex flex-col gap-2.5">
+          {error ? (
+            <div className="rounded-lg border border-red-400/35 bg-red-950/40 px-3 py-2 text-[12px] text-red-100/95" role="alert">
+              {error}
+            </div>
+          ) : null}
+
+          <div className="flex flex-col gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 focus-within:border-lg-gold/25 sm:px-3.5">
+            <textarea
+              ref={textareaRef}
+              value={question}
+              onChange={(e) => setQuestion(e.target.value)}
+              onKeyDown={onTextareaKeyDown}
+              placeholder={t("placeholder")}
+              rows={1}
+              disabled={loading}
+              className="max-h-40 min-h-11 w-full resize-none bg-transparent text-[13px] font-light text-white outline-none placeholder:text-white/25 disabled:opacity-50"
             />
-            <span className="min-w-0 leading-snug">{t("includeUploads")}</span>
-          </label>
-          <label className="flex min-w-0 flex-col gap-1">
-            <span className="text-white/45">{t("pdfLabel")}</span>
-            <input
-              type="file"
-              accept="application/pdf"
-              onChange={(e) => setPdfFile(e.target.files?.[0] ?? null)}
-              className="min-w-0 max-w-full text-[11px] file:mr-2 file:rounded file:border-0 file:bg-lg-gold/20 file:px-2 file:py-1 file:text-white"
-            />
-          </label>
-        </div>
-        <div className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 focus-within:border-lg-gold/25 sm:gap-2.5 sm:px-3.5">
-          <input
-            className="min-w-0 flex-1 bg-transparent text-[13px] font-light text-white outline-none placeholder:text-white/25"
-            placeholder={t("placeholder")}
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key !== "Enter" || e.shiftKey || e.nativeEvent.isComposing) return;
-              e.preventDefault();
-              void send();
-            }}
-          />
-          <button
-            type="button"
-            onClick={() => void send()}
-            className="grid h-9 w-9 shrink-0 touch-manipulation place-items-center rounded-md bg-lg-gold text-lg-navy disabled:opacity-40 sm:h-8 sm:w-8"
-            disabled={loading || input.trim().length < 3}
-            aria-label={t("send")}
-            title={input.trim().length < 3 ? t("minLengthHint") : undefined}
-          >
-            <IconArrowUp size={16} />
-          </button>
-        </div>
-        {hint && (
-          <p className="mt-2 text-center text-[11px] text-amber-200/90" role="alert">
-            {hint}
-          </p>
-        )}
-        <p className="mt-2 text-center text-[10px] text-white/25">{t("inputNote")}</p>
+            <div className="flex items-center justify-between gap-2 border-t border-white/5 pt-2">
+              <p className="text-[10px] font-light text-white/35">{t("inputNote")}</p>
+              <button
+                type="submit"
+                className="grid h-9 w-9 shrink-0 touch-manipulation place-items-center rounded-md bg-lg-gold text-lg-navy disabled:opacity-40"
+                disabled={loading || question.trim().length < 3}
+                aria-label={t("send")}
+                title={question.trim().length < 3 ? t("minLengthHint") : t("send")}
+              >
+                <IconArrowUp size={16} />
+              </button>
+            </div>
+          </div>
+          {hint ? (
+            <p className="text-center text-[11px] text-amber-200/90" role="alert">
+              {hint}
+            </p>
+          ) : null}
+          <p className="text-center text-[10px] text-white/25">{t("textareaHint")}</p>
+        </form>
       </div>
     </div>
   );
