@@ -12,4 +12,4 @@ Le cahier des charges CDC peut mentionner une URL de backend exposée côté fro
 
 **Embeddings Chroma** : le défaut du code est `intfloat/multilingual-e5-small`. Pour activer **`intfloat/multilingual-e5-base`** (meilleure qualité, plus lourd), définir `CHROMA_EMBEDDING_MODEL` côté backend — **réingestion obligatoire** si vous changez de modèle (dimensions / index différents).
 
-**Flags RAG** : `USE_HYBRID_RAG` et `USE_RERANK` sont à `false` par défaut ; les activer modifie le classement des résultats (hybride léger = re-score lexical sur les candidats vectoriels).
+**Flags RAG** : `USE_HYBRID_RAG` est à **`true` par défaut** dans le code (re-fetch élargi + léger re-score lexical sur les candidats vectoriels). Mettre `USE_HYBRID_RAG=false` dans l’environnement pour le pur vectoriel. `USE_RERANK` reste à `false` par défaut ; l’activer modifie encore le classement (recouvrement lexical seul sur les candidats).

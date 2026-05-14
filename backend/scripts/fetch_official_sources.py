@@ -132,6 +132,8 @@ def main() -> None:
                             "citation": citation,
                             "text": chunk,
                             "fetch_source_id": sid,
+                            "url": url,
+                            "titre": label,
                         },
                         ensure_ascii=False,
                     )

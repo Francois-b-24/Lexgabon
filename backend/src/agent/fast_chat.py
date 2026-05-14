@@ -12,23 +12,47 @@ from src.agent.prompts import (
 )
 from src.rag import retriever
 
+
+def _meta_header_line(meta: dict[str, Any]) -> str:
+    parts: list[str] = []
+    ref = meta.get("reference")
+    if isinstance(ref, str) and ref.strip():
+        parts.append(f"Référence : {ref.strip()}")
+    num = meta.get("numero_article")
+    if isinstance(num, str) and num.strip() and num.strip() != "—":
+        parts.append(f"Article / disposition : {num.strip()}")
+    url = meta.get("url")
+    if isinstance(url, str) and url.strip():
+        parts.append(f"URL : {url.strip()}")
+    return " · ".join(parts)
+
+
 def _format_rag_block(rows: list[dict[str, Any]], max_snippets: int = 8, max_chars: int = 900) -> str:
     if not rows:
         return (
-            "Aucun extrait pertinent n'a été trouvé dans la base indexée pour cette requête. "
-            "Réponds d'abord clairement à la question en t'appuyant sur tes connaissances générales du droit applicable au Gabon, "
-            "sans inventer de références précises ; tu peux indiquer en une phrase que la base indexée n'a pas fourni de document utile ici."
+            "Contexte indexé LexGabon : aucun passage n'a été retourné par la recherche pour cette requête "
+            "(index vide en environnement de test, corpus limité, ou thème encore peu couvert — une seule de ces raisons peut suffire).\n\n"
+            "Instructions pour ta réponse :\n"
+            "— Réponds d'abord de façon structurée en t'appuyant sur tes connaissances du droit applicable au Gabon et des cadres régionaux pertinents (sans inventer d'articles ni d'actes précis).\n"
+            "— Ensuite, un court paragraphe introduit par « Sources indexées » doit expliquer pourquoi l'index LexGabon n'a fourni aucun extrait à citer.\n"
+            "— Ne commence pas ta réponse uniquement par l'absence de documents : la synthèse juridique doit venir en premier."
         )
     parts: list[str] = []
     for i, r in enumerate(rows[:max_snippets], start=1):
         cit = str(r.get("citation") or r.get("id") or f"doc{i}")
+        meta = r.get("metadata") if isinstance(r.get("metadata"), dict) else {}
+        extra = _meta_header_line(meta)
         body = (r.get("text") or "").strip().replace("\r\n", "\n")
         if len(body) > max_chars:
             body = body[: max_chars - 1] + "…"
-        parts.append(f"[{i}] {cit}\n{body}")
+        head = f"[{i}] {cit}"
+        if extra:
+            head = f"{head}\n{extra}"
+        parts.append(f"{head}\n{body}")
     return (
-        "Extraits de la base juridique indexée (à n'utiliser que pour enrichir ou préciser ta réponse si pertinents ; "
-        "cite chaque emprunt avec le format exact [Source : …]) :\n\n"
+        "Contexte indexé LexGabon (extraits à exploiter après ta synthèse de connaissances ; "
+        "chaque emprunt doit être cité au format exact [Source : …], en reprenant au minimum la ligne de citation de l'extrait, "
+        "et article ou référence juridique s'ils figurent sur l'en-tête) :\n\n"
         + "\n\n---\n\n".join(parts)
     )
 
@@ -57,6 +81,7 @@ def run_fast_chat(
         question.strip(),
         session_id=session_id,
         include_uploads=include_uploads,
+        domaine=domaine,
     )
     rag_block = _format_rag_block(rows)
 
@@ -75,12 +100,15 @@ def run_fast_chat(
 
     sources: list[dict[str, Any]] = []
     for r in rows[:20]:
+        meta = r.get("metadata") if isinstance(r.get("metadata"), dict) else {}
         sources.append(
             {
                 "citation": str(r.get("citation", "")),
                 "text": str(r.get("text", ""))[:4000],
                 "score": float(r.get("score", 0.4)),
                 "badge": "doc",
+                "id": r.get("id"),
+                "metadata": meta,
             }
         )
 
@@ -101,6 +129,7 @@ def stream_fast_tokens(
         question.strip(),
         session_id=session_id,
         include_uploads=include_uploads,
+        domaine=domaine,
     )
     rag_block = _format_rag_block(rows)
     messages_anthropic = _anthropic_messages_from_history(hist)
@@ -121,12 +150,15 @@ def stream_fast_tokens(
     text = strip_markdown_heuristic(raw)
     sources: list[dict[str, Any]] = []
     for r in rows[:20]:
+        meta = r.get("metadata") if isinstance(r.get("metadata"), dict) else {}
         sources.append(
             {
                 "citation": str(r.get("citation", "")),
                 "text": str(r.get("text", ""))[:4000],
                 "score": float(r.get("score", 0.4)),
                 "badge": "doc",
+                "id": r.get("id"),
+                "metadata": meta,
             }
         )
     holder["answer"] = AgentAnswer(text=text, sources=sources, tools_used=["fast_rag"])

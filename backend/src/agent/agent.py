@@ -50,7 +50,7 @@ class LegalAgent:
         include_uploads: bool = False,
     ) -> AgentAnswer:
         messages, _user_final = self._build_messages(question, domaine, history)
-        ctx = ToolContext(session_id=session_id, include_uploads=include_uploads)
+        ctx = ToolContext(session_id=session_id, include_uploads=include_uploads, domaine=domaine)
         s = get_settings()
         tools = anthropic_tool_definitions()
 
@@ -108,7 +108,7 @@ class LegalAgent:
     ) -> Iterator[str]:
         """SSE : émet des deltas texte réels ; remplit `out` avec clés answer, sources, tools_used."""
         messages, _user_final = self._build_messages(question, domaine, history)
-        ctx = ToolContext(session_id=session_id, include_uploads=include_uploads)
+        ctx = ToolContext(session_id=session_id, include_uploads=include_uploads, domaine=domaine)
         s = get_settings()
         tools = anthropic_tool_definitions()
         max_it = s.max_agent_iterations
@@ -185,6 +185,7 @@ class LegalAgent:
                 text[:500] if text else "",
                 session_id=ctx.session_id,
                 include_uploads=ctx.include_uploads,
+                domaine=ctx.domaine,
             )
             for r in fb:
                 ctx.sources.append(
@@ -193,6 +194,8 @@ class LegalAgent:
                         "text": (r.get("text") or "")[:4000],
                         "score": float(r.get("score", 0.4)),
                         "badge": "fallback",
+                        "id": r.get("id"),
+                        "metadata": r.get("metadata") if isinstance(r.get("metadata"), dict) else {},
                     }
                 )
         return AgentAnswer(text=text, sources=ctx.sources, tools_used=ctx.tools_used)

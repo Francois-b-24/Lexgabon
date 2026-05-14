@@ -132,17 +132,45 @@ def merge_search_results(
     return _maybe_rerank_overlap(merged, query, k) if s.use_rerank else merged[:k]
 
 
+def search_expanded(
+    query: str,
+    k: int | None = None,
+    *,
+    domaine: str | None = None,
+) -> list[dict[str, Any]]:
+    """Plusieurs requêtes (question + variante domaine) fusionnées par id, score max conservé."""
+    from src.agent.prompts import rag_search_query_variants
+
+    k = k or get_settings().rag_top_k
+    variants = rag_search_query_variants(query, domaine)
+    by_id: dict[str, dict[str, Any]] = {}
+    for v in variants:
+        rows = search_main(v, k)
+        for r in rows:
+            rid = str(r.get("id") or "")
+            if not rid:
+                continue
+            sc = float(r.get("score", 0))
+            prev = by_id.get(rid)
+            if prev is None or sc > float(prev.get("score", 0)):
+                by_id[rid] = dict(r)
+    merged = sorted(by_id.values(), key=lambda x: float(x.get("score", 0)), reverse=True)
+    merged = merged[:k]
+    return _maybe_rerank_overlap(merged, query, k)
+
+
 def search(
     query: str,
     k: int | None = None,
     *,
     session_id: str | None = None,
     include_uploads: bool = False,
+    domaine: str | None = None,
 ) -> list[dict[str, Any]]:
     """Recherche principale ; fusionne les chunks PDF de session si demandé."""
     s = get_settings()
     k = k or s.rag_top_k
-    main = search_main(query, k)
+    main = search_expanded(query, k, domaine=domaine)
     if not include_uploads or not session_id:
         return main
     up = uploads_store.search_session_uploads(session_id, query, min(k, 8))

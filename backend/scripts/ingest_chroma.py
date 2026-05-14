@@ -63,10 +63,24 @@ def main() -> None:
         if not text:
             continue
         cit = str(obj.get("citation") or obj.get("titre") or f"doc-{i}")
-        meta: dict = {"citation": cit}
+        meta: dict[str, str | int | float | bool] = {"citation": cit}
         fid = obj.get("fetch_source_id")
         if fid is not None:
             meta["fetch_source_id"] = str(fid)
+        # Métadonnées optionnelles (types scalaires acceptés par Chroma)
+        for key in ("reference", "numero_article", "slug", "url", "titre", "source"):
+            if key not in obj or obj[key] is None:
+                continue
+            val = obj[key]
+            if isinstance(val, bool):
+                meta[key] = val
+            elif isinstance(val, int | float) and not isinstance(val, bool):
+                meta[key] = val
+            elif isinstance(val, str):
+                lim = 4000 if key == "url" else 2000
+                sval = val.strip()
+                if sval:
+                    meta[key] = sval[:lim]
         ids.append(str(obj.get("id") or f"ingest-{i}"))
         docs.append(text)
         metas.append(meta)

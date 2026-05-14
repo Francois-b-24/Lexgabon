@@ -14,6 +14,7 @@ class ToolContext:
     tools_used: list[str] = field(default_factory=list)
     session_id: str | None = None
     include_uploads: bool = False
+    domaine: str | None = None
 
 
 def anthropic_tool_definitions() -> list[dict[str, Any]]:
@@ -110,10 +111,15 @@ def execute_tool(name: str, tool_input: dict[str, Any], ctx: ToolContext) -> str
                 q,
                 session_id=ctx.session_id,
                 include_uploads=ctx.include_uploads,
+                domaine=ctx.domaine,
             )
             _add_sources(ctx, rows, "recherche_juridique")
             if not rows:
-                return "Aucun document pertinent trouvé dans la base indexée pour cette requête."
+                return (
+                    "Recherche indexée : aucun passage retourné pour cette requête (corpus limité ou thème peu couvert). "
+                    "Tu dois tout de même répondre sur le fond à partir de tes connaissances, puis un bref paragraphe "
+                    "« Sources indexées » pour indiquer qu'aucun extrait indexé n'étaye la réponse ici."
+                )
             lines = [f"- {r['citation']}: {(r.get('text') or '')[:500]}…" for r in rows[:5]]
             return "Extraits pertinents (résumé pour l'agent) :\n" + "\n".join(lines)
 
@@ -125,10 +131,15 @@ def execute_tool(name: str, tool_input: dict[str, Any], ctx: ToolContext) -> str
                 q,
                 session_id=ctx.session_id,
                 include_uploads=ctx.include_uploads,
+                domaine=ctx.domaine,
             )
             _add_sources(ctx, rows, "lire_article")
             if not rows:
-                return f"Aucun extrait indexé trouvé pour l'article ou la référence « {num} »."
+                return (
+                    f"Recherche indexée : aucun extrait pour « {num} ». Réponds sur le fond avec tes connaissances "
+                    "(sans inventer le texte de l'article), puis indique en « Sources indexées » que l'index n'a pas "
+                    "fourni ce passage."
+                )
             return "\n\n".join(f"[{r['citation']}]\n{(r.get('text') or '')[:2000]}" for r in rows[:3])
 
         if name == "calculer_indemnite":
@@ -150,10 +161,14 @@ def execute_tool(name: str, tool_input: dict[str, Any], ctx: ToolContext) -> str
                 sujet,
                 session_id=ctx.session_id,
                 include_uploads=ctx.include_uploads,
+                domaine=ctx.domaine,
             )
             _add_sources(ctx, rows, "synthese_document")
             if not rows:
-                return "Pas assez de documents indexés pour une synthèse fiable."
+                return (
+                    "Synthèse : pas d'extraits indexés pour ce sujet. Propose une synthèse courte à partir de tes "
+                    "connaissances et précise en « Sources indexées » que la base indexée n'a pas fourni de matériau."
+                )
             blob = "\n".join((r.get("text") or "")[:1200] for r in rows[:4])
             return (
                 "Matériau pour synthèse (extraits concaténés, à reformuler pour le public) :\n"
@@ -168,10 +183,14 @@ def execute_tool(name: str, tool_input: dict[str, Any], ctx: ToolContext) -> str
                 q or titre,
                 session_id=ctx.session_id,
                 include_uploads=ctx.include_uploads,
+                domaine=ctx.domaine,
             )
             _add_sources(ctx, rows, "generer_rapport")
             if not rows:
-                return "Rapport : pas de sources indexées — indiquez les limites au lecteur."
+                return (
+                    "Rapport : aucun extrait indexé. Rédige une ébauche à partir de tes connaissances et indique "
+                    "explicitement au lecteur que les sources indexées LexGabon n'ont pas été utilisées faute de résultats."
+                )
             sections = []
             for i, r in enumerate(rows[:5], 1):
                 sections.append(f"Section {i} — {r['citation']}\n{(r.get('text') or '')[:800]}")

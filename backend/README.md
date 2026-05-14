@@ -19,9 +19,9 @@ Sur **Render** ou toute instance avec **peu de RAM**, laisser `WARM_RAG_ON_START
 
 ## Ingestion Chroma (JSONL)
 
-Script : `scripts/ingest_chroma.py`. Chaque ligne du fichier JSONL est un JSON avec au minimum `"text"` ; `"citation"` ou `"titre"` est recommandé ; `"id"` optionnel (sinon `ingest-<ligne>`). Si le JSON contient **`fetch_source_id`**, les anciens chunks portant cette valeur sont **supprimés** avant réinsertion (réingestion idempotente du fichier `scraped_chunks.jsonl`).
+Script : `scripts/ingest_chroma.py`. Chaque ligne du fichier JSONL est un JSON avec au minimum `"text"` ; `"citation"` ou `"titre"` est recommandé ; `"id"` optionnel (sinon `ingest-<ligne>`). Métadonnées optionnelles recopiées vers Chroma si présentes : `reference`, `numero_article`, `slug`, `url`, `titre`, `source` (scalaires uniquement). Si le JSON contient **`fetch_source_id`**, les anciens chunks portant cette valeur sont **supprimés** avant réinsertion (réingestion idempotente du fichier `scraped_chunks.jsonl`).
 
-**Jeu de données initial (RAG)** : `scripts/build_rag_seed_jsonl.py` régénère `data/rag_seed.jsonl` à partir d’entrées alignées sur `lib/veille/official-feed.ts` (veille officielle + une fiche démo code électoral). Pour tout faire en une commande (rebuild JSONL + ingestion) :
+**Jeu de données initial (RAG)** : `scripts/build_rag_seed_jsonl.py` régénère `data/rag_seed.jsonl` (veille institutionnelle alignée sur `lib/veille/official-feed.ts`, fiche démo code électoral, fiche indicative droit du travail Gabon). Pour tout faire en une commande (rebuild JSONL + ingestion) :
 
 ```bash
 cd backend
@@ -69,6 +69,6 @@ Le script contrôle que la collection **`droit_gabonais`** contient au moins un 
 ## Variables principales
 
 - **`USE_FULL_AGENT_CHAT`** : `false` par défaut — chemin **rapide** (une passe RAG + un appel LLM, sans boucle outils). Mettre `true` pour le **mode CDC complet** (plus lent).
-- Voir `src/config.py` et la racine `.env.example` (`LEGAL_AGENT_API_BASE_URL` côté Next). Côté backend utiles : `CHROMA_PATH`, `CHROMA_COLLECTION`, `CHROMA_UPLOADS_COLLECTION`, `CHROMA_EMBEDDING_MODEL`, `USE_HYBRID_RAG`, `USE_RERANK`, `RAG_STRUCTURED_CITATIONS`, `MAX_UPLOAD_PDF_BYTES`.
+- Voir `src/config.py` et la racine `.env.example` (`LEGAL_AGENT_API_BASE_URL` côté Next). Côté backend utiles : `CHROMA_PATH`, `CHROMA_COLLECTION`, `CHROMA_UPLOADS_COLLECTION`, `CHROMA_EMBEDDING_MODEL`, `USE_HYBRID_RAG` (par défaut **true** : re-fetch élargi + léger re-score lexical), `USE_RERANK`, `RAG_STRUCTURED_CITATIONS`, `MAX_UPLOAD_PDF_BYTES`.
 
 Parité CDC / noms de variables : [`../docs/chatbot-env-parity.md`](../docs/chatbot-env-parity.md). Checklist Render : [`../docs/chatbot-render-production.md`](../docs/chatbot-render-production.md). RAG externe (cible) : [`../docs/chat-rag-external.md`](../docs/chat-rag-external.md).

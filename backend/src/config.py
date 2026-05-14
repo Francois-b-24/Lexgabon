@@ -17,7 +17,7 @@ class Settings(BaseSettings):
     chroma_embedding_model: str = "intfloat/multilingual-e5-small"
     max_upload_pdf_bytes: int = 10 * 1024 * 1024
 
-    use_hybrid_rag: bool = False
+    use_hybrid_rag: bool = True
     use_rerank: bool = False
 
     redis_url: str | None = None

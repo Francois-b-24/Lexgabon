@@ -114,6 +114,22 @@ SEED: list[dict[str, str]] = [
         "portal": "beac.int",
         "url": "https://beac.int/supervision-bancaire/reglements-de-cobac",
     },
+    {
+        "id": "lex-seed-droit-travail-orientation",
+        "slug": "droit-travail-gabon-orientation-lexgabon",
+        "citation": "Droit du travail (Gabon) — fiche indicative LexGabon ; texte authentique au Journal officiel",
+        "titre": "Code du travail et droit individuel du travail — repères (Gabon)",
+        "resume": (
+            "Thèmes : contrat de travail (CDI, CDD), obligations des parties, licenciement "
+            "(motifs, procédure, notification, recours internes), rupture conventionnelle, démission, "
+            "sanctions disciplinaires, durée du travail et repos. Seule la version publiée au Journal officiel fait foi."
+        ),
+        "source": "Gabon",
+        "date": "—",
+        "portal": "journal-officiel.ga",
+        "url": "https://journal-officiel.ga/",
+        "reference": "Code du travail — République gabonaise (texte authentique : Journal officiel)",
+    },
 ]
 
 
@@ -131,16 +147,20 @@ def main() -> None:
     OUT.parent.mkdir(parents=True, exist_ok=True)
     lines: list[str] = []
     for row in SEED:
-        lines.append(
-            json.dumps(
-                {
-                    "id": row["id"],
-                    "citation": row["citation"],
-                    "text": chunk_text(row),
-                },
-                ensure_ascii=False,
-            )
-        )
+        line_obj: dict[str, str] = {
+            "id": row["id"],
+            "citation": row["citation"],
+            "text": chunk_text(row),
+            "slug": row["slug"],
+            "url": row["url"],
+            "titre": row["titre"],
+            "source": row["source"],
+        }
+        if row.get("reference"):
+            line_obj["reference"] = str(row["reference"])
+        if row.get("numero_article"):
+            line_obj["numero_article"] = str(row["numero_article"])
+        lines.append(json.dumps(line_obj, ensure_ascii=False))
     # Fiche démo code électoral (aperçu pédagogique — renvoie vers le JO pour le texte intégral)
     lines.append(
         json.dumps(
