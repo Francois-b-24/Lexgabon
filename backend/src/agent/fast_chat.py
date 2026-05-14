@@ -13,20 +13,6 @@ from src.agent.prompts import (
 from src.rag import retriever
 
 
-def _meta_header_line(meta: dict[str, Any]) -> str:
-    parts: list[str] = []
-    ref = meta.get("reference")
-    if isinstance(ref, str) and ref.strip():
-        parts.append(f"Référence : {ref.strip()}")
-    num = meta.get("numero_article")
-    if isinstance(num, str) and num.strip() and num.strip() != "—":
-        parts.append(f"Article / disposition : {num.strip()}")
-    url = meta.get("url")
-    if isinstance(url, str) and url.strip():
-        parts.append(f"URL : {url.strip()}")
-    return " · ".join(parts)
-
-
 def _format_rag_block(rows: list[dict[str, Any]], max_snippets: int = 8, max_chars: int = 900) -> str:
     if not rows:
         return (
@@ -41,7 +27,7 @@ def _format_rag_block(rows: list[dict[str, Any]], max_snippets: int = 8, max_cha
     for i, r in enumerate(rows[:max_snippets], start=1):
         cit = str(r.get("citation") or r.get("id") or f"doc{i}")
         meta = r.get("metadata") if isinstance(r.get("metadata"), dict) else {}
-        extra = _meta_header_line(meta)
+        extra = retriever.rag_metadata_subheader(meta)
         body = (r.get("text") or "").strip().replace("\r\n", "\n")
         if len(body) > max_chars:
             body = body[: max_chars - 1] + "…"
@@ -51,8 +37,8 @@ def _format_rag_block(rows: list[dict[str, Any]], max_snippets: int = 8, max_cha
         parts.append(f"{head}\n{body}")
     return (
         "Contexte indexé LexGabon (extraits à exploiter après ta synthèse de connaissances ; "
-        "chaque emprunt doit être cité au format exact [Source : …], en reprenant au minimum la ligne de citation de l'extrait, "
-        "et article ou référence juridique s'ils figurent sur l'en-tête) :\n\n"
+        "chaque emprunt doit être cité au format exact [Source : …] (ou [Source: …]), en reprenant au minimum la ligne de citation de l'extrait "
+        "et, si la ligne « Article / disposition : » est présente, le numéro d'article doit apparaître tel quel dans [Source : …]) :\n\n"
         + "\n\n---\n\n".join(parts)
     )
 

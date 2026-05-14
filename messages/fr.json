@@ -109,6 +109,8 @@
     "errorNetwork": "Erreur réseau. Vérifiez votre connexion et que le backend FastAPI est démarré.",
     "errorRateLimited": "Trop de requêtes. Réessayez dans une minute.",
     "sourcesTitle": "Sources utilisées",
+    "sourceDispositionIndexed": "Disposition indexée : {article}",
+    "sourceViewTexte": "Voir la fiche texte",
     "qualityCitation": "Citation [Source : …]",
     "qualityDisclaimer": "Avertissement légal",
     "yes": "oui",

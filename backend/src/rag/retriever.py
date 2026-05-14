@@ -13,6 +13,46 @@ from src.rag import uploads_store
 
 logger = logging.getLogger(__name__)
 
+
+def _meta_numero_article(meta: dict[str, Any]) -> str | None:
+    raw = meta.get("numero_article")
+    if raw is None:
+        return None
+    s = str(raw).strip()
+    if not s or s == "—":
+        return None
+    return s
+
+
+def enrich_citation_line(meta: dict[str, Any] | None, base: str) -> str:
+    """Ligne de citation affichée au modèle : inclut le numéro d'article si présent en métadonnées."""
+    m = meta or {}
+    b = (base or "").strip() or "Document indexé"
+    n = _meta_numero_article(m)
+    if not n:
+        return b
+    low = b.lower()
+    nlow = n.lower()
+    if nlow in low or f"article {nlow}" in low or f"art. {nlow}" in low or f"art {nlow}" in low:
+        return b
+    return f"{b} — article {n}"
+
+
+def rag_metadata_subheader(meta: dict[str, Any]) -> str:
+    """Sous-ligne d'en-tête (référence, article, URL) pour le contexte LLM et les outils."""
+    parts: list[str] = []
+    ref = meta.get("reference")
+    if isinstance(ref, str) and ref.strip():
+        parts.append(f"Référence : {ref.strip()}")
+    num = _meta_numero_article(meta)
+    if num:
+        parts.append(f"Article / disposition : {num}")
+    url = meta.get("url")
+    if isinstance(url, str) and url.strip():
+        parts.append(f"URL : {url.strip()}")
+    return " · ".join(parts)
+
+
 _ef: embedding_functions.SentenceTransformerEmbeddingFunction | None = None
 _collection: Any = None
 
@@ -78,7 +118,8 @@ def _rows_from_chroma_result(res: dict[str, Any], k: int) -> list[dict[str, Any]
         meta = metas[i] if i < len(metas) else {}
         dist = dists[i] if i < len(dists) else 1.0
         score = max(0.0, 1.0 - float(dist) / 2.0) if dist is not None else 0.5
-        citation = (meta or {}).get("citation") or (meta or {}).get("titre") or str(doc_id)
+        raw_cit = (meta or {}).get("citation") or (meta or {}).get("titre") or str(doc_id)
+        citation = enrich_citation_line(meta or {}, str(raw_cit))
         out.append(
             {
                 "id": doc_id,

@@ -26,6 +26,8 @@ class SourceItem(BaseModel):
     text: str
     score: float
     badge: str = "doc"
+    slug: str | None = None
+    numero_article: str | None = None
 
 
 class Quality(BaseModel):

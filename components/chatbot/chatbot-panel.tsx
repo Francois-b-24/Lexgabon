@@ -7,7 +7,14 @@ import { Link } from "@/i18n/navigation";
 
 type Role = "user" | "assistant";
 type ChatMsg = { role: Role; content: string };
-type SourceBadge = { citation: string; text: string; score: number; badge: string };
+type SourceBadge = {
+  citation: string;
+  text: string;
+  score: number;
+  badge: string;
+  slug?: string | null;
+  numero_article?: string | null;
+};
 type ChatQuality = { has_citation?: boolean; has_disclaimer?: boolean };
 type BackendChatPayload = {
   answer?: string;
@@ -283,6 +290,19 @@ export default function ChatbotPanel({ welcome }: { welcome: string }) {
                       <span className="text-lg-gold/80">[{s.badge}]</span> {s.citation}
                       <span className="text-white/35"> · score {(s.score ?? 0).toFixed(2)}</span>
                     </div>
+                    {s.numero_article?.trim() ? (
+                      <p className="text-[10px] leading-snug text-white/50">
+                        {t("sourceDispositionIndexed", { article: s.numero_article.trim() })}
+                      </p>
+                    ) : null}
+                    {s.slug?.trim() ? (
+                      <Link
+                        href={`/textes/${encodeURIComponent(s.slug.trim())}`}
+                        className="w-fit text-[10px] text-lg-gold/90 underline-offset-2 hover:underline"
+                      >
+                        {t("sourceViewTexte")}
+                      </Link>
+                    ) : null}
                     {s.text?.trim() ? (
                       <details className="group rounded border border-white/10 bg-black/20">
                         <summary className="cursor-pointer select-none px-2 py-1 text-[10px] text-white/55 hover:text-white/80">

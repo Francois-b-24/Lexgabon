@@ -120,7 +120,15 @@ def execute_tool(name: str, tool_input: dict[str, Any], ctx: ToolContext) -> str
                     "Tu dois tout de même répondre sur le fond à partir de tes connaissances, puis un bref paragraphe "
                     "« Sources indexées » pour indiquer qu'aucun extrait indexé n'étaye la réponse ici."
                 )
-            lines = [f"- {r['citation']}: {(r.get('text') or '')[:500]}…" for r in rows[:5]]
+            lines: list[str] = []
+            for r in rows[:5]:
+                meta = r.get("metadata") if isinstance(r.get("metadata"), dict) else {}
+                sub = retriever.rag_metadata_subheader(meta)
+                excerpt = f"{(r.get('text') or '')[:500]}…"
+                if sub:
+                    lines.append(f"- {r['citation']}\n  {sub}\n  Extrait : {excerpt}")
+                else:
+                    lines.append(f"- {r['citation']}\n  Extrait : {excerpt}")
             return "Extraits pertinents (résumé pour l'agent) :\n" + "\n".join(lines)
 
         if name == "lire_article":

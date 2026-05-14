@@ -109,6 +109,8 @@
     "errorNetwork": "Network error. Check your connection and that the FastAPI backend is running.",
     "errorRateLimited": "Too many requests. Try again in a minute.",
     "sourcesTitle": "Sources used",
+    "sourceDispositionIndexed": "Indexed provision: {article}",
+    "sourceViewTexte": "View text record",
     "qualityCitation": "Citation [Source : …]",
     "qualityDisclaimer": "Legal disclaimer",
     "yes": "yes",

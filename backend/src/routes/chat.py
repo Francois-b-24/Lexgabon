@@ -44,6 +44,26 @@ def _prepare_history(body: ChatRequest) -> list[dict[str, str]]:
     return h
 
 
+def _source_item_from_row(src: dict[str, Any]) -> SourceItem:
+    meta = src.get("metadata") if isinstance(src.get("metadata"), dict) else {}
+    slug_raw = meta.get("slug")
+    slug_out: str | None = slug_raw.strip() if isinstance(slug_raw, str) and slug_raw.strip() else None
+    raw_num = meta.get("numero_article")
+    num_out: str | None = None
+    if raw_num is not None:
+        ns = str(raw_num).strip()
+        if ns and ns != "—":
+            num_out = ns
+    return SourceItem(
+        citation=str(src.get("citation", "")),
+        text=str(src.get("text", "")),
+        score=float(src.get("score", 0)),
+        badge=str(src.get("badge", "doc")),
+        slug=slug_out,
+        numero_article=num_out,
+    )
+
+
 def _build_citations(sources: list[dict[str, Any]]) -> list[StructuredCitation]:
     out: list[StructuredCitation] = []
     for s in sources[:20]:
@@ -115,15 +135,7 @@ async def api_chat(request: Request, body: ChatRequest):
         logger.exception("agent failed")
         return JSONResponse({"detail": str(e)}, status_code=502)
 
-    sources = [
-        SourceItem(
-            citation=src.get("citation", ""),
-            text=src.get("text", ""),
-            score=float(src.get("score", 0)),
-            badge=str(src.get("badge", "doc")),
-        )
-        for src in out.sources[:20]
-    ]
+    sources = [_source_item_from_row(src) for src in out.sources[:20]]
     quality = Quality(has_citation=answer_has_citation(out.text), has_disclaimer=answer_has_disclaimer(out.text))
     warnings = collect_server_warnings(out.text, out.sources)
     citations: list[StructuredCitation] | None = None
@@ -258,15 +270,7 @@ async def api_chat_stream(request: Request, body: ChatRequest):
                 yield f"data: {json.dumps({'type': 'error', 'detail': 'empty_response'})}\n\n".encode()
                 return
             text = ans.text
-            sources = [
-                {
-                    "citation": src.get("citation", ""),
-                    "text": src.get("text", ""),
-                    "score": src.get("score", 0),
-                    "badge": src.get("badge", "doc"),
-                }
-                for src in ans.sources[:20]
-            ]
+            sources = [_source_item_from_row(src).model_dump() for src in ans.sources[:20]]
             quality = {
                 "has_citation": answer_has_citation(text),
                 "has_disclaimer": answer_has_disclaimer(text),
