@@ -6,7 +6,6 @@ import { FormEvent, KeyboardEvent, useCallback, useEffect, useRef, useState } fr
 import { Link } from "@/i18n/navigation";
 
 type Role = "user" | "assistant";
-type ChatMsg = { role: Role; content: string };
 type SourceBadge = {
   citation: string;
   text: string;
@@ -16,6 +15,13 @@ type SourceBadge = {
   numero_article?: string | null;
 };
 type ChatQuality = { has_citation?: boolean; has_disclaimer?: boolean };
+type ChatMsg = {
+  role: Role;
+  content: string;
+  sources?: SourceBadge[];
+  quality?: ChatQuality;
+  warnings?: string[];
+};
 type BackendChatPayload = {
   answer?: string;
   error?: string;
@@ -45,6 +51,59 @@ function parseErrorDetail(raw: unknown): string {
   return "";
 }
 
+function ChatSourcesPanel({ sources }: { sources: SourceBadge[] }) {
+  const t = useTranslations("Chatbot");
+  if (!sources.length) return null;
+  return (
+    <div className="mt-2 w-full max-w-[min(92%,28rem)] rounded-xl border border-lg-gold/20 bg-white/[0.04] px-3 py-2.5 text-[11px] text-white/75 sm:max-w-[78%]">
+      <p className="mb-1 font-semibold text-lg-gold/95">{t("sourcesTitle")}</p>
+      <p className="mb-2 text-[10px] leading-snug text-white/50">{t("sourcesBlockIntro")}</p>
+      <p className="mb-2 text-[10px] text-white/40">{t("sourcesCount", { count: sources.length })}</p>
+      <ul className="space-y-3">
+        {sources.slice(0, 8).map((s, idx) => (
+          <li key={idx} className="border-l-2 border-lg-gold/35 pl-2.5">
+            <div className="flex flex-col gap-1.5">
+              <div>
+                <span className="text-lg-gold/85">[{s.badge}]</span> {s.citation}
+                <span className="text-white/35"> · score {(s.score ?? 0).toFixed(2)}</span>
+              </div>
+              {s.numero_article?.trim() ? (
+                <p className="text-[10px] leading-snug text-white/55">
+                  {t("sourceDispositionIndexed", { article: s.numero_article.trim() })}
+                </p>
+              ) : null}
+              {s.slug?.trim() ? (
+                <Link
+                  href={`/textes/${encodeURIComponent(s.slug.trim())}`}
+                  className="w-fit text-[10px] font-medium text-lg-gold/95 underline-offset-2 hover:underline"
+                >
+                  {t("sourceViewTexte")}
+                </Link>
+              ) : null}
+              {s.text?.trim() ? (
+                <details open className="rounded border border-white/10 bg-black/25">
+                  <summary className="cursor-pointer select-none px-2 py-1.5 text-[10px] text-white/60 hover:text-white/85">
+                    {t("sourceExcerptSummary")}
+                  </summary>
+                  <p className="max-h-52 overflow-y-auto whitespace-pre-wrap border-t border-white/10 px-2 py-2 text-[11px] font-light leading-relaxed text-white/75">
+                    {s.text}
+                  </p>
+                </details>
+              ) : null}
+              <Link
+                href={`/recherche?q=${encodeURIComponent(s.citation)}`}
+                className="w-fit text-[10px] text-lg-gold/90 underline-offset-2 hover:underline"
+              >
+                {t("verifySourceSearch")}
+              </Link>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 export default function ChatbotPanel({ welcome }: { welcome: string }) {
   const t = useTranslations("Chatbot");
   const [messages, setMessages] = useState<ChatMsg[]>([{ role: "assistant", content: welcome }]);
@@ -53,9 +112,6 @@ export default function ChatbotPanel({ welcome }: { welcome: string }) {
   const [error, setError] = useState<string | null>(null);
   const [hint, setHint] = useState<string | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
-  const [lastSources, setLastSources] = useState<SourceBadge[]>([]);
-  const [lastQuality, setLastQuality] = useState<ChatQuality | null>(null);
-  const [lastWarnings, setLastWarnings] = useState<string[]>([]);
   const messageContainerRef = useRef<HTMLDivElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -86,9 +142,6 @@ export default function ChatbotPanel({ welcome }: { welcome: string }) {
     setError(null);
     setHint(null);
     setQuestion("");
-    setLastSources([]);
-    setLastQuality(null);
-    setLastWarnings([]);
     setMessages([{ role: "assistant", content: welcome }]);
 
     if (!sessionId) {
@@ -123,12 +176,9 @@ export default function ChatbotPanel({ welcome }: { welcome: string }) {
     setError(null);
     setHint(null);
     setLoading(true);
-    setLastSources([]);
-    setLastQuality(null);
-    setLastWarnings([]);
 
-    const history: ChatMsg[] = [...messages, { role: "user", content: prompt }];
-    setMessages(history);
+    const historyForApi = [...messages.map(({ role, content }) => ({ role, content })), { role: "user" as const, content: prompt }];
+    setMessages((prev) => [...prev, { role: "user", content: prompt }]);
 
     try {
       const controller = new AbortController();
@@ -139,7 +189,7 @@ export default function ChatbotPanel({ welcome }: { welcome: string }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           question: prompt,
-          history,
+          history: historyForApi,
           session_id: sessionId,
         }),
         signal: controller.signal,
@@ -160,15 +210,18 @@ export default function ChatbotPanel({ welcome }: { welcome: string }) {
         );
       }
 
-      setLastSources(payload.sources ?? []);
-      setLastQuality(payload.quality ?? null);
-      setLastWarnings(Array.isArray(payload.warnings) ? payload.warnings : []);
       if (payload.session_id) {
         setSessionId(payload.session_id);
       }
       setMessages((prev) => [
         ...prev,
-        { role: "assistant", content: payload.answer?.trim() ? payload.answer : t("noAnswer") },
+        {
+          role: "assistant",
+          content: payload.answer?.trim() ? payload.answer : t("noAnswer"),
+          sources: payload.sources ?? [],
+          quality: payload.quality,
+          warnings: Array.isArray(payload.warnings) ? payload.warnings : [],
+        },
       ]);
     } catch (err) {
       if (err instanceof DOMException && err.name === "AbortError") {
@@ -239,8 +292,8 @@ export default function ChatbotPanel({ welcome }: { welcome: string }) {
       >
         {messages.map((m, i) => (
           <div
-            key={`${m.role}-${i}-${m.content.slice(0, 24)}`}
-            className={`flex max-w-[min(92%,28rem)] flex-col gap-1 sm:max-w-[78%] ${m.role === "user" ? "self-end items-end" : "self-start items-start"}`}
+            key={`msg-${i}`}
+            className={`flex w-full max-w-[min(92%,28rem)] flex-col gap-1 sm:max-w-[78%] ${m.role === "user" ? "self-end items-end" : "self-start items-start"}`}
           >
             <span className="px-1 text-[10px] text-white/25">{m.role === "user" ? t("you") : t("bot")}</span>
             <div
@@ -252,6 +305,56 @@ export default function ChatbotPanel({ welcome }: { welcome: string }) {
             >
               <p className="whitespace-pre-wrap [overflow-wrap:anywhere]">{m.content}</p>
             </div>
+            {m.role === "assistant" ? (
+              <>
+                {m.sources && m.sources.length > 0 ? <ChatSourcesPanel sources={m.sources} /> : null}
+                {m.content !== welcome && (!m.sources || m.sources.length === 0) ? (
+                  <div
+                    className="mt-2 w-full max-w-[min(92%,28rem)] rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-[10px] leading-snug text-white/55 sm:max-w-[78%]"
+                    role="note"
+                  >
+                    {t("sourcesEmptyHint")}
+                  </div>
+                ) : null}
+                {m.quality && (!m.quality.has_citation || !m.quality.has_disclaimer) ? (
+                  <div className="mt-2 w-full max-w-[min(92%,28rem)] rounded-xl border border-amber-500/35 bg-amber-500/10 px-3 py-2 text-[11px] text-amber-100/90 sm:max-w-[78%]">
+                    {t("qualityPrudence")}
+                  </div>
+                ) : null}
+                {m.quality && (m.quality.has_citation || m.quality.has_disclaimer) ? (
+                  <div className="mt-1.5 flex w-full max-w-[min(92%,28rem)] flex-wrap gap-2 text-[10px] text-white/50 sm:max-w-[78%]">
+                    <span
+                      className={
+                        m.quality.has_citation
+                          ? "rounded bg-emerald-500/15 px-2 py-0.5 text-emerald-300"
+                          : "rounded bg-white/5 px-2 py-0.5"
+                      }
+                    >
+                      {t("qualityCitation")}: {m.quality.has_citation ? t("yes") : t("no")}
+                    </span>
+                    <span
+                      className={
+                        m.quality.has_disclaimer
+                          ? "rounded bg-emerald-500/15 px-2 py-0.5 text-emerald-300"
+                          : "rounded bg-amber-500/15 px-2 py-0.5 text-amber-200"
+                      }
+                    >
+                      {t("qualityDisclaimer")}: {m.quality.has_disclaimer ? t("yes") : t("no")}
+                    </span>
+                  </div>
+                ) : null}
+                {m.warnings && m.warnings.length > 0 ? (
+                  <div className="mt-2 w-full max-w-[min(92%,28rem)] rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-[11px] text-amber-100/90 sm:max-w-[78%]">
+                    <p className="mb-1 font-medium text-amber-200">{t("warningsTitle")}</p>
+                    <ul className="list-inside list-disc space-y-0.5">
+                      {m.warnings.map((w) => (
+                        <li key={w}>{w}</li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : null}
+              </>
+            ) : null}
           </div>
         ))}
 
@@ -275,92 +378,6 @@ export default function ChatbotPanel({ welcome }: { welcome: string }) {
               </div>
               <p className="mt-2 text-[11px] font-light leading-snug text-white/55">{t("thinkingHint")}</p>
             </div>
-          </div>
-        )}
-
-        {lastSources.length > 0 && (
-          <div className="max-w-full self-start rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-[11px] text-white/70">
-            <p className="mb-1.5 font-medium text-lg-gold/90">{t("sourcesTitle")}</p>
-            <p className="mb-1.5 text-white/45">{t("sourcesCount", { count: lastSources.length })}</p>
-            <ul className="space-y-2.5">
-              {lastSources.slice(0, 8).map((s, idx) => (
-                <li key={idx} className="border-l border-lg-gold/30 pl-2">
-                  <div className="flex flex-col gap-1.5">
-                    <div>
-                      <span className="text-lg-gold/80">[{s.badge}]</span> {s.citation}
-                      <span className="text-white/35"> · score {(s.score ?? 0).toFixed(2)}</span>
-                    </div>
-                    {s.numero_article?.trim() ? (
-                      <p className="text-[10px] leading-snug text-white/50">
-                        {t("sourceDispositionIndexed", { article: s.numero_article.trim() })}
-                      </p>
-                    ) : null}
-                    {s.slug?.trim() ? (
-                      <Link
-                        href={`/textes/${encodeURIComponent(s.slug.trim())}`}
-                        className="w-fit text-[10px] text-lg-gold/90 underline-offset-2 hover:underline"
-                      >
-                        {t("sourceViewTexte")}
-                      </Link>
-                    ) : null}
-                    {s.text?.trim() ? (
-                      <details className="group rounded border border-white/10 bg-black/20">
-                        <summary className="cursor-pointer select-none px-2 py-1 text-[10px] text-white/55 hover:text-white/80">
-                          {t("sourceExcerptSummary")}
-                        </summary>
-                        <p className="max-h-40 overflow-y-auto whitespace-pre-wrap border-t border-white/10 px-2 py-1.5 text-[10px] font-light leading-snug text-white/65">
-                          {s.text}
-                        </p>
-                      </details>
-                    ) : null}
-                    <Link
-                      href={`/recherche?q=${encodeURIComponent(s.citation)}`}
-                      className="w-fit text-[10px] text-lg-gold/90 underline-offset-2 hover:underline"
-                    >
-                      {t("verifySourceSearch")}
-                    </Link>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        {lastQuality && (!lastQuality.has_citation || !lastQuality.has_disclaimer) && (
-          <div className="max-w-full self-start rounded-xl border border-amber-500/35 bg-amber-500/10 px-3 py-2 text-[11px] text-amber-100/90">
-            {t("qualityPrudence")}
-          </div>
-        )}
-
-        {lastQuality && (lastQuality.has_citation || lastQuality.has_disclaimer) && (
-          <div className="flex flex-wrap gap-2 self-start text-[10px] text-white/50">
-            <span
-              className={
-                lastQuality.has_citation ? "rounded bg-emerald-500/15 px-2 py-0.5 text-emerald-300" : "rounded bg-white/5 px-2 py-0.5"
-              }
-            >
-              {t("qualityCitation")}: {lastQuality.has_citation ? t("yes") : t("no")}
-            </span>
-            <span
-              className={
-                lastQuality.has_disclaimer
-                  ? "rounded bg-emerald-500/15 px-2 py-0.5 text-emerald-300"
-                  : "rounded bg-amber-500/15 px-2 py-0.5 text-amber-200"
-              }
-            >
-              {t("qualityDisclaimer")}: {lastQuality.has_disclaimer ? t("yes") : t("no")}
-            </span>
-          </div>
-        )}
-
-        {lastWarnings.length > 0 && (
-          <div className="max-w-full self-start rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-[11px] text-amber-100/90">
-            <p className="mb-1 font-medium text-amber-200">{t("warningsTitle")}</p>
-            <ul className="list-inside list-disc space-y-0.5">
-              {lastWarnings.map((w) => (
-                <li key={w}>{w}</li>
-              ))}
-            </ul>
           </div>
         )}
 
