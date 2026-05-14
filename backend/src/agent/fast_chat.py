@@ -14,7 +14,11 @@ from src.rag import retriever
 
 def _format_rag_block(rows: list[dict[str, Any]], max_snippets: int = 8, max_chars: int = 900) -> str:
     if not rows:
-        return "Aucun extrait pertinent n'a été trouvé dans la base indexée pour cette requête. Réponds prudement en t'appuyant sur tes connaissances générales du droit applicable au Gabon, sans inventer de références précises."
+        return (
+            "Aucun extrait pertinent n'a été trouvé dans la base indexée pour cette requête. "
+            "Réponds d'abord clairement à la question en t'appuyant sur tes connaissances générales du droit applicable au Gabon, "
+            "sans inventer de références précises ; tu peux indiquer en une phrase que la base indexée n'a pas fourni de document utile ici."
+        )
     parts: list[str] = []
     for i, r in enumerate(rows[:max_snippets], start=1):
         cit = str(r.get("citation") or r.get("id") or f"doc{i}")
@@ -22,7 +26,11 @@ def _format_rag_block(rows: list[dict[str, Any]], max_snippets: int = 8, max_cha
         if len(body) > max_chars:
             body = body[: max_chars - 1] + "…"
         parts.append(f"[{i}] {cit}\n{body}")
-    return "Extraits de la base juridique indexée (cite avec le format [Source : …] en t'appuyant sur ces textes) :\n\n" + "\n\n---\n\n".join(parts)
+    return (
+        "Extraits de la base juridique indexée (à n'utiliser que pour enrichir ou préciser ta réponse si pertinents ; "
+        "cite chaque emprunt avec le format exact [Source : …]) :\n\n"
+        + "\n\n---\n\n".join(parts)
+    )
 
 
 def _anthropic_messages_from_history(hist: list[dict[str, str]]) -> list[dict[str, Any]]:
@@ -60,7 +68,7 @@ def run_fast_chat(
         messages_anthropic.append({"role": "user", "content": build_user_message(question, domaine)})
 
     last = str(messages_anthropic[-1].get("content") or "")
-    messages_anthropic[-1] = {"role": "user", "content": f"{rag_block}\n\n---\n\n{last}"}
+    messages_anthropic[-1] = {"role": "user", "content": f"{last}\n\n---\n\n{rag_block}"}
 
     msg = llm.create_text_only(system=SYSTEM_PROMPT_FAST, messages=messages_anthropic)
     text = strip_markdown_heuristic(llm.extract_text_blocks(msg.content))
@@ -101,7 +109,7 @@ def stream_fast_tokens(
     if messages_anthropic[-1].get("role") != "user":
         messages_anthropic.append({"role": "user", "content": build_user_message(question, domaine)})
     last = str(messages_anthropic[-1].get("content") or "")
-    messages_anthropic[-1] = {"role": "user", "content": f"{rag_block}\n\n---\n\n{last}"}
+    messages_anthropic[-1] = {"role": "user", "content": f"{last}\n\n---\n\n{rag_block}"}
 
     text_parts: list[str] = []
     stream_holder: dict[str, Any] = {}
