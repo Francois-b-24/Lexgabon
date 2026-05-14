@@ -61,6 +61,7 @@ export default function ChatbotPanel({ welcome }: { welcome: string }) {
   const [domain, setDomain] = useState<string>("");
   const [includeUploads, setIncludeUploads] = useState(false);
   const [pdfFile, setPdfFile] = useState<File | null>(null);
+  const [hint, setHint] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -99,11 +100,23 @@ export default function ChatbotPanel({ welcome }: { welcome: string }) {
     setDomain("");
     setIncludeUploads(false);
     setPdfFile(null);
+    setHint(null);
   }, [sessionId, welcome]);
+
+  useEffect(() => {
+    if (!loading) return;
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [loading, messages.length]);
 
   const send = useCallback(async () => {
     const text = input.trim();
-    if (text.length < 3 || loading) return;
+    if (loading) return;
+    if (text.length < 3) {
+      setHint(t("minLengthHint"));
+      window.setTimeout(() => setHint(null), 4000);
+      return;
+    }
+    setHint(null);
     setInput("");
     setLoading(true);
     const nextMsgs: ChatMsg[] = [...messages, { role: "user", content: text }];
@@ -262,6 +275,29 @@ export default function ChatbotPanel({ welcome }: { welcome: string }) {
           </div>
         ))}
 
+        {loading && (
+          <div
+            className="flex max-w-[min(92%,28rem)] flex-col gap-1 self-start sm:max-w-[78%]"
+            role="status"
+            aria-live="polite"
+            aria-busy="true"
+          >
+            <span className="px-1 text-[10px] text-white/25">{t("bot")}</span>
+            <div className="rounded-2xl rounded-bl-sm border border-lg-gold/35 bg-white/[0.07] px-3 py-2.5 sm:px-4">
+              <p className="text-[13px] font-medium leading-snug text-lg-gold-light">{t("thinkingTitle")}</p>
+              <div className="mt-2 flex items-center gap-2">
+                <span className="flex gap-1" aria-hidden>
+                  <span className="inline-block size-1.5 animate-bounce rounded-full bg-lg-gold [animation-duration:1s] [animation-delay:0ms]" />
+                  <span className="inline-block size-1.5 animate-bounce rounded-full bg-lg-gold [animation-duration:1s] [animation-delay:150ms]" />
+                  <span className="inline-block size-1.5 animate-bounce rounded-full bg-lg-gold [animation-duration:1s] [animation-delay:300ms]" />
+                </span>
+                <span className="text-[11px] font-light italic text-white/45">{t("sending")}</span>
+              </div>
+              <p className="mt-2 text-[11px] font-light leading-snug text-white/55">{t("thinkingHint")}</p>
+            </div>
+          </div>
+        )}
+
         {lastSources.length > 0 && (
           <div className="max-w-full self-start rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-[11px] text-white/70">
             <p className="mb-1.5 font-medium text-lg-gold/90">{t("sourcesTitle")}</p>
@@ -311,6 +347,16 @@ export default function ChatbotPanel({ welcome }: { welcome: string }) {
         <div ref={bottomRef} />
       </div>
 
+      {loading && (
+        <div
+          className="shrink-0 border-y border-lg-gold/25 bg-lg-gold/15 px-3 py-2.5 text-center text-[11px] font-light leading-snug text-white/90 sm:px-6"
+          role="status"
+          aria-live="polite"
+        >
+          {t("thinkingSticky")}
+        </div>
+      )}
+
       <div className="shrink-0 border-t border-white/10 px-3 py-3 sm:px-6">
         <div className="mb-2.5 flex flex-col gap-2 text-[11px] text-white/70">
           <label className="flex min-w-0 flex-col gap-1">
@@ -352,18 +398,28 @@ export default function ChatbotPanel({ welcome }: { welcome: string }) {
             placeholder={t("placeholder")}
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && void send()}
+            onKeyDown={(e) => {
+              if (e.key !== "Enter" || e.shiftKey || e.nativeEvent.isComposing) return;
+              e.preventDefault();
+              void send();
+            }}
           />
           <button
             type="button"
             onClick={() => void send()}
             className="grid h-9 w-9 shrink-0 touch-manipulation place-items-center rounded-md bg-lg-gold text-lg-navy disabled:opacity-40 sm:h-8 sm:w-8"
-            disabled={loading}
+            disabled={loading || input.trim().length < 3}
             aria-label={t("send")}
+            title={input.trim().length < 3 ? t("minLengthHint") : undefined}
           >
             <IconArrowUp size={16} />
           </button>
         </div>
+        {hint && (
+          <p className="mt-2 text-center text-[11px] text-amber-200/90" role="alert">
+            {hint}
+          </p>
+        )}
         <p className="mt-2 text-center text-[10px] text-white/25">{t("inputNote")}</p>
       </div>
     </div>
