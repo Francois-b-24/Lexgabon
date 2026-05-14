@@ -2,7 +2,8 @@ import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
-export const maxDuration = 120;
+/** Premier message (RAG + LLM) peut dépasser 2 min après cold start Render. Pro : jusqu’à 300 s ; Hobby est plafonné par Vercel. */
+export const maxDuration = 180;
 
 function backendBase(): string | null {
   const b = process.env.LEGAL_AGENT_API_BASE_URL?.trim();

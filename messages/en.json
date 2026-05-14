@@ -10,7 +10,10 @@
     "api": "ALIN",
     "home": "Home",
     "favoris": "Bookmarks",
-    "recherche": "Search"
+    "recherche": "Search",
+    "menuOpen": "Open menu",
+    "menuClose": "Close menu",
+    "menuLabel": "Main navigation"
   },
   "Recherche": {
     "title": "Search",
@@ -119,7 +122,7 @@
     "you": "You",
     "bot": "Ama'IA",
     "error": "Something went wrong. Please try again.",
-    "errorTimeout": "Timed out (90s). Try a shorter question or check the service.",
+    "errorTimeout": "Timed out (3 min). The backend may be waking (Render) or busy — retry or open /api/chat/health.",
     "errorNetwork": "Network error. Check your connection and that the FastAPI backend is running.",
     "errorRateLimited": "Too many requests. Try again in a minute.",
     "sourcesTitle": "Sources used",

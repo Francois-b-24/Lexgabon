@@ -10,7 +10,10 @@
     "api": "ALIN",
     "home": "Accueil",
     "favoris": "Favoris",
-    "recherche": "Recherche"
+    "recherche": "Recherche",
+    "menuOpen": "Ouvrir le menu",
+    "menuClose": "Fermer le menu",
+    "menuLabel": "Menu principal"
   },
   "Recherche": {
     "title": "Recherche",
@@ -119,7 +122,7 @@
     "you": "Vous",
     "bot": "Ama'IA",
     "error": "Une erreur est survenue. Veuillez réessayer.",
-    "errorTimeout": "Délai dépassé (90 s). Réessayez avec une question plus courte ou vérifiez le service.",
+    "errorTimeout": "Délai dépassé (3 min). Le service peut être en réveil (Render) ou surchargé — réessayez ou ouvrez /api/chat/health.",
     "errorNetwork": "Erreur réseau. Vérifiez votre connexion et que le backend FastAPI est démarré.",
     "errorRateLimited": "Trop de requêtes. Réessayez dans une minute.",
     "sourcesTitle": "Sources utilisées",

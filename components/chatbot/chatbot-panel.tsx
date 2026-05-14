@@ -36,7 +36,7 @@ const DOMAIN_ENTRIES = [
   { value: "famille", labelKey: "domainFamille" },
 ] as const;
 
-const CHAT_TIMEOUT_MS = 90_000;
+const CHAT_TIMEOUT_MS = 180_000;
 
 function parseErrorDetail(raw: unknown): string {
   if (typeof raw === "string") return raw;

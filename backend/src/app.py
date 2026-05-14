@@ -1,5 +1,7 @@
 """Application FastAPI — /health répond vite (imports lourds chargés seulement avec les routes chat)."""
 import logging
+import threading
+import time
 import uuid
 
 from fastapi import FastAPI, Request
@@ -39,3 +41,18 @@ def health():
 from src.routes.chat import router as chat_router
 
 app.include_router(chat_router, prefix="")
+
+
+def _background_warm_rag() -> None:
+    """Précharge Chroma / embeddings après le démarrage pour raccourcir le 1er chat (ne bloque pas /health)."""
+    time.sleep(3)
+    try:
+        from src.rag import retriever
+
+        retriever.search_main("droit", k=1)
+        logging.getLogger(__name__).info("RAG warm-up completed")
+    except Exception:
+        logging.getLogger(__name__).warning("RAG warm-up skipped", exc_info=True)
+
+
+threading.Thread(target=_background_warm_rag, daemon=True, name="rag-warm").start()

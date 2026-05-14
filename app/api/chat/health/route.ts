@@ -36,8 +36,13 @@ export async function GET() {
 
   try {
     const ac = new AbortController();
-    const to = setTimeout(() => ac.abort(), 20_000);
-    const r = await fetch(url, { cache: "no-store", signal: ac.signal });
+    /** Render gratuit : réveil + TLS peut dépasser 20 s avant la première réponse HTTP. */
+    const to = setTimeout(() => ac.abort(), 55_000);
+    const r = await fetch(url, {
+      cache: "no-store",
+      signal: ac.signal,
+      headers: { Accept: "application/json" },
+    });
     clearTimeout(to);
     const text = await r.text();
     let backend: unknown = {};
@@ -66,7 +71,7 @@ export async function GET() {
       {
         ok: false,
         detail: aborted
-          ? `Délai dépassé (20 s) en joignant ${host}. Ouvrez https://${host}/health dans le navigateur pour réveiller Render, attendez le JSON, puis rafraîchissez cette page.`
+          ? `Délai dépassé (55 s) en joignant ${host}. Sur Render gratuit, le premier réveil peut prendre 1–2 min. Ouvrez https://${host}/health dans le navigateur, attendez le JSON, puis rafraîchissez cette page.`
           : `Connexion impossible vers ${host} : ${msg}. Vérifiez LEGAL_AGENT_API_BASE_URL (https, pas d’espace).`,
       },
       { status: 502 },
