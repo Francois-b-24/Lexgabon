@@ -1,0 +1,2 @@
+# Par défaut les PDF restent locaux (poids du dépôt). Pour les versionner : supprimer la ligne ci-dessous ou utiliser Git LFS.
+*.pdf

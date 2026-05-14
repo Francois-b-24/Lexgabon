@@ -2,16 +2,14 @@
 from __future__ import annotations
 
 import logging
-import re
 import uuid
-from io import BytesIO
 from typing import Any
 
 import chromadb
 from chromadb.utils import embedding_functions
-from pypdf import PdfReader
 
 from src.config import get_settings
+from src.rag.chunking import chunk_text, extract_pdf_text
 
 logger = logging.getLogger(__name__)
 
@@ -36,32 +34,9 @@ def _get_upload_collection():
     return _upload_collection
 
 
-def _chunk_text(text: str, chunk_size: int = 1200, overlap: int = 200) -> list[str]:
-    t = re.sub(r"\s+", " ", text).strip()
-    if not t:
-        return []
-    chunks: list[str] = []
-    i = 0
-    while i < len(t):
-        end = min(len(t), i + chunk_size)
-        chunks.append(t[i:end].strip())
-        if end >= len(t):
-            break
-        i = max(0, end - overlap)
-    return [c for c in chunks if c]
-
-
-def extract_pdf_text(data: bytes) -> str:
-    reader = PdfReader(BytesIO(data))
-    parts: list[str] = []
-    for page in reader.pages:
-        parts.append(page.extract_text() or "")
-    return "\n".join(parts).strip()
-
-
 def add_pdf_chunks(session_id: str, filename: str, data: bytes) -> int:
     text = extract_pdf_text(data)
-    chunks = _chunk_text(text)
+    chunks = chunk_text(text)
     if not chunks:
         return 0
     col = _get_upload_collection()

@@ -12,6 +12,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY main.py .
 COPY src ./src
 COPY scripts ./scripts
+COPY corpus ./corpus
 
 ENV PYTHONPATH=/app
 ENV CHROMA_PATH=/data/chroma

@@ -32,27 +32,48 @@ def main() -> None:
         metadata={"hnsw:space": "cosine"},
     )
     path = Path(args.jsonl)
+    if not path.is_file():
+        print(f"ingested_chunks=0 (fichier absent: {path})", file=sys.stderr)
+        return
+
+    raw_lines: list[dict] = []
+    with path.open(encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                raw_lines.append(json.loads(line))
+            except json.JSONDecodeError as e:
+                print(f"skip invalid json: {e}", file=sys.stderr)
+
+    fetch_ids = {str(o["fetch_source_id"]) for o in raw_lines if o.get("fetch_source_id") is not None}
+    for fid in sorted(fetch_ids):
+        try:
+            col.delete(where={"fetch_source_id": fid})
+        except Exception as e:
+            print(f"warn delete fetch_source_id={fid}: {e}", file=sys.stderr)
+
     ids: list[str] = []
     docs: list[str] = []
     metas: list[dict] = []
     n = 0
-    with path.open(encoding="utf-8") as f:
-        for i, line in enumerate(f):
-            line = line.strip()
-            if not line:
-                continue
-            obj = json.loads(line)
-            text = (obj.get("text") or "").strip()
-            if not text:
-                continue
-            cit = str(obj.get("citation") or obj.get("titre") or f"doc-{i}")
-            ids.append(str(obj.get("id") or f"ingest-{i}"))
-            docs.append(text)
-            metas.append({"citation": cit})
-            n += 1
-            if len(ids) >= args.batch:
-                col.add(ids=ids, documents=docs, metadatas=metas)
-                ids, docs, metas = [], [], []
+    for i, obj in enumerate(raw_lines):
+        text = (obj.get("text") or "").strip()
+        if not text:
+            continue
+        cit = str(obj.get("citation") or obj.get("titre") or f"doc-{i}")
+        meta: dict = {"citation": cit}
+        fid = obj.get("fetch_source_id")
+        if fid is not None:
+            meta["fetch_source_id"] = str(fid)
+        ids.append(str(obj.get("id") or f"ingest-{i}"))
+        docs.append(text)
+        metas.append(meta)
+        n += 1
+        if len(ids) >= args.batch:
+            col.add(ids=ids, documents=docs, metadatas=metas)
+            ids, docs, metas = [], [], []
     if ids:
         col.add(ids=ids, documents=docs, metadatas=metas)
     print(f"ingested_chunks={n} collection={s.chroma_collection}")

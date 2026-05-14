@@ -1,0 +1,19 @@
+# Allowlist stricte : seuls ces domaines (hôte normalisé, sans www.) sont acceptés pour le fetch.
+allowed_domains:
+  - journal-officiel.ga
+  - ohada.org
+  - beac.int
+  - cemac.int
+
+# Entrées à récupérer (ajoutez / retirez selon vos besoins).
+# kind: html = page web (extraction texte) ; pdf = fichier PDF direct.
+sources:
+  - id: fetch-jo-code-electoral-2025
+    url: "https://journal-officiel.ga/21554-001-2025-/"
+    label: "JO Gabon — Loi organique 001/2025 (page)"
+    kind: html
+
+  - id: fetch-ohada-actes-index
+    url: "https://www.ohada.org/category/actes-uniformes/actes-uniformes-en-vigueur/"
+    label: "OHADA — Actes uniformes en vigueur (index)"
+    kind: html

@@ -19,7 +19,7 @@ Sur **Render** ou toute instance avec **peu de RAM**, laisser `WARM_RAG_ON_START
 
 ## Ingestion Chroma (JSONL)
 
-Script : `scripts/ingest_chroma.py`. Chaque ligne du fichier JSONL est un JSON avec au minimum `"text"` ; `"citation"` ou `"titre"` est recommandé ; `"id"` optionnel (sinon `ingest-<ligne>`).
+Script : `scripts/ingest_chroma.py`. Chaque ligne du fichier JSONL est un JSON avec au minimum `"text"` ; `"citation"` ou `"titre"` est recommandé ; `"id"` optionnel (sinon `ingest-<ligne>`). Si le JSON contient **`fetch_source_id`**, les anciens chunks portant cette valeur sont **supprimés** avant réinsertion (réingestion idempotente du fichier `scraped_chunks.jsonl`).
 
 **Jeu de données initial (RAG)** : `scripts/build_rag_seed_jsonl.py` régénère `data/rag_seed.jsonl` à partir d’entrées alignées sur `lib/veille/official-feed.ts` (veille officielle + une fiche démo code électoral). Pour tout faire en une commande (rebuild JSONL + ingestion) :
 
@@ -36,6 +36,35 @@ cd backend
 export PYTHONPATH=.
 python3 scripts/ingest_chroma.py --jsonl ./chemin/vers/fichier.jsonl
 ```
+
+## Corpus (PDF + sites officiels)
+
+- Dossier **[`corpus/pdfs/`](corpus/pdfs/)** : y déposer les PDF à indexer dans **`droit_gabonais`** (voir [`corpus/README.md`](corpus/README.md)). Par défaut les `*.pdf` ne sont pas versionnés (`corpus/pdfs/.gitignore`).
+- Fichier **[`corpus/sources.yaml`](corpus/sources.yaml)** : allowlist de domaines + URLs (`kind: html` ou `pdf`) pour `scripts/fetch_official_sources.py` → `data/scraped_chunks.jsonl` (fichier régénéré, ignoré par Git). Une nouvelle ingestion du JSONL généré **remplace** les chunks précédents ayant le même `fetch_source_id`.
+
+**Pipeline complet** (seed veille + fetch YAML + ingestion JSONL + PDF dossier) :
+
+```bash
+cd backend
+export PYTHONPATH=.
+python3 scripts/ingest_corpus.py
+```
+
+Options : `--skip-seed`, `--skip-fetch`, `--skip-pdfs`, **`--verify`** (lance la vérification ci-dessous à la fin).
+
+Même **`CHROMA_PATH`** et **`CHROMA_EMBEDDING_MODEL`** que l’API (`.env`). Sur **Render** / volume persistant : exécuter ce script **une fois** (ou job manuel) après déploiement, sur l’instance qui monte le disque Chroma.
+
+### Vérifier l’indexation
+
+Après une ingestion (ou à tout moment sur la même machine que l’API / le même `CHROMA_PATH`) :
+
+```bash
+cd backend
+export PYTHONPATH=.
+python3 scripts/verify_chroma_index.py
+```
+
+Le script contrôle que la collection **`droit_gabonais`** contient au moins un document (par défaut) et qu’une **requête vectorielle** (`search_main`) renvoie des résultats. Options : `--min-chunks N`, `--query "…"`, `-q`. Code de sortie **0** si OK, **1** si collection vide ou recherche vide, **2** si la collection est introuvable.
 
 ## Variables principales
 

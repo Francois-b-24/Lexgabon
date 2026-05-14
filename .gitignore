@@ -45,5 +45,8 @@ next-env.d.ts
 # local Chroma persistence (ingest / runtime — not the seed corpus)
 backend/data/chroma/
 
+# fetch script output (régénéré à l’ingestion)
+backend/data/scraped_chunks.jsonl
+
 # reference / legacy (not typechecked — see tsconfig exclude)
 archive/
