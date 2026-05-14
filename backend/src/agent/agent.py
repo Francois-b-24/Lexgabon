@@ -10,7 +10,6 @@ from src.agent import llm
 from src.agent.prompts import SYSTEM_PROMPT, strip_markdown_heuristic
 from src.agent.tools import ToolContext, anthropic_tool_definitions, execute_tool
 from src.config import get_settings
-from src.rag import retriever
 
 logger = logging.getLogger(__name__)
 
@@ -178,6 +177,8 @@ class LegalAgent:
         out["answer"] = ans
 
     def _finalize(self, text: str, ctx: ToolContext) -> AgentAnswer:
+        from src.rag import retriever
+
         text = strip_markdown_heuristic(text)
         if not ctx.sources:
             fb = retriever.search(

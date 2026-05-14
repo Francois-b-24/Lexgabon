@@ -36,7 +36,7 @@ export async function GET() {
 
   try {
     const ac = new AbortController();
-    const to = setTimeout(() => ac.abort(), 55_000);
+    const to = setTimeout(() => ac.abort(), 20_000);
     const r = await fetch(url, { cache: "no-store", signal: ac.signal });
     clearTimeout(to);
     const text = await r.text();
@@ -66,8 +66,8 @@ export async function GET() {
       {
         ok: false,
         detail: aborted
-          ? `Délai dépassé (~55 s) en joignant ${host}. Souvent un « cold start » Render : attendez 30–60 s, ouvrez https://${host}/health dans le navigateur pour réveiller le service, puis rafraîchissez cette page. Sur Vercel Hobby, la limite d’exécution peut aussi couper l’appel : augmentez maxDuration ou passez un plan supérieur.`
-          : `Connexion impossible vers ${host} : ${msg}. Vérifiez l’URL dans LEGAL_AGENT_API_BASE_URL (https, pas d’espace, bon sous-domaine onrender.com).`,
+          ? `Délai dépassé (20 s) en joignant ${host}. Ouvrez https://${host}/health dans le navigateur pour réveiller Render, attendez le JSON, puis rafraîchissez cette page.`
+          : `Connexion impossible vers ${host} : ${msg}. Vérifiez LEGAL_AGENT_API_BASE_URL (https, pas d’espace).`,
       },
       { status: 502 },
     );

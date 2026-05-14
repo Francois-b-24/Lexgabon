@@ -1,4 +1,4 @@
-"""Application FastAPI."""
+"""Application FastAPI — /health répond vite (imports lourds chargés seulement avec les routes chat)."""
 import logging
 import uuid
 
@@ -6,7 +6,6 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 
 from src.config import get_settings
-from src.routes.chat import router as chat_router
 
 logging.basicConfig(level=logging.INFO)
 
@@ -31,9 +30,12 @@ async def request_id_middleware(request: Request, call_next):
     return response
 
 
-app.include_router(chat_router, prefix="")
-
-
 @app.get("/health")
 def health():
+    """Ne doit pas importer Chroma / sentence-transformers (cold start Render + proxy Vercel)."""
     return {"status": "ok"}
+
+
+from src.routes.chat import router as chat_router
+
+app.include_router(chat_router, prefix="")

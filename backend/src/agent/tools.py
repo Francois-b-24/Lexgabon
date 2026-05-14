@@ -5,8 +5,6 @@ import logging
 from dataclasses import dataclass, field
 from typing import Any
 
-from src.rag import retriever
-
 logger = logging.getLogger(__name__)
 
 
@@ -100,6 +98,8 @@ def _add_sources(ctx: ToolContext, rows: list[dict[str, Any]], badge: str) -> No
 
 
 def execute_tool(name: str, tool_input: dict[str, Any], ctx: ToolContext) -> str:
+    from src.rag import retriever
+
     ctx.tools_used.append(name)
     try:
         if name == "recherche_juridique":

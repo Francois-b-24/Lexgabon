@@ -8,12 +8,10 @@ from typing import Any, AsyncIterator
 from fastapi import APIRouter, File, Form, Request, UploadFile
 from fastapi.responses import JSONResponse, StreamingResponse
 
-from src.agent.agent import LegalAgent
 from src.agent.prompts import answer_has_citation, answer_has_disclaimer, build_user_message, collect_server_warnings
 from src.agent.schemas import ChatRequest, ChatResponse, Quality, SessionClearRequest, SourceItem, StructuredCitation
 from src.config import get_settings
 from src.rate_limit import check_rate_limit_chat
-from src.rag import uploads_store
 from src.session_store import get_session_store, new_session_id
 
 logger = logging.getLogger(__name__)
@@ -87,6 +85,8 @@ async def api_chat(request: Request, body: ChatRequest):
     else:
         hist = _prepare_history(body)
 
+    from src.agent.agent import LegalAgent
+
     agent = LegalAgent()
     try:
         out = agent.answer(
@@ -135,6 +135,8 @@ async def api_chat(request: Request, body: ChatRequest):
 
 @router.post("/api/session/clear")
 async def api_session_clear(body: SessionClearRequest):
+    from src.rag import uploads_store
+
     get_session_store().clear(body.session_id)
     uploads_store.clear_session_uploads(body.session_id)
     return {"ok": True, "session_id": body.session_id}
@@ -160,6 +162,8 @@ async def api_upload_pdf(
             {"detail": f"fichier trop volumineux (max {s.max_upload_pdf_bytes} octets)"},
             status_code=413,
         )
+    from src.rag import uploads_store
+
     try:
         n = uploads_store.add_pdf_chunks(session_id, file.filename or "document.pdf", data)
     except Exception as e:
@@ -192,6 +196,8 @@ async def api_chat_stream(request: Request, body: ChatRequest):
         hist = _prepare_history(body)
 
     async def gen() -> AsyncIterator[bytes]:
+        from src.agent.agent import LegalAgent
+
         out_holder: dict[str, Any] = {}
         try:
             ag = LegalAgent()
