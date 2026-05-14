@@ -90,6 +90,7 @@
     "serviceChecking": "Vérification du service…",
     "serviceReady": "Backend juridique joignable",
     "serviceDegraded": "Backend indisponible ou non configuré",
+    "retryHealth": "Tester à nouveau la connexion",
     "disclaimerExact": "Ama'IA est une IA et peut faire des erreurs. Veuillez vérifier les réponses.",
     "disclaimerLegal": "Ses réponses ne constituent pas un conseil juridique professionnel.",
     "newChat": "Nouvelle conversation",

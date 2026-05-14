@@ -55,6 +55,7 @@ export default function ChatbotPanel({ welcome }: { welcome: string }) {
   const [loading, setLoading] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [health, setHealth] = useState<"checking" | "ready" | "degraded">("checking");
+  const [healthDetail, setHealthDetail] = useState<string | null>(null);
   const [lastSources, setLastSources] = useState<ChatApiSource[]>([]);
   const [lastQuality, setLastQuality] = useState<ChatApiResponse["quality"] | null>(null);
   const [lastWarnings, setLastWarnings] = useState<string[]>([]);
@@ -64,21 +65,38 @@ export default function ChatbotPanel({ welcome }: { welcome: string }) {
   const [hint, setHint] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    let cancelled = false;
-    fetch("/api/chat/health")
-      .then((r) => r.json() as Promise<{ ok?: boolean }>)
+  const refreshHealth = useCallback(() => {
+    setHealth("checking");
+    setHealthDetail(null);
+    fetch("/api/chat/health", { cache: "no-store" })
+      .then(async (r) => {
+        let data: { ok?: boolean; detail?: string } = {};
+        try {
+          data = (await r.json()) as { ok?: boolean; detail?: string };
+        } catch {
+          data = {
+            ok: false,
+            detail: `Réponse invalide du proxy (HTTP ${r.status}). Vérifiez les logs Vercel pour cette route.`,
+          };
+        }
+        if (!r.ok && !data.detail) {
+          data.detail = `HTTP ${r.status} depuis /api/chat/health.`;
+        }
+        return data;
+      })
       .then((data) => {
-        if (cancelled) return;
         setHealth(data.ok ? "ready" : "degraded");
+        setHealthDetail(typeof data.detail === "string" ? data.detail : null);
       })
       .catch(() => {
-        if (!cancelled) setHealth("degraded");
+        setHealth("degraded");
+        setHealthDetail("Impossible d’atteindre /api/chat/health (réseau ou page hors ligne).");
       });
-    return () => {
-      cancelled = true;
-    };
   }, []);
+
+  useEffect(() => {
+    refreshHealth();
+  }, [refreshHealth]);
 
   const clearConversation = useCallback(async () => {
     if (sessionId) {
@@ -170,15 +188,18 @@ export default function ChatbotPanel({ welcome }: { welcome: string }) {
 
       if (!res.ok) {
         let errText = t("error");
+        const raw = await res.text();
         try {
-          const j = (await res.json()) as unknown;
+          const j = JSON.parse(raw) as unknown;
           errText = parseErrorDetail(j) || errText;
         } catch {
-          errText = res.status === 429 ? t("errorRateLimited") : errText;
+          if (res.status === 429) errText = t("errorRateLimited");
+          else if (raw.trim()) errText = raw.trim().slice(0, 800);
         }
         setMessages((m) => [...m, { role: "assistant", content: errText }]);
         setLoading(false);
         bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+        queueMicrotask(() => refreshHealth());
         return;
       }
 
@@ -202,7 +223,7 @@ export default function ChatbotPanel({ welcome }: { welcome: string }) {
     }
     setLoading(false);
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [input, loading, messages, sessionId, t, domain, includeUploads, pdfFile]);
+  }, [input, loading, messages, sessionId, t, domain, includeUploads, pdfFile, refreshHealth]);
 
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden pb-[max(0.5rem,env(safe-area-inset-bottom,0px))]">
@@ -231,10 +252,24 @@ export default function ChatbotPanel({ welcome }: { welcome: string }) {
             {health === "checking" && <span className="text-white/40">{t("serviceChecking")}</span>}
             {health === "ready" && <span className="text-emerald-400/90">{t("serviceReady")}</span>}
             {health === "degraded" && (
-              <span className="flex items-center gap-1 text-amber-400/90">
-                <IconAlertCircle size={14} className="shrink-0" />
-                <span className="break-words">{t("serviceDegraded")}</span>
-              </span>
+              <div className="flex max-w-full flex-col gap-1.5">
+                <span className="flex items-center gap-1 text-amber-400/90">
+                  <IconAlertCircle size={14} className="shrink-0" />
+                  <span className="break-words">{t("serviceDegraded")}</span>
+                </span>
+                {healthDetail && (
+                  <p className="max-h-28 overflow-y-auto rounded border border-white/10 bg-black/25 px-2 py-1.5 text-[10px] font-light leading-snug text-amber-100/85">
+                    {healthDetail}
+                  </p>
+                )}
+                <button
+                  type="button"
+                  onClick={() => refreshHealth()}
+                  className="self-start rounded border border-white/15 px-2 py-1 text-[10px] text-white/70 hover:border-lg-gold/30 hover:text-white"
+                >
+                  {t("retryHealth")}
+                </button>
+              </div>
             )}
           </div>
         </div>
