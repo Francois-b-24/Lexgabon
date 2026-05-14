@@ -1,6 +1,7 @@
 """Routes /api/chat, /api/chat/stream, /api/session/clear, /api/upload-pdf."""
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 from typing import Any, AsyncIterator
@@ -89,7 +90,10 @@ async def api_chat(request: Request, body: ChatRequest):
 
     agent = LegalAgent()
     try:
-        out = agent.answer(
+        # Ne pas bloquer la boucle asyncio : sinon /health et les autres requêtes
+        # attendent la fin du chat (~2 min) et les proxies Vercel timeout.
+        out = await asyncio.to_thread(
+            agent.answer,
             body.question,
             body.domaine,
             hist,
@@ -165,7 +169,12 @@ async def api_upload_pdf(
     from src.rag import uploads_store
 
     try:
-        n = uploads_store.add_pdf_chunks(session_id, file.filename or "document.pdf", data)
+        n = await asyncio.to_thread(
+            uploads_store.add_pdf_chunks,
+            session_id,
+            file.filename or "document.pdf",
+            data,
+        )
     except Exception as e:
         logger.exception("upload pdf failed")
         return JSONResponse({"detail": str(e)}, status_code=400)
