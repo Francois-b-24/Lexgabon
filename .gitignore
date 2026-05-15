@@ -47,6 +47,7 @@ backend/data/chroma/
 
 # fetch script output (régénéré à l’ingestion)
 backend/data/scraped_chunks.jsonl
+backend/data/articles_ingest.jsonl
 
 # reference / legacy (not typechecked — see tsconfig exclude)
 archive/

@@ -69,7 +69,7 @@ There is **no multi-tool agent loop** and **no SSE streaming**. The mode-flag `u
 - Articles longer than `max_chars` (1500) are split with `chunk_long_article` at sentence boundaries, keeping `Article N (suite) — ` as a prefix.
 - `src/rag/pdf_parser.py` adds the pypdf extraction + soft-hyphen / NBSP / line-rejoin normalisation before splitting.
 
-If you change the regex or boundary rules, run the embedded sanity test in `chunks_from_pdf` on `corpus/pdfs/code-travail-2021.pdf` and check the article count stays around **417 with ≤ 2 duplicates** and that the synthetic regression cases in past sessions still pass (`Article 1: Foo. Article 2 — Bar.` → 2 ; `aux articles 12 et 13 du code` → 0 ; etc.).
+If you change the regex or boundary rules, run `chunks_from_pdf` on `corpus/pdfs/code-travail-2021.pdf` and check the result stays around **417 segments / 415 unique numbers / 2 expected duplicates** (the duplicates are legitimate — the file's annexes restart numbering at `Article 1`). Synthetic regressions to keep passing: `Article 1: Foo. Article 2 — Bar.` → 2 ; `Article 54: La. Dans l'article 54 ci-dessus, voir.` → 1 ; `aux articles 12 et 13 du code` → 0 ; `Cet article 12 vise. Article 13: New.` → 1. **These tests live nowhere** — they were validated by hand. If you touch chunking heavily, consider freezing them in a `tests/` directory.
 
 ## Corpus and metadata invariants
 
@@ -78,6 +78,8 @@ Every chunk in Chroma carries: `citation` (rebuilt as `<Code> — Article N (<re
 For PDFs, declare metadata in `backend/corpus/pdfs/manifest.yaml` (`titre`, `code`, `autorite`, `date`, `reference`, optional `duplicate_of`). For scraped URLs, the same keys live in `backend/corpus/sources.yaml` alongside the `allowed_domains` allowlist — only those hosts are fetched.
 
 `verify_corpus.py` targets: **≥ 5000 chunks, ≥ 80 % with `numero_article`**. Below those, the audit raises explicit alerts.
+
+**Current corpus reality (as of the rewrite)**: only the Gabonese Code du travail is ingested (~450 chunks). All other codes — civil, pénal, commerce, OHADA uniform acts, Constitution, CEMAC/COBAC regulations — are missing. Any RAG result outside labour law will be weak and the chatbot will fall back to its model knowledge with the "Sources indexées : index incomplet" disclaimer. Do not interpret the small corpus as a chunking bug.
 
 ## Front routing and i18n
 
@@ -96,4 +98,6 @@ For PDFs, declare metadata in `backend/corpus/pdfs/manifest.yaml` (`titre`, `cod
 
 - Front on **Vercel** — `LEGAL_AGENT_API_BASE_URL` is a *server-only* env var (do not prefix with `NEXT_PUBLIC_`). `/api/chat` has `maxDuration = 300`.
 - Backend on **Render** — set `WARM_RAG_ON_STARTUP=true` on instances ≥ ~1 GB RAM (otherwise the embedding model load races the `/health` check). Mount a persistent volume for `CHROMA_PATH`. Re-ingest the corpus on first deploy: `PYTHONPATH=. python3 scripts/ingest_pdfs.py --skip-duplicates` from the running instance.
+- **Health endpoints** — FastAPI exposes `GET /health` (`backend/src/app.py:62`, returns `{status: ok}` lazily without warming Chroma). The Next proxy `app/api/chat/health/route.ts` is the user-facing entry: it returns a JSON envelope with diagnostic hints when the backend is unreachable, timed out (~4 min 40), or replied non-200. Useful for Vercel + Render smoke tests.
+- **Daily cron** — `vercel.json` triggers `GET /api/ingest/cron` every day at 03:00 UTC. Authenticated via `CRON_SECRET` (Bearer header). The job runs whatever is wired under `app/api/ingest/cron/route.ts`.
 - Operational docs live in `docs/` — read `docs/chatbot-render-production.md` and `docs/deployment-vercel.md` before touching deployment config.
