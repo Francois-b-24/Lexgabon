@@ -1,9 +1,7 @@
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { rateLimit } from "@/lib/rate-limit";
-import { searchTextes } from "@/lib/meilisearch";
-
-const MAX_QUERY_LENGTH = 256;
+import { parseSearchFilters, runSearch } from "@/lib/search-service";
 
 export const dynamic = "force-dynamic";
 
@@ -19,16 +17,17 @@ export async function GET(req: Request) {
     try {
       searchParams = new URL(req.url).searchParams;
     } catch {
-      return NextResponse.json({ hits: [] });
+      return NextResponse.json({ hits: [], total: 0, page: 1, pageSize: 0, mode: "fulltext", degraded: true });
     }
 
-    const raw = searchParams.get("q") ?? "";
-    const q = raw.slice(0, MAX_QUERY_LENGTH);
-
-    const hits = await searchTextes(q);
-    return NextResponse.json({ hits });
+    const filters = parseSearchFilters(searchParams);
+    const response = await runSearch(filters);
+    return NextResponse.json(response);
   } catch (e) {
     console.error("[api/search]", e);
-    return NextResponse.json({ hits: [], error: "search_failed" }, { status: 200 });
+    return NextResponse.json(
+      { hits: [], total: 0, page: 1, pageSize: 0, mode: "fulltext", degraded: true, error: "search_failed" },
+      { status: 200 },
+    );
   }
 }

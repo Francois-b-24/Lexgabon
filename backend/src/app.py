@@ -29,10 +29,12 @@ def _background_warm_rag() -> None:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Monte les routes chat après création de l’app : évite d’importer tout le routeur au import de ce module."""
+    """Monte les routes chat + recherche après création de l’app : évite d’importer tout le routeur au import de ce module."""
     from src.routes.chat import router as chat_router
+    from src.routes.search import router as search_router
 
     app.include_router(chat_router, prefix="")
+    app.include_router(search_router, prefix="")
     if get_settings().warm_rag_on_startup:
         threading.Thread(target=_background_warm_rag, daemon=True, name="rag-warm").start()
     yield
