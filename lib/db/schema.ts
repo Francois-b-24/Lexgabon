@@ -1,6 +1,7 @@
 import {
   boolean,
   date,
+  index,
   integer,
   jsonb,
   pgTable,
@@ -8,6 +9,7 @@ import {
   serial,
   text,
   timestamp,
+  uniqueIndex,
   uuid,
   vector,
 } from "drizzle-orm/pg-core";
@@ -48,6 +50,27 @@ export const textes = pgTable("textes", {
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
 });
+
+export const articles = pgTable(
+  "articles",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    texteId: uuid("texte_id")
+      .notNull()
+      .references(() => textes.id, { onDelete: "cascade" }),
+    numero: text("numero").notNull(),
+    titre: text("titre"),
+    contenu: text("contenu").notNull(),
+    position: integer("position").notNull(),
+    titreSection: text("titre_section"),
+    refsCroisees: jsonb("refs_croisees").default([]),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  },
+  (t) => [
+    uniqueIndex("articles_texte_numero_unique").on(t.texteId, t.numero),
+    index("articles_texte_position_idx").on(t.texteId, t.position),
+  ],
+);
 
 export const chunks = pgTable("chunks", {
   id: uuid("id").primaryKey().defaultRandom(),

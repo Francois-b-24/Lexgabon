@@ -26,10 +26,11 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 import chromadb  # noqa: E402
+import json  # noqa: E402
 from chromadb.utils import embedding_functions  # noqa: E402
 
 from src.config import get_settings  # noqa: E402
-from src.rag.pdf_parser import chunks_from_pdf  # noqa: E402
+from src.rag.pdf_parser import chunks_from_pdf, parse_pdf_articles  # noqa: E402
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
@@ -94,6 +95,12 @@ def main() -> None:
     parser.add_argument("--dir", type=Path, default=ROOT / "corpus" / "pdfs", help="Dossier racine des PDF (récursif)")
     parser.add_argument("--max-chars", type=int, default=1500, help="Taille max d'un chunk avant subdivision")
     parser.add_argument("--skip-duplicates", action="store_true", help="Sauter les PDFs marqués duplicate_of dans le manifest")
+    parser.add_argument(
+        "--articles-jsonl",
+        type=Path,
+        default=ROOT / "data" / "articles_ingest.jsonl",
+        help="Fichier JSONL produit en parallèle pour peupler la table SQL `articles` (consommé par scripts/ingest-articles.ts)",
+    )
     args = parser.parse_args()
 
     base: Path = args.dir.resolve()
@@ -119,6 +126,7 @@ def main() -> None:
     seen_hashes: dict[str, str] = {}  # sha256 -> premier relpath rencontré
     total_chunks = 0
     skipped = 0
+    article_rows: list[dict[str, Any]] = []
 
     for pdf_path in pdfs:
         rel = pdf_path.relative_to(base).as_posix()
@@ -181,9 +189,46 @@ def main() -> None:
         total_chunks += len(chunks)
         logger.info("ingéré %s : %d chunks · %d articles distincts", rel, len(chunks), articles)
 
+        # Génération du JSONL d'articles entiers pour la table SQL `articles`.
+        # On re-parse via parse_pdf_articles pour obtenir un ArticleSegment par article complet,
+        # indépendamment du sous-chunking utilisé pour le RAG.
+        try:
+            article_segments = parse_pdf_articles(data)
+        except Exception as e:
+            logger.warning("parse_pdf_articles échoué pour %s: %s", rel, e)
+            article_segments = []
+        for position, seg in enumerate(article_segments):
+            article_rows.append(
+                {
+                    "texte_slug": file_meta.get("slug") or pdf_path.stem,
+                    "source_code": file_meta.get("source_code"),
+                    "source_filename": pdf_path.name,
+                    "source_key": skey,
+                    "type": file_meta.get("type") or "loi",
+                    "code": file_meta.get("code"),
+                    "reference": file_meta.get("reference"),
+                    "titre_texte": file_meta.get("titre"),
+                    "autorite": file_meta.get("autorite"),
+                    "date_publication": file_meta.get("date"),
+                    "url_source": file_meta.get("source"),
+                    "numero": seg.numero,
+                    "contenu": seg.text,
+                    "position": position,
+                    "titre_section": seg.titre_section,
+                }
+            )
+
+    # Écrit le JSONL d'articles (vide si rien) ; le consommateur Node fera l'upsert SQL.
+    if article_rows or args.articles_jsonl.exists():
+        args.articles_jsonl.parent.mkdir(parents=True, exist_ok=True)
+        with args.articles_jsonl.open("w", encoding="utf-8") as f:
+            for row in article_rows:
+                f.write(json.dumps(row, ensure_ascii=False) + "\n")
+        logger.info("articles JSONL écrit : %d lignes → %s", len(article_rows), args.articles_jsonl)
+
     logger.info(
-        "TOTAL : chunks=%d · fichiers=%d (skipped=%d) · collection=%s",
-        total_chunks, len(seen_hashes), skipped, s.chroma_collection,
+        "TOTAL : chunks=%d · articles=%d · fichiers=%d (skipped=%d) · collection=%s",
+        total_chunks, len(article_rows), len(seen_hashes), skipped, s.chroma_collection,
     )
 
 

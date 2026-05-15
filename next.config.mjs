@@ -6,7 +6,12 @@ const withNextIntl = createNextIntlPlugin("./i18n/request.ts");
 const nextConfig = {
   poweredByHeader: false,
   async redirects() {
-    return [{ source: "/:locale/amaia", destination: "/:locale/chatbot", permanent: false }];
+    return [
+      { source: "/:locale/amaia", destination: "/:locale/chatbot", permanent: false },
+      // Legacy /textes/[slug] → /textes/jo-ga/[slug] (heuristique : corpus principal gabonais).
+      // Les slugs OHADA/CEMAC/COBAC doivent désormais utiliser /textes/<source>/<slug> directement.
+      { source: "/:locale/textes/:slug", destination: "/:locale/textes/jo-ga/:slug", permanent: true },
+    ];
   },
   async headers() {
     return [

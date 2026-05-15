@@ -1,11 +1,16 @@
 # Manifest des PDFs corpus — métadonnées par fichier (relpath depuis backend/corpus/pdfs/).
 #
 # Champs reconnus :
+#   slug       : identifiant URL stable, unique (ex. « code-travail-2021 »).
+#                Utilisé pour `/textes/[source]/[slug]` et pour le upsert SQL.
+#   source_code: code court de la source côté DB (ex. « JOG », « OHADA »).
+#                Mappé vers le segment d'URL via lib/sources.ts.
+#   type       : famille du texte (« loi », « ordonnance », « décret », « acte uniforme »…).
 #   titre      : nom complet du texte (ex. « Code du travail »).
 #   code       : code court pour les citations LLM (ex. « Code du travail »).
 #   autorite   : émetteur (ex. « République gabonaise », « OHADA », « CEMAC »).
-#   date       : date de promulgation/version (ex. « 2021-09-20 », « 2024 »).
-#   reference  : numéro JO / loi / acte uniforme (ex. « Loi n° 022/2021 du 19 nov. 2021 »).
+#   date       : date de promulgation/version au format ISO (YYYY-MM-DD ou YYYY).
+#   reference  : numéro JO / loi / acte uniforme.
 #   source     : URL officielle d'origine si pertinent.
 #
 # Le fichier physique trouvé sous corpus/pdfs/ qui n'est pas listé ici est ingéré
@@ -13,14 +18,21 @@
 
 files:
   code-travail-2021.pdf:
+    slug: "code-travail-2021"
+    source_code: "JOG"
+    type: "loi"
     titre: "Code du travail de la République gabonaise"
     code: "Code du travail"
     autorite: "République gabonaise"
     date: "2021-11-19"
     reference: "Loi n° 022/2021 du 19 novembre 2021"
+    source: "https://journal-officiel.ga/"
 
   # Doublons connus du Code du travail — même contenu, métadonnées partagées.
   travail.pdf:
+    slug: "code-travail-2021"
+    source_code: "JOG"
+    type: "loi"
     titre: "Code du travail de la République gabonaise (doublon)"
     code: "Code du travail"
     autorite: "République gabonaise"
@@ -29,6 +41,9 @@ files:
     duplicate_of: "code-travail-2021.pdf"
 
   travail_1.pdf:
+    slug: "code-travail-2021"
+    source_code: "JOG"
+    type: "loi"
     titre: "Code du travail de la République gabonaise (doublon)"
     code: "Code du travail"
     autorite: "République gabonaise"
