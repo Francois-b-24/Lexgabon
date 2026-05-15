@@ -4,16 +4,33 @@ allowed_domains:
   - ohada.org
   - beac.int
   - cemac.int
+  - cima-afrique.org
 
-# Entrées à récupérer (ajoutez / retirez selon vos besoins).
-# kind: html = page web (extraction texte) ; pdf = fichier PDF direct.
+# Entrées à récupérer.
+# Champs reconnus par source : id, url, label, kind (html|pdf), et facultativement
+# code (ex. « Code du travail »), reference (ex. « Loi 022/2021 »), autorite, date.
+# Le chunker article-aware extrait les numéros d'articles automatiquement.
 sources:
-  - id: fetch-jo-code-electoral-2025
+  # === Gabon — Journal Officiel ===
+  - id: jo-ga-code-electoral-2025
     url: "https://journal-officiel.ga/21554-001-2025-/"
-    label: "JO Gabon — Loi organique 001/2025 (page)"
+    label: "Code électoral du Gabon"
+    code: "Code électoral"
+    reference: "Loi organique n° 001/2025"
+    autorite: "République gabonaise"
+    date: "2025"
     kind: html
 
-  - id: fetch-ohada-actes-index
+  # === OHADA — Actes uniformes ===
+  - id: ohada-actes-uniformes-index
     url: "https://www.ohada.org/category/actes-uniformes/actes-uniformes-en-vigueur/"
-    label: "OHADA — Actes uniformes en vigueur (index)"
+    label: "OHADA — Index des actes uniformes en vigueur"
+    autorite: "OHADA"
     kind: html
+
+# Notes de maintenance :
+# - Ajoutez ici les URLs officielles directes (PDF ou page article-by-article) au fur et à mesure
+#   qu'elles sont identifiées sur les portails autorisés.
+# - Pour un PDF distant, indiquez kind: pdf — il passe par le même chunker article-aware que
+#   les PDFs locaux de corpus/pdfs/.
+# - Le champ « reference » est recopié dans la citation finale ([Article N, <code> (<reference>)]).

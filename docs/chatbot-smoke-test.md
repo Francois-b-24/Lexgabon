@@ -20,34 +20,28 @@ Attendu : `{ "ok": true, "backend": { "status": "ok" } }` si le proxy atteint Fa
 ```bash
 curl -sS -X POST "http://localhost:3000/api/chat" \
   -H "Content-Type: application/json" \
-  -d '{"question":"Qu est-ce que le droit OHADA au Gabon ?","history":[{"role":"assistant","content":"Bonjour."}],"session_id":null}' | jq .
+  -d '{"question":"Quel est le délai de préavis d un cadre au Gabon ?","history":[],"session_id":null}' | jq .
 ```
 
-Vérifier : `answer`, `sources`, `quality`, `session_id`, `tools_used` (en mode rapide par défaut, `tools_used` contient souvent `["fast_rag"]`).
+Vérifier dans la réponse :
 
-## Flux SSE (proxy Next → backend)
+- `answer` non vide, contenant au moins une citation au format `[Article N, …]` ou `[Source : …]` et l'avertissement final obligatoire ;
+- `sources` : liste de 0–12 extraits avec `citation`, `numero_article`, éventuel `slug` ;
+- `quality.has_citation` = `true` et `quality.has_disclaimer` = `true` ;
+- `session_id` retourné (à réutiliser pour l'historique).
 
-L’interface utilise **`POST /api/chat/stream`** via le proxy [`app/api/chat/stream/route.ts`](../app/api/chat/stream/route.ts).
+## Test off-topic (périmètre strict)
 
 ```bash
-curl -sS -N -X POST "http://localhost:3000/api/chat/stream" \
+curl -sS -X POST "http://localhost:3000/api/chat" \
   -H "Content-Type: application/json" \
-  -H "Accept: text/event-stream" \
-  -d '{"question":"Qu est-ce que l OHADA ?","history":[],"session_id":null}' | head -c 2000
+  -d '{"question":"Quelle est la recette du poulet nyembwe ?","history":[],"session_id":null}' | jq .answer
 ```
 
-Attendu : lignes `data: {"type":"token",...}` puis un événement `data: {"type":"done",...}`.
+Attendu : refus poli « Cette question dépasse le périmètre du droit gabonais. […] » suivi de l'avertissement final. Aucune source.
 
 ## UI
 
 1. Ouvrir **`/fr/chatbot`** (ou `/en/chatbot`).
-2. Vérifier le bandeau d’état (backend joignable).
-3. Poser une question (≥ 3 caractères) ; le texte de la réponse doit apparaître **au fil de l’eau** (SSE), puis sources et indicateurs de qualité une fois le flux terminé.
-
-## Effacer la session
-
-```bash
-curl -sS -X POST "http://localhost:3000/api/session/clear" \
-  -H "Content-Type: application/json" \
-  -d '{"session_id":"VOTRE_SESSION_ID"}' | jq .
-```
+2. Poser une question juridique ; la réponse doit s'afficher avec, en dessous, jusqu'à 5 sources compactes (badge `Article N` + lien vers la fiche texte si `slug` disponible).
+3. Cliquer « Nouvelle conversation » pour repartir d'un message d'accueil sobre.

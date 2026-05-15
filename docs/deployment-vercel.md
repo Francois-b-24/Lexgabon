@@ -71,7 +71,7 @@ git push -u origin main
 
 5. **Observabilité** : activer **Vercel Analytics** dans le dashboard (le package `@vercel/analytics` est intégré au layout racine).
 
-6. **Chatbot juridique** : checklist dans [`docs/chatbot-smoke-test.md`](./chatbot-smoke-test.md) ; santé via `GET /api/chat/health`. L’UI utilise **`POST /api/chat/stream`** (proxy [`app/api/chat/stream/route.ts`](../app/api/chat/stream/route.ts) → même backend). Production Render : [`docs/chatbot-render-production.md`](./chatbot-render-production.md). Évolution RAG externe : [`docs/chat-rag-external.md`](./chat-rag-external.md). Parité CDC ↔ variables : [`docs/chatbot-env-parity.md`](./chatbot-env-parity.md).
+6. **Chatbot juridique** : checklist dans [`docs/chatbot-smoke-test.md`](./chatbot-smoke-test.md) ; santé via `GET /api/chat/health`. L'UI appelle **`POST /api/chat`** (proxy [`app/api/chat/route.ts`](../app/api/chat/route.ts) vers FastAPI). Production Render : [`docs/chatbot-render-production.md`](./chatbot-render-production.md). Évolution RAG externe : [`docs/chat-rag-external.md`](./chat-rag-external.md). Parité CDC ↔ variables : [`docs/chatbot-env-parity.md`](./chatbot-env-parity.md).
 
 ## Guide express — première mise en ligne (ordre recommandé)
 

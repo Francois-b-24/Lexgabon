@@ -20,8 +20,7 @@ Sans ces points, le chemin « rapide » (RAG + 1 LLM) peut encore subir des cold
 - `ANTHROPIC_API_KEY` (obligatoire)
 - `FRONTEND_ORIGINS` : inclure `https://<votre-domaine-vercel>.vercel.app` (sans slash final)
 - `CHROMA_PATH` : aligné sur le volume persistant si vous utilisez un disque Render
-- `WARM_RAG_ON_STARTUP` : laisser `false` sur petites instances (voir [`backend/README.md`](../backend/README.md))
-- `USE_FULL_AGENT_CHAT` : `false` en production pour le **chemin rapide** par défaut ; `true` uniquement si vous exigez la boucle outils CDC complète (plus lent)
+- `WARM_RAG_ON_STARTUP` : `true` dès ~1 Go de RAM (préchauffe Chroma au boot, supprime la latence d'init sur la 1re requête) ; `false` sur petites instances (<1 Go) pour éviter les timeouts `/health` (voir [`backend/README.md`](../backend/README.md))
 
 ## Diagnostic
 

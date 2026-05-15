@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { getOrCreateLegalAgentSessionId, setLegalAgentSessionId } from "@/lib/legal-agent-session";
-import { clearAllLocalSessionData } from "@/lib/veille/indexed-sources-storage";
 
 /** Session partagée (localStorage) : créée au premier montage côté client. */
 export function useLegalAgentSession() {
@@ -19,11 +18,5 @@ export function useLegalAgentSession() {
     setSessionId(s);
   }, []);
 
-  /** Après `/api/session/clear` : nouveau session_id local (nouvelle session navigateur). */
-  const rotateAfterServerClear = useCallback(() => {
-    clearAllLocalSessionData();
-    setSessionId(getOrCreateLegalAgentSessionId());
-  }, []);
-
-  return { sessionId, syncFromServer, rotateAfterServerClear };
+  return { sessionId, syncFromServer };
 }

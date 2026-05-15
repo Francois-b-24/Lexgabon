@@ -1,4 +1,4 @@
-"""Modèles Pydantic API (contrat cahier des charges)."""
+"""Modèles Pydantic API."""
 from typing import Literal
 
 from pydantic import BaseModel, Field
@@ -14,16 +14,6 @@ class ChatRequest(BaseModel):
     history: list[HistoryItem] = Field(default_factory=list)
     session_id: str | None = None
     domaine: str | None = None
-    include_uploads: bool = False
-
-
-class SessionClearRequest(BaseModel):
-    session_id: str
-
-
-class IngestUrlRequest(BaseModel):
-    session_id: str = Field(..., min_length=4, max_length=200)
-    url: str = Field(..., min_length=12, max_length=2048)
 
 
 class SourceItem(BaseModel):
@@ -33,6 +23,7 @@ class SourceItem(BaseModel):
     badge: str = "doc"
     slug: str | None = None
     numero_article: str | None = None
+    url: str | None = None
 
 
 class Quality(BaseModel):
@@ -52,7 +43,5 @@ class ChatResponse(BaseModel):
     sources: list[SourceItem]
     quality: Quality
     session_id: str
-    tools_used: list[str] = Field(default_factory=list)
     source_stats: dict | None = None
     citations: list[StructuredCitation] | None = None
-    warnings: list[str] = Field(default_factory=list)

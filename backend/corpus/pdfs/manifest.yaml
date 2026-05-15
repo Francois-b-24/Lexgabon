@@ -1,0 +1,37 @@
+# Manifest des PDFs corpus — métadonnées par fichier (relpath depuis backend/corpus/pdfs/).
+#
+# Champs reconnus :
+#   titre      : nom complet du texte (ex. « Code du travail »).
+#   code       : code court pour les citations LLM (ex. « Code du travail »).
+#   autorite   : émetteur (ex. « République gabonaise », « OHADA », « CEMAC »).
+#   date       : date de promulgation/version (ex. « 2021-09-20 », « 2024 »).
+#   reference  : numéro JO / loi / acte uniforme (ex. « Loi n° 022/2021 du 19 nov. 2021 »).
+#   source     : URL officielle d'origine si pertinent.
+#
+# Le fichier physique trouvé sous corpus/pdfs/ qui n'est pas listé ici est ingéré
+# avec un libellé par défaut basé sur son nom (et un avertissement à l'ingestion).
+
+files:
+  code-travail-2021.pdf:
+    titre: "Code du travail de la République gabonaise"
+    code: "Code du travail"
+    autorite: "République gabonaise"
+    date: "2021-11-19"
+    reference: "Loi n° 022/2021 du 19 novembre 2021"
+
+  # Doublons connus du Code du travail — même contenu, métadonnées partagées.
+  travail.pdf:
+    titre: "Code du travail de la République gabonaise (doublon)"
+    code: "Code du travail"
+    autorite: "République gabonaise"
+    date: "2021-11-19"
+    reference: "Loi n° 022/2021 du 19 novembre 2021"
+    duplicate_of: "code-travail-2021.pdf"
+
+  travail_1.pdf:
+    titre: "Code du travail de la République gabonaise (doublon)"
+    code: "Code du travail"
+    autorite: "République gabonaise"
+    date: "2021-11-19"
+    reference: "Loi n° 022/2021 du 19 novembre 2021"
+    duplicate_of: "code-travail-2021.pdf"

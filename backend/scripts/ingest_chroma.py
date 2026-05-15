@@ -68,7 +68,10 @@ def main() -> None:
         if fid is not None:
             meta["fetch_source_id"] = str(fid)
         # Métadonnées optionnelles (types scalaires acceptés par Chroma)
-        for key in ("reference", "numero_article", "slug", "url", "titre", "source"):
+        for key in (
+            "reference", "numero_article", "titre_section", "slug", "url",
+            "titre", "source", "code", "autorite", "date",
+        ):
             if key not in obj or obj[key] is None:
                 continue
             val = obj[key]

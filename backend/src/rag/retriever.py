@@ -1,4 +1,4 @@
-"""Retriever ChromaDB + embeddings multilingues (fusion uploads session, hybride léger)."""
+"""Retriever ChromaDB + embeddings multilingues (hybride vectoriel + recouvrement lexical)."""
 from __future__ import annotations
 
 import logging
@@ -9,7 +9,6 @@ import chromadb
 from chromadb.utils import embedding_functions
 
 from src.config import get_settings
-from src.rag import uploads_store
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +38,7 @@ def enrich_citation_line(meta: dict[str, Any] | None, base: str) -> str:
 
 
 def rag_metadata_subheader(meta: dict[str, Any]) -> str:
-    """Sous-ligne d'en-tête (référence, article, URL) pour le contexte LLM et les outils."""
+    """Sous-ligne d'en-tête (référence, article, URL) pour le contexte LLM."""
     parts: list[str] = []
     ref = meta.get("reference")
     if isinstance(ref, str) and ref.strip():
@@ -133,7 +132,7 @@ def _rows_from_chroma_result(res: dict[str, Any], k: int) -> list[dict[str, Any]
 
 
 def search_main(query: str, k: int | None = None) -> list[dict[str, Any]]:
-    """Recherche dans la collection principale (option hybride : n_results élargi + re-score)."""
+    """Recherche dans la collection principale (hybride : fetch élargi + re-score)."""
     s = get_settings()
     k = k or s.rag_top_k
     col = _get_collection()
@@ -148,29 +147,7 @@ def search_main(query: str, k: int | None = None) -> list[dict[str, Any]]:
         rows = _hybrid_rescore(rows, query, k)
     else:
         rows = rows[:k]
-    rows = _maybe_rerank_overlap(rows, query, k)
-    return rows
-
-
-def merge_search_results(
-    main: list[dict[str, Any]],
-    uploads: list[dict[str, Any]],
-    k: int,
-    query: str,
-) -> list[dict[str, Any]]:
-    """Concatène corpus principal + uploads, déduplique par id, trie par score."""
-    s = get_settings()
-    seen: set[str] = set()
-    merged: list[dict[str, Any]] = []
-    for r in main + uploads:
-        rid = str(r.get("id") or r.get("citation") or "")
-        if not rid or rid in seen:
-            continue
-        seen.add(rid)
-        merged.append(r)
-    merged.sort(key=lambda x: float(x.get("score", 0)), reverse=True)
-    merged = merged[: max(k, 1)]
-    return _maybe_rerank_overlap(merged, query, k) if s.use_rerank else merged[:k]
+    return _maybe_rerank_overlap(rows, query, k)
 
 
 def search_expanded(
@@ -185,7 +162,7 @@ def search_expanded(
 
     s = get_settings()
     base_k = k or s.rag_top_k
-    k_eff = min(16, max(base_k, int(base_k * 1.75) + 2)) if citation_intent else base_k
+    k_eff = min(20, max(base_k, int(base_k * 1.75) + 2)) if citation_intent else base_k
     variants = rag_search_query_variants(query, domaine)
     by_id: dict[str, dict[str, Any]] = {}
     for v in variants:
@@ -207,17 +184,27 @@ def search(
     query: str,
     k: int | None = None,
     *,
-    session_id: str | None = None,
-    include_uploads: bool = False,
     domaine: str | None = None,
     citation_intent: bool = False,
 ) -> list[dict[str, Any]]:
-    """Recherche principale ; fusionne les chunks PDF de session si demandé."""
-    s = get_settings()
-    k_base = k or s.rag_top_k
-    k_eff = min(16, max(k_base, int(k_base * 1.75) + 2)) if citation_intent else k_base
-    main = search_expanded(query, k, domaine=domaine, citation_intent=citation_intent)
-    if not include_uploads or not session_id:
-        return main
-    up = uploads_store.search_session_uploads(session_id, query, min(k_eff, 8))
-    return merge_search_results(main, up, k_eff, query)
+    """Point d'entrée unique : recherche RAG sur la collection principale."""
+    return search_expanded(query, k, domaine=domaine, citation_intent=citation_intent)
+
+
+def format_context_for_llm(rows: list[dict[str, Any]], max_chars_per: int = 900) -> str:
+    """Sérialise les extraits pour injection dans le prompt utilisateur (avant LLM)."""
+    if not rows:
+        return ""
+    parts: list[str] = []
+    for i, r in enumerate(rows, start=1):
+        cit = str(r.get("citation") or r.get("id") or f"doc{i}")
+        meta = r.get("metadata") if isinstance(r.get("metadata"), dict) else {}
+        head = f"[Extrait {i}] {cit}"
+        sub = rag_metadata_subheader(meta or {})
+        if sub:
+            head = f"{head}\n{sub}"
+        body = (r.get("text") or "").strip().replace("\r\n", "\n")
+        if len(body) > max_chars_per:
+            body = body[: max_chars_per - 1] + "…"
+        parts.append(f"{head}\n{body}")
+    return "\n\n---\n\n".join(parts)

@@ -50,10 +50,10 @@ def main() -> None:
         print("(skip) pas de fichier", scraped, file=sys.stderr)
 
     if not args.skip_pdfs:
-        _run(py, [str(ROOT / "scripts" / "ingest_pdf_folder.py")])
+        _run(py, [str(ROOT / "scripts" / "ingest_pdfs.py"), "--skip-duplicates"])
 
     if args.verify:
-        _run(py, [str(ROOT / "scripts" / "verify_chroma_index.py")])
+        _run(py, [str(ROOT / "scripts" / "verify_corpus.py")])
 
 
 if __name__ == "__main__":

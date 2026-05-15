@@ -1,6 +1,6 @@
-# Backend agent juridique (FastAPI)
+# Backend Ama'IA (FastAPI)
 
-Service conforme au cahier des charges : `POST /api/chat`, `POST /api/chat/stream`, `POST /api/session/clear`, `POST /api/upload-pdf`.
+Chatbot juridique gabonais : **un seul endpoint `POST /api/chat`** (RAG + un appel Claude), pas de boucle outils, pas d'upload session.
 
 ## Développement local
 
@@ -15,60 +15,59 @@ uvicorn main:app --reload --host 0.0.0.0 --port 8000
 
 Avec Docker : `docker compose up backend` depuis la racine du monorepo.
 
-Sur **Render** ou toute instance avec **peu de RAM**, laisser `WARM_RAG_ON_STARTUP` désactivé (défaut) : un préchauffage Chroma au démarrage peut monopoliser CPU/RAM et faire **timeout** sur `GET /health` depuis les proxies (Vercel).
+Sur une instance ≥ ~1 Go de RAM : activer `WARM_RAG_ON_STARTUP=true` (Chroma et embeddings préchargés au boot, plus de latence sur la première requête après un cold start). Sur petite instance (< 1 Go), laisser à `false` pour éviter les timeouts `GET /health` depuis les proxies.
 
-## Ingestion Chroma (JSONL)
+## Ingestion du corpus
 
-Script : `scripts/ingest_chroma.py`. Chaque ligne du fichier JSONL est un JSON avec au minimum `"text"` ; `"citation"` ou `"titre"` est recommandé ; `"id"` optionnel (sinon `ingest-<ligne>`). Métadonnées optionnelles recopiées vers Chroma si présentes : `reference`, `numero_article`, `slug`, `url`, `titre`, `source` (scalaires uniquement). Si le JSON contient **`fetch_source_id`**, les anciens chunks portant cette valeur sont **supprimés** avant réinsertion (réingestion idempotente du fichier `scraped_chunks.jsonl`).
+Tout passe par la collection Chroma principale `droit_gabonais`. Le **chunking est article-aware** : la regex détecte `Article N`, `Art. 12`, `Article 1er`, `Article 12 bis`, `Article 12-1`, etc., et propage `numero_article` + `titre_section` en métadonnées.
 
-**Jeu de données initial (RAG)** : `scripts/build_rag_seed_jsonl.py` régénère `data/rag_seed.jsonl` (veille institutionnelle alignée sur `lib/veille/official-feed.ts`, fiche démo code électoral, fiche indicative droit du travail Gabon). Pour tout faire en une commande (rebuild JSONL + ingestion) :
+### PDFs locaux (priorité corpus juridique sérieux)
 
-```bash
-cd backend
-export PYTHONPATH=.
-python3 scripts/ingest_rag_seed.py
-```
-
-Ingestion d’un fichier JSONL arbitraire :
+Déposer les PDFs dans `corpus/pdfs/`, déclarer leurs métadonnées dans `corpus/pdfs/manifest.yaml` (titre, code, autorité, date, reference, éventuel `duplicate_of`), puis :
 
 ```bash
-cd backend
-export PYTHONPATH=.
-python3 scripts/ingest_chroma.py --jsonl ./chemin/vers/fichier.jsonl
+PYTHONPATH=. python3 scripts/ingest_pdfs.py --skip-duplicates
 ```
 
-## Corpus (PDF + sites officiels)
+- Hash SHA256 par fichier : déduplication même en cas de renommage.
+- `--skip-duplicates` saute les PDFs marqués `duplicate_of:` dans le manifest.
+- Réingestion idempotente : les anciens chunks du fichier (clé `source_key`) sont supprimés avant réinsertion.
 
-- Dossier **[`corpus/pdfs/`](corpus/pdfs/)** : y déposer les PDF à indexer dans **`droit_gabonais`** (voir [`corpus/README.md`](corpus/README.md)). Par défaut les `*.pdf` ne sont pas versionnés (`corpus/pdfs/.gitignore`).
-- Fichier **[`corpus/sources.yaml`](corpus/sources.yaml)** : allowlist de domaines + URLs (`kind: html` ou `pdf`) pour `scripts/fetch_official_sources.py` → `data/scraped_chunks.jsonl` (fichier régénéré, ignoré par Git). Une nouvelle ingestion du JSONL généré **remplace** les chunks précédents ayant le même `fetch_source_id`.
+### Scraping officiel (URLs allowlist)
 
-**Pipeline complet** (seed veille + fetch YAML + ingestion JSONL + PDF dossier) :
+`corpus/sources.yaml` liste les domaines autorisés et les URLs à fetch (`kind: html | pdf`, plus métadonnées `code`, `reference`, `autorite`, `date`). Le script produit un JSONL ingérable :
 
 ```bash
-cd backend
-export PYTHONPATH=.
-python3 scripts/ingest_corpus.py
+PYTHONPATH=. python3 scripts/fetch_official_sources.py
+PYTHONPATH=. python3 scripts/ingest_chroma.py --jsonl data/scraped_chunks.jsonl
 ```
 
-Options : `--skip-seed`, `--skip-fetch`, `--skip-pdfs`, **`--verify`** (lance la vérification ci-dessous à la fin).
+Réingestion idempotente : tout chunk portant le même `fetch_source_id` est remplacé.
 
-Même **`CHROMA_PATH`** et **`CHROMA_EMBEDDING_MODEL`** que l’API (`.env`). Sur **Render** / volume persistant : exécuter ce script **une fois** (ou job manuel) après déploiement, sur l’instance qui monte le disque Chroma.
-
-### Vérifier l’indexation
-
-Après une ingestion (ou à tout moment sur la même machine que l’API / le même `CHROMA_PATH`) :
+### Pipeline complet
 
 ```bash
-cd backend
-export PYTHONPATH=.
-python3 scripts/verify_chroma_index.py
+PYTHONPATH=. python3 scripts/ingest_corpus.py [--verify]
 ```
 
-Le script contrôle que la collection **`droit_gabonais`** contient au moins un document (par défaut) et qu’une **requête vectorielle** (`search_main`) renvoie des résultats. Options : `--min-chunks N`, `--query "…"`, `-q`. Code de sortie **0** si OK, **1** si collection vide ou recherche vide, **2** si la collection est introuvable.
+Lance, dans l'ordre : `build_rag_seed_jsonl.py` → `fetch_official_sources.py` → `ingest_chroma.py` (seed) → `ingest_chroma.py` (scraped) → `ingest_pdfs.py --skip-duplicates`. Avec `--verify` : audit final.
+
+### Audit / vérification
+
+```bash
+PYTHONPATH=. python3 scripts/verify_corpus.py
+```
+
+Affiche le total de chunks, le pourcentage avec `numero_article`, le top des sources, des alertes (volume trop faible, chunking dégradé). Effectue aussi une requête test pour valider que le retriever renvoie des extraits cohérents.
 
 ## Variables principales
 
-- **`USE_FULL_AGENT_CHAT`** : `false` par défaut — chemin **rapide** (une passe RAG + un appel LLM, sans boucle outils). Mettre `true` pour le **mode CDC complet** (plus lent).
-- Voir `src/config.py` et la racine `.env.example` (`LEGAL_AGENT_API_BASE_URL` côté Next). Côté backend utiles : `CHROMA_PATH`, `CHROMA_COLLECTION`, `CHROMA_UPLOADS_COLLECTION`, `CHROMA_EMBEDDING_MODEL`, `USE_HYBRID_RAG` (par défaut **true** : re-fetch élargi + léger re-score lexical), `USE_RERANK`, `RAG_STRUCTURED_CITATIONS`, `MAX_UPLOAD_PDF_BYTES`.
+- `ANTHROPIC_API_KEY` (obligatoire) — `ANTHROPIC_MODEL` par défaut `claude-sonnet-4-6`, `ANTHROPIC_MODEL_FALLBACK` `claude-haiku-4-5-20251001`.
+- `CHROMA_PATH` (défaut `./data/chroma`), `CHROMA_COLLECTION` (`droit_gabonais`), `CHROMA_EMBEDDING_MODEL` (`intfloat/multilingual-e5-small`).
+- `USE_HYBRID_RAG` (défaut `true`) : élargit le fetch puis re-score lexical léger.
+- `USE_RERANK` (défaut `true`) : tri additionnel par recouvrement lexical sur top-k.
+- `RAG_TOP_K` (défaut `12`) ; `RAG_STRUCTURED_CITATIONS` (défaut `false`).
+- `FRONTEND_ORIGINS` : origines CORS séparées par virgule.
+- `WARM_RAG_ON_STARTUP` : `true` recommandé dès ~1 Go RAM (voir plus haut).
 
-Parité CDC / noms de variables : [`../docs/chatbot-env-parity.md`](../docs/chatbot-env-parity.md). Checklist Render : [`../docs/chatbot-render-production.md`](../docs/chatbot-render-production.md). RAG externe (cible) : [`../docs/chat-rag-external.md`](../docs/chat-rag-external.md).
+Toutes les variables sont listées dans `src/config.py`. Checklist Render : [`../docs/chatbot-render-production.md`](../docs/chatbot-render-production.md).

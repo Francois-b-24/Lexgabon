@@ -1,6 +1,6 @@
 # RAG « externe » (cible moyen terme)
 
-Aujourd’hui, le chemin **rapide** (`fast_chat`) interroge **Chroma + embeddings** dans le **même processus** que FastAPI. Pour réduire encore la latence et la charge RAM par requête, la cible suivante est :
+Aujourd'hui, le moteur unique (`chat_engine.run_chat`) interroge **Chroma + embeddings** dans le **même processus** que FastAPI. Pour réduire encore la latence et la charge RAM par requête, la cible suivante est :
 
 ## Principe
 

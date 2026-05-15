@@ -1,27 +1,34 @@
 # Corpus RAG (PDF + sources officielles)
 
-Ce répertoire sert à **alimenter la collection Chroma principale** (`droit_gabonais`), distincte des PDF téléversés par session (`uploads_session`).
+Alimente la collection Chroma principale **`droit_gabonais`**. Chunking **article-aware** : la regex détecte `Article N`, `Art. 12`, `Article 1er`, `Article 12 bis`, etc., et propage `numero_article` + `titre_section` aux métadonnées.
 
 ## PDF (`pdfs/`)
 
-- Déposez des fichiers **`.pdf`** (texte sélectionnable de préférence ; pas d’OCR dans le pipeline actuel).
-- Par défaut, les PDF ne sont **pas versionnés** (voir `pdfs/.gitignore`) pour limiter la taille du dépôt. Retirez la règle `*.pdf` ou utilisez **Git LFS** si vous souhaitez les committer.
-- Taille conseillée : raisonnable pour votre RAM au moment de l’ingestion (voir `MAX_UPLOAD_PDF_BYTES` côté API upload ; le script corpus n’a pas la même limite par défaut, restez modéré).
+- Déposer des fichiers **`.pdf`** (texte sélectionnable ; pas d'OCR dans le pipeline).
+- Déclarer leurs métadonnées dans `pdfs/manifest.yaml` (titre, code, autorité, date, reference, `duplicate_of`).
+- Hash SHA256 par fichier : déduplication automatique même si vous renommez le fichier.
+- Par défaut, les PDF ne sont **pas versionnés** (`pdfs/.gitignore`) — retirez la règle ou utilisez Git LFS si vous voulez les committer.
 
 ## Sources web (`sources.yaml`)
 
-- Liste **allowlist** : seules les URLs dont le **domaine** figure dans `allowed_domains` sont récupérées.
-- Chaque entrée : `id`, `url`, `label`, `kind` (`html` ou `pdf`).
-- **Respect** des conditions d’usage des sites, délais entre requêtes, et rappel : **seul le document officiel publié fait foi** ; le contenu extrait sert au RAG à titre indicatif.
+- **Allowlist** stricte : seuls les domaines listés dans `allowed_domains` sont fetchés.
+- Chaque entrée : `id`, `url`, `label`, `kind` (`html` | `pdf`) ; champs optionnels : `code`, `reference`, `autorite`, `date` (recopiés en métadonnées).
+- Respect des conditions d'usage : délai entre requêtes (`--delay 1.5s` par défaut). Le document officiel publié fait seul foi.
 
 ## Ingestion
 
 Depuis `backend/` avec `PYTHONPATH=.` :
 
 ```bash
-python3 scripts/ingest_corpus.py
+# Pipeline complet (seed + scraping + PDFs)
+python3 scripts/ingest_corpus.py --verify
+
+# OU étape par étape :
+python3 scripts/ingest_pdfs.py --skip-duplicates
+python3 scripts/fetch_official_sources.py
+python3 scripts/ingest_chroma.py --jsonl data/scraped_chunks.jsonl
 ```
 
-Options : `--skip-seed`, `--skip-fetch`, `--skip-pdfs`, `--verify`. Contrôle post-ingestion : `python3 scripts/verify_chroma_index.py`. Détails : [`../README.md`](../README.md).
+Audit du résultat : `python3 scripts/verify_corpus.py` (volume, articles distincts, top sources, alertes, requête test).
 
-Les scripts utilisent le même **`CHROMA_PATH`** et **`CHROMA_EMBEDDING_MODEL`** que l’API (fichier `.env` ou variables d’environnement).
+Les scripts utilisent le même `CHROMA_PATH` et `CHROMA_EMBEDDING_MODEL` que l'API (`.env` ou variables d'environnement).

@@ -8,17 +8,15 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     anthropic_api_key: str = ""
-    anthropic_model: str = "claude-sonnet-4-20250514"
-    anthropic_model_fallback: str = "claude-3-5-haiku-20241022"
+    anthropic_model: str = "claude-sonnet-4-6"
+    anthropic_model_fallback: str = "claude-haiku-4-5-20251001"
 
     chroma_path: str = "./data/chroma"
     chroma_collection: str = "droit_gabonais"
-    chroma_uploads_collection: str = "uploads_session"
     chroma_embedding_model: str = "intfloat/multilingual-e5-small"
-    max_upload_pdf_bytes: int = 10 * 1024 * 1024
 
     use_hybrid_rag: bool = True
-    use_rerank: bool = False
+    use_rerank: bool = True
 
     redis_url: str | None = None
 
@@ -26,11 +24,8 @@ class Settings(BaseSettings):
 
     session_ttl_seconds: int = 30 * 60
     session_max_messages: int = 30
-    max_agent_iterations: int = 5
-    rag_top_k: int = 8
+    rag_top_k: int = 12
 
-    # CDC : max_tokens 1024 pour les tours avec outils ; réponse finale sans outils peut être plus longue
-    anthropic_max_tokens_with_tools: int = 1024
     anthropic_max_tokens_text: int = 2048
 
     rate_limit_chat_per_minute: int = 20
@@ -38,15 +33,10 @@ class Settings(BaseSettings):
 
     rag_structured_citations: bool = False
 
-    # Allowlist domaines pour POST /api/ingest-url (même fichier que fetch_official_sources.py).
+    # Allowlist domaines pour les scripts d'ingestion (fetch_official_sources, ingest_pdfs).
     corpus_sources_yaml: str = "./corpus/sources.yaml"
-    ingest_url_max_bytes: int = 15_000_000
-    ingest_url_timeout_seconds: float = 45.0
 
-    # Mode CDC complet (multi-tours + outils) : plus lent ; désactivé par défaut en prod.
-    use_full_agent_chat: bool = False
-
-    # Préchauffage Chroma au boot (déconseillé sur petites instances Render).
+    # Préchauffage Chroma au boot : true dès ~1 Go de RAM ; false sur petites instances (<1 Go).
     warm_rag_on_startup: bool = False
 
 
