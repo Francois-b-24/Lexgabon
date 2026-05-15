@@ -3,16 +3,7 @@
 import { IconExternalLink, IconFileText } from "@tabler/icons-react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
-
-export type ChatSource = {
-  citation: string;
-  text?: string;
-  score?: number;
-  badge?: string;
-  slug?: string | null;
-  numero_article?: string | null;
-  url?: string | null;
-};
+import type { ChatSource } from "@/lib/chatbot-types";
 
 export function SourceList({ sources }: { sources: ChatSource[] }) {
   const t = useTranslations("Chatbot");

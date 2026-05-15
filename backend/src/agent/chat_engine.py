@@ -6,7 +6,7 @@ from typing import Any
 
 from src.agent import llm
 from src.agent.prompts import (
-    SYSTEM_PROMPT_FAST,
+    build_system_prompt,
     build_user_message,
     question_seeks_citations,
     strip_markdown_heuristic,
@@ -51,6 +51,8 @@ def run_chat(
     question: str,
     domaine: str | None,
     hist: list[dict[str, str]],
+    *,
+    profile: str | None = None,
 ) -> ChatAnswer:
     """Récupère top-k Chroma puis un seul appel LLM (texte uniquement)."""
     cite_intent = question_seeks_citations(question.strip())
@@ -68,7 +70,8 @@ def run_chat(
     last = str(messages[-1].get("content") or "")
     messages[-1] = {"role": "user", "content": f"{last}\n\n---\n\n{rag_block}"}
 
-    msg = llm.create_text_only(system=SYSTEM_PROMPT_FAST, messages=messages)
+    system_prompt = build_system_prompt(profile)
+    msg = llm.create_text_only(system=system_prompt, messages=messages)
     text = strip_markdown_heuristic(llm.extract_text_blocks(msg.content))
 
     sources: list[dict[str, Any]] = []

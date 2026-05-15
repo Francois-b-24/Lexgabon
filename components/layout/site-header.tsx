@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { IconMenu2, IconX } from "@tabler/icons-react";
 import { Logo } from "@/components/brand/logo";
+import { ProfileSwitcher } from "@/components/layout/profile-switcher";
 import { cn } from "@/lib/utils";
 import { Link, usePathname } from "@/i18n/navigation";
 
@@ -24,6 +25,7 @@ export function SiteHeader() {
     { href: "/veille", label: n("veille") },
     { href: "/recherche", label: n("recherche") },
     { href: "/chatbot", label: n("chatbot") },
+    { href: "/methodologie", label: n("methodologie") },
     { href: "/#api", label: n("api") },
   ] as const;
 
@@ -64,6 +66,8 @@ export function SiteHeader() {
               </Link>
             ))}
           </div>
+
+          <ProfileSwitcher />
 
           <button
             type="button"

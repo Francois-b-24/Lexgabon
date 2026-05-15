@@ -4,15 +4,24 @@ import { IconArrowUp, IconRefresh } from "@tabler/icons-react";
 import { useTranslations } from "next-intl";
 import { FormEvent, KeyboardEvent, useCallback, useEffect, useRef, useState } from "react";
 import { useLegalAgentSession } from "@/hooks/use-legal-agent-session";
-import { SourceList, type ChatSource } from "@/components/chatbot/source-list";
+import { useUserProfile } from "@/hooks/use-user-profile";
+import { SourceList } from "@/components/chatbot/source-list";
+import { LegalNoteRenderer } from "@/components/chatbot/legal-note-renderer";
+import type { ChatSource, StructuredAnswer } from "@/lib/chatbot-types";
 
 type Role = "user" | "assistant";
-type ChatMsg = { role: Role; content: string; sources?: ChatSource[] };
+type ChatMsg = {
+  role: Role;
+  content: string;
+  sources?: ChatSource[];
+  structured?: StructuredAnswer | null;
+};
 type BackendChatPayload = {
   answer?: string;
   error?: string;
   sources?: ChatSource[];
   session_id?: string;
+  structured?: StructuredAnswer | null;
   detail?: string | { msg?: string }[];
 };
 
@@ -38,6 +47,7 @@ function parseErrorDetail(raw: unknown): string {
 export default function ChatbotPanel({ welcome }: { welcome: string }) {
   const t = useTranslations("Chatbot");
   const { sessionId, syncFromServer } = useLegalAgentSession();
+  const { profile } = useUserProfile();
   const [messages, setMessages] = useState<ChatMsg[]>([{ role: "assistant", content: welcome }]);
   const [question, setQuestion] = useState("");
   const [loading, setLoading] = useState(false);
@@ -108,6 +118,7 @@ export default function ChatbotPanel({ welcome }: { welcome: string }) {
           question: prompt,
           history: historyForApi,
           session_id: sessionId,
+          profile: profile ?? null,
         }),
         signal: controller.signal,
       }).finally(() => {
@@ -133,6 +144,7 @@ export default function ChatbotPanel({ welcome }: { welcome: string }) {
           role: "assistant",
           content: payload.answer?.trim() ? payload.answer : t("noAnswer"),
           sources: payload.sources ?? [],
+          structured: payload.structured ?? null,
         },
       ]);
     } catch (err) {
@@ -196,15 +208,17 @@ export default function ChatbotPanel({ welcome }: { welcome: string }) {
               <span className="text-[10px] uppercase tracking-wider text-white/30">
                 {m.role === "user" ? t("you") : t("bot")}
               </span>
-              <div
-                className={
-                  m.role === "user"
-                    ? "self-end max-w-[85%] rounded-lg border border-lg-gold/25 bg-lg-gold/10 px-3.5 py-2.5 text-[15px] leading-relaxed text-white"
-                    : "text-[15px] leading-relaxed text-white/90"
-                }
-              >
-                <p className="whitespace-pre-wrap [overflow-wrap:anywhere]">{m.content}</p>
-              </div>
+              {m.role === "user" ? (
+                <div className="self-end max-w-[85%] rounded-lg border border-lg-gold/25 bg-lg-gold/10 px-3.5 py-2.5 text-[15px] leading-relaxed text-white">
+                  <p className="whitespace-pre-wrap [overflow-wrap:anywhere]">{m.content}</p>
+                </div>
+              ) : m.structured ? (
+                <LegalNoteRenderer structured={m.structured} />
+              ) : (
+                <div className="text-[15px] leading-relaxed text-white/90">
+                  <p className="whitespace-pre-wrap [overflow-wrap:anywhere]">{m.content}</p>
+                </div>
+              )}
               {m.role === "assistant" && m.sources && m.sources.length > 0 ? (
                 <SourceList sources={m.sources} />
               ) : null}

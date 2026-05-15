@@ -15,11 +15,13 @@ from src.agent.prompts import (
     append_indexed_source_lines_if_needed,
     build_user_message,
 )
+from src.agent.response_parser import parse_legal_note
 from src.agent.schemas import (
     ChatRequest,
     ChatResponse,
     Quality,
     SourceItem,
+    StructuredAnswer,
     StructuredCitation,
 )
 from src.config import get_settings
@@ -114,7 +116,13 @@ async def api_chat(request: Request, body: ChatRequest):
         hist = _prepare_history(body)
 
     try:
-        out = await asyncio.to_thread(run_chat, body.question, body.domaine, hist)
+        out = await asyncio.to_thread(
+            run_chat,
+            body.question,
+            body.domaine,
+            hist,
+            profile=body.profile,
+        )
     except Exception as e:
         logger.exception("chat failed")
         return JSONResponse({"detail": str(e)}, status_code=502)
@@ -129,6 +137,15 @@ async def api_chat(request: Request, body: ChatRequest):
     if s.rag_structured_citations:
         citations = _build_citations(out.sources)
 
+    structured: StructuredAnswer | None = None
+    try:
+        structured = parse_legal_note(out_text, sources)
+        if not structured.paragraphs and not structured.disclaimer:
+            structured = None
+    except Exception:
+        logger.exception("legal note parsing failed; falling back to plain answer")
+        structured = None
+
     clean = [{"role": m["role"], "content": m["content"]} for m in hist]
     clean.append({"role": "assistant", "content": out_text})
     store.set_history(sid, clean[-s.session_max_messages:])
@@ -140,4 +157,5 @@ async def api_chat(request: Request, body: ChatRequest):
         session_id=sid,
         source_stats={"count": len(sources)},
         citations=citations,
+        structured=structured,
     )
