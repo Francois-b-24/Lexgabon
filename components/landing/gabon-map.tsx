@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, useInView, useReducedMotion } from "framer-motion";
+import { motion, useMotionValue, useReducedMotion, useScroll, useSpring, useTransform } from "framer-motion";
 import { useId, useRef } from "react";
 
 /**
@@ -34,17 +34,46 @@ export function GabonMap() {
   const uid = useId().replace(/:/g, "");
   const filterId = `gabon-glow-${uid}`;
   const containerRef = useRef<HTMLDivElement>(null);
-  const isInView = useInView(containerRef, { amount: 0.22, margin: "0px" });
 
-  const strokeDuration = reduce ? 0 : 2.6;
-  const fillDelay = reduce ? 0 : 1.75;
-  const fillDuration = reduce ? 0 : 0.55;
-  const dotDelay = reduce ? 0 : strokeDuration * 0.92;
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    /** Fenêtre large : le tracé évolue sur tout le passage du bloc dans le viewport */
+    offset: ["start 0.94", "end 0.06"],
+  });
+
+  /** Hors animation scroll : progression figée à 1 (carte entièrement visible) */
+  const staticProgress = useMotionValue(1);
+  const scrollSource = reduce ? staticProgress : scrollYProgress;
+
+  /** Léger amortissement pour que le trait reste lisible même au scroll rapide */
+  const drawProgress = useSpring(scrollSource, {
+    stiffness: reduce ? 999 : 44,
+    damping: reduce ? 90 : 18,
+    mass: 0.72,
+    restDelta: 0.001,
+  });
+
+  const pathLength = useTransform(drawProgress, [0, 1], reduce ? [1, 1] : [0, 1]);
+  const fillOpacity = useTransform(
+    drawProgress,
+    reduce ? [0, 1] : [0, 0.34, 0.52, 0.72, 1],
+    reduce ? [1, 1] : [0, 0.45, 1, 1, 0],
+  );
+  const dotOpacity = useTransform(
+    drawProgress,
+    reduce ? [0, 1] : [0, 0.48, 0.62, 0.82, 1],
+    reduce ? [1, 1] : [0, 0, 1, 1, 0],
+  );
+  const dotScale = useTransform(
+    drawProgress,
+    reduce ? [0, 1] : [0, 0.52, 0.68, 0.88, 1],
+    reduce ? [1, 1] : [0.82, 0.82, 1, 1, 0.88],
+  );
 
   return (
     <div
       ref={containerRef}
-      className="relative h-[min(420px,55vw)] w-[min(420px,55vw)] opacity-[0.85]"
+      className="relative h-[min(480px,58vw)] w-[min(480px,58vw)] opacity-[0.94]"
     >
       <svg
         viewBox="0 0 900 960"
@@ -65,50 +94,24 @@ export function GabonMap() {
 
         <motion.path
           d={GABON_PATH}
-          fill="rgba(196, 154, 42, 0.08)"
+          fill="rgba(196, 154, 42, 0.1)"
           stroke="#C49A2A"
-          strokeWidth="2"
+          strokeWidth="2.25"
           strokeLinejoin="round"
           strokeLinecap="round"
           vectorEffect="non-scaling-stroke"
           filter={`url(#${filterId})`}
-          animate={
-            isInView
-              ? { pathLength: 1, fillOpacity: 1 }
-              : { pathLength: 0, fillOpacity: 0 }
-          }
-          transition={
-            isInView
-              ? {
-                  pathLength: { duration: strokeDuration, ease: [0.22, 1, 0.36, 1] },
-                  fillOpacity: { duration: fillDuration, delay: fillDelay },
-                }
-              : {
-                  pathLength: { duration: reduce ? 0 : 0.45, ease: "easeIn" },
-                  fillOpacity: { duration: reduce ? 0 : 0.2 },
-                }
-          }
+          style={{ pathLength, fillOpacity }}
         />
 
         <motion.g
           pointerEvents="auto"
           initial={false}
-          animate={
-            isInView
-              ? { opacity: 1, scale: 1 }
-              : { opacity: 0, scale: 0.6 }
-          }
-          transition={{
-            opacity: {
-              duration: reduce ? 0 : isInView ? 0.35 : 0.2,
-              delay: isInView ? dotDelay : 0,
-            },
-            scale: {
-              type: "spring",
-              stiffness: 420,
-              damping: 22,
-              delay: isInView ? dotDelay : 0,
-            },
+          style={{
+            opacity: dotOpacity,
+            scale: dotScale,
+            transformOrigin: `${LIBREVILLE_CX}px ${LIBREVILLE_CY}px`,
+            transformBox: "fill-box",
           }}
         >
           <circle

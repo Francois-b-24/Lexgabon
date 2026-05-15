@@ -11,7 +11,7 @@ const linkClass =
   "shrink-0 font-landing-sans text-[10px] uppercase tracking-[0.1em] text-white/60 transition-colors hover:text-lg-gold-soft sm:text-[11px]";
 
 const mobileLinkClass =
-  "block border-b border-[var(--lg-gold-faint)]/40 px-3 py-3.5 font-landing-sans text-[11px] uppercase tracking-[0.12em] text-white/85 transition-colors last:border-b-0 hover:bg-white/5 hover:text-lg-gold-soft active:bg-white/10 sm:px-6";
+  "block rounded-lg px-3 py-3 font-landing-sans text-[11px] uppercase tracking-[0.12em] text-white/85 transition-colors hover:bg-white/[0.06] hover:text-lg-gold-soft active:bg-white/[0.1] sm:px-6";
 
 export function SiteHeader() {
   const t = useTranslations("Landing");
@@ -81,7 +81,7 @@ export function SiteHeader() {
       {open ? (
         <div
           id="site-nav-mobile-menu"
-          className="flex flex-col border-t border-[var(--lg-gold-faint)] bg-lg-navy md:hidden"
+          className="flex flex-col gap-0.5 border-t border-white/[0.08] bg-lg-navy px-1.5 pb-3 pt-1.5 md:hidden"
           role="navigation"
           aria-label={n("menuLabel")}
         >
