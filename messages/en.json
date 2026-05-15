@@ -7,6 +7,7 @@
     "textes": "Official sources",
     "veille": "Monitoring",
     "chatbot": "Ama'IA",
+    "methodologie": "Methodology",
     "api": "ALIN",
     "home": "Home",
     "favoris": "Bookmarks",
@@ -17,7 +18,51 @@
   },
   "Recherche": {
     "title": "Search",
-    "searchPlaceholder": "Search a text, a reference, an article…"
+    "searchPlaceholder": "Search a text, a reference, an article…",
+    "submit": "Search",
+    "filters": "Filters",
+    "filterSource": "Source",
+    "filterType": "Type",
+    "filterDateFrom": "Published from",
+    "filterDateTo": "Published to",
+    "filterDomaine": "Domain",
+    "mode": "Mode",
+    "modeFulltext": "Full-text",
+    "modeSemantic": "Semantic",
+    "modeSemanticHint": "Meaning-based search (RAG over indexed articles).",
+    "noResults": "No text matches these filters.",
+    "totalResults": "{total, plural, =0 {No results} =1 {1 result} other {# results}}",
+    "page": "Page {page} of {total}",
+    "previous": "Previous",
+    "next": "Next",
+    "degradedNotice": "Index unavailable: demo results shown.",
+    "clearFilters": "Reset filters",
+    "matchedArticle": "Article {article}",
+    "typeOption": {
+      "loi": "Law",
+      "ordonnance": "Ordinance",
+      "decret": "Decree",
+      "acte uniforme": "Uniform Act",
+      "reglement": "Regulation",
+      "circulaire": "Circular"
+    },
+    "domaineOption": {
+      "civil": "Civil law",
+      "penal": "Criminal law",
+      "commercial": "Commercial law",
+      "travail": "Labour law",
+      "administratif": "Administrative law",
+      "fiscal": "Tax law",
+      "famille": "Family law",
+      "social": "Social law"
+    },
+    "sourceOption": {
+      "jo-ga": "Official Gazette of Gabon",
+      "ohada": "OHADA",
+      "cemac": "CEMAC",
+      "cobac": "COBAC",
+      "cima": "CIMA"
+    }
   },
   "Legal": {
     "mentionsTitle": "Legal notice",
@@ -112,7 +157,22 @@
   "Textes": {
     "downloadPdf": "Download official PDF",
     "summary": "Summary",
-    "articles": "Articles"
+    "articles": "Articles",
+    "tableOfContents": "Table of contents",
+    "copyReference": "Copy reference",
+    "copyReferenceDone": "Reference copied",
+    "share": "Share",
+    "openSource": "Open official source",
+    "noArticlesIndexed": "Articles for this text are not indexed yet. See the official source above.",
+    "metaPublication": "Publication",
+    "metaEntreeVig": "Entry into force",
+    "metaType": "Type",
+    "metaSource": "Source",
+    "metaStatus": "Status",
+    "statusInForce": "In force",
+    "statusRepealed": "Repealed",
+    "articleAnchorLabel": "Direct link to this article",
+    "section": "Section"
   },
   "Auth": {
     "signIn": "Sign in",
@@ -141,5 +201,63 @@
     "equipe": "Team",
     "mentions": "Legal notice",
     "cgu": "Terms of use"
+  },
+  "Methodologie": {
+    "title": "Methodology",
+    "intro": "LexGabon is an open-access platform for the law applicable in Gabon. This page documents how our corpus is built, verified and maintained — so you can use our content confidently, and know exactly what we do and what we do not do.",
+    "principleTitle": "Guiding principle",
+    "principleBody": "The Official Gazette of the Gabonese Republic or the authentic text published by the issuing authority is alone authoritative. LexGabon centralises, structures and makes these texts searchable; we do not create law, we make it accessible.",
+    "collectionTitle": "How texts are collected",
+    "collectionItems": [
+      "Manual download of the official PDFs published in the Official Gazette or by regional bodies (OHADA, CEMAC, COBAC, CIMA).",
+      "SHA-256 fingerprint verification to detect duplicates and ensure integrity.",
+      "Text extraction with automatic splitting by article (« Article N », « Art. N », variants including bis, ter, ordinals).",
+      "Concurrent indexing in a relational database (Postgres) for article-by-article display, and in a vector database (ChromaDB) for Ama'IA semantic search.",
+      "Targeted scraping of the official portals listed below, within a strict domain allowlist."
+    ],
+    "verificationTitle": "Verification chain",
+    "verificationItems": [
+      "Per-text metadata maintained manually: code, authority, publication date, legal reference.",
+      "Regular corpus audit via the `verify_corpus.py` script: volume, distinct articles, alerts on missing metadata.",
+      "Systematic preservation of the link to the official source on every text record.",
+      "When a text is repealed, the record states so and points to the replacement version."
+    ],
+    "frequencyTitle": "Update frequency",
+    "frequencyBody": "The corpus is enriched on each relevant official publication. Automated monitoring runs daily at 03:00 UTC to spot new entries on monitored portals. Full code ingestions remain manual, triggered by our team.",
+    "engagementsTitle": "Our commitments",
+    "engagementsItems": [
+      "No generative AI is used to produce legal text. Ama'IA does not author law; it points to the applicable text and cites its sources.",
+      "No paywall, no forced sign-up to consult the corpus.",
+      "No advertising tracking, no third-party commercial cookies.",
+      "Ama'IA answers do not commit LexGabon or ALIN and do not constitute personalised legal advice.",
+      "Any factual statement produced by Ama'IA must be backed by an explicit citation; if the index does not supply a passage to cite, Ama'IA says so."
+    ],
+    "limitsTitle": "Current limitations",
+    "limitsBody": "The corpus is being built. At this date, only the Gabonese Labour Code is fully ingested and indexed article by article. Other codes (civil, criminal, commerce, tax, electoral, Constitution) are being added. Searches in areas not yet indexed will return fewer results — Ama'IA states this in its response rather than fabricating a reference.",
+    "sourcesTitle": "Primary sources monitored",
+    "sourcesIntro": "Only the official portals listed below are fetched by our scraping. No other domain is queried automatically.",
+    "sourceStatus": {
+      "indexed": "Indexed",
+      "partial": "Partially indexed",
+      "monitored": "Monitored (ingestion to come)"
+    },
+    "lastSyncLabel": "Last sync",
+    "lastUpdatedLabel": "Index last updated",
+    "contactTitle": "Something to report?",
+    "contactBody": "If you spot an error in a text, a missing reference or a source we should add, write to the ALIN team — we promptly correct documented inaccuracies and publish the sources you flag when they fall within scope."
+  },
+  "Profile": {
+    "title": "Tailor LexGabon to your profile",
+    "none": "Profile not set",
+    "option": {
+      "avocat": "Lawyer",
+      "juriste": "In-house counsel",
+      "etudiant": "Law student"
+    },
+    "hint": {
+      "avocat": "Technical answers focused on litigation and procedure.",
+      "juriste": "Operational summary, business applicability, OHADA and CEMAC.",
+      "etudiant": "Pedagogical explanations, defined vocabulary, systemic landmarks."
+    }
   }
 }
