@@ -4,6 +4,8 @@ import { IconAlertTriangle, IconArrowUp, IconRefresh } from "@tabler/icons-react
 import { useTranslations } from "next-intl";
 import { FormEvent, KeyboardEvent, useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "@/i18n/navigation";
+import { useLegalAgentSession } from "@/hooks/use-legal-agent-session";
+import { loadIndexedSources } from "@/lib/veille/indexed-sources-storage";
 
 type Role = "user" | "assistant";
 type SourceBadge = {
@@ -106,12 +108,13 @@ function ChatSourcesPanel({ sources }: { sources: SourceBadge[] }) {
 
 export default function ChatbotPanel({ welcome }: { welcome: string }) {
   const t = useTranslations("Chatbot");
+  const { sessionId, syncFromServer, rotateAfterServerClear } = useLegalAgentSession();
   const [messages, setMessages] = useState<ChatMsg[]>([{ role: "assistant", content: welcome }]);
   const [question, setQuestion] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hint, setHint] = useState<string | null>(null);
-  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [includeUploads, setIncludeUploads] = useState(false);
   const messageContainerRef = useRef<HTMLDivElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -137,30 +140,41 @@ export default function ChatbotPanel({ welcome }: { welcome: string }) {
     textarea.style.height = `${Math.min(textarea.scrollHeight, 160)}px`;
   }, [question]);
 
-  const clearConversation = useCallback(async () => {
+  useEffect(() => {
+    if (!sessionId) return;
+    setIncludeUploads(loadIndexedSources(sessionId).length > 0);
+  }, [sessionId]);
+
+  const clearConversation = useCallback(() => {
     if (loading) return;
     setError(null);
     setHint(null);
     setQuestion("");
     setMessages([{ role: "assistant", content: welcome }]);
+  }, [loading, welcome]);
 
-    if (!sessionId) {
-      setSessionId(null);
-      return;
+  const resetSessionAndIndexed = useCallback(async () => {
+    if (loading) return;
+    if (typeof window !== "undefined" && !window.confirm(t("resetSessionConfirm"))) return;
+    const sid = sessionId;
+    if (sid) {
+      try {
+        await fetch("/api/session/clear", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ session_id: sid }),
+        });
+      } catch {
+        /* continue local rotation */
+      }
     }
-
-    try {
-      await fetch("/api/session/clear", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ session_id: sessionId }),
-      });
-    } catch {
-      /* reset local state even if server clear fails */
-    } finally {
-      setSessionId(null);
-    }
-  }, [loading, sessionId, welcome]);
+    rotateAfterServerClear();
+    setIncludeUploads(false);
+    setError(null);
+    setHint(null);
+    setQuestion("");
+    setMessages([{ role: "assistant", content: welcome }]);
+  }, [loading, rotateAfterServerClear, sessionId, t, welcome]);
 
   async function handleSubmit(event?: FormEvent<HTMLFormElement>) {
     event?.preventDefault();
@@ -191,6 +205,7 @@ export default function ChatbotPanel({ welcome }: { welcome: string }) {
           question: prompt,
           history: historyForApi,
           session_id: sessionId,
+          include_uploads: includeUploads,
         }),
         signal: controller.signal,
       }).finally(() => {
@@ -211,7 +226,7 @@ export default function ChatbotPanel({ welcome }: { welcome: string }) {
       }
 
       if (payload.session_id) {
-        setSessionId(payload.session_id);
+        syncFromServer(payload.session_id);
       }
       setMessages((prev) => [
         ...prev,
@@ -263,15 +278,25 @@ export default function ChatbotPanel({ welcome }: { welcome: string }) {
             </p>
           </div>
         </div>
-        <button
-          type="button"
-          onClick={() => void clearConversation()}
-          disabled={loading}
-          className="flex touch-manipulation items-center gap-1 self-start rounded-md border border-white/10 px-2 py-1.5 text-[10px] text-white/70 hover:border-lg-gold/30 hover:text-white disabled:opacity-40 sm:self-auto sm:text-[11px]"
-        >
-          <IconRefresh size={14} className="shrink-0" />
-          <span className="whitespace-nowrap">{t("newChat")}</span>
-        </button>
+        <div className="flex shrink-0 flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
+          <button
+            type="button"
+            onClick={() => void resetSessionAndIndexed()}
+            disabled={loading}
+            className="self-start rounded-md border border-amber-500/30 px-2 py-1.5 text-[10px] text-amber-200/90 hover:border-amber-400/50 disabled:opacity-40 sm:self-auto sm:text-[11px]"
+          >
+            {t("resetSessionFull")}
+          </button>
+          <button
+            type="button"
+            onClick={() => clearConversation()}
+            disabled={loading}
+            className="flex touch-manipulation items-center gap-1 self-start rounded-md border border-white/10 px-2 py-1.5 text-[10px] text-white/70 hover:border-lg-gold/30 hover:text-white disabled:opacity-40 sm:self-auto sm:text-[11px]"
+          >
+            <IconRefresh size={14} className="shrink-0" />
+            <span className="whitespace-nowrap">{t("newChat")}</span>
+          </button>
+        </div>
       </header>
 
       <div
@@ -391,6 +416,20 @@ export default function ChatbotPanel({ welcome }: { welcome: string }) {
               {error}
             </div>
           ) : null}
+
+          <label className="flex cursor-pointer items-start gap-2.5 rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-[11px] text-white/70">
+            <input
+              type="checkbox"
+              className="mt-0.5 accent-lg-gold"
+              checked={includeUploads}
+              onChange={(e) => setIncludeUploads(e.target.checked)}
+              disabled={loading}
+            />
+            <span>
+              <span className="font-medium text-white/85">{t("includeUploads")}</span>
+              <span className="mt-0.5 block text-[10px] font-light text-white/45">{t("includeUploadsHint")}</span>
+            </span>
+          </label>
 
           <div className="flex flex-col gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 focus-within:border-lg-gold/25 sm:px-3.5">
             <textarea

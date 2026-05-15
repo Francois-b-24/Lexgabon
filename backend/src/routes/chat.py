@@ -1,4 +1,4 @@
-"""Routes /api/chat, /api/chat/stream, /api/session/clear, /api/upload-pdf."""
+"""Routes /api/chat, /api/chat/stream, /api/session/clear, /api/upload-pdf, /api/ingest-url."""
 from __future__ import annotations
 
 import asyncio
@@ -9,8 +9,22 @@ from typing import Any, AsyncIterator
 from fastapi import APIRouter, File, Form, Request, UploadFile
 from fastapi.responses import JSONResponse, StreamingResponse
 
-from src.agent.prompts import answer_has_citation, answer_has_disclaimer, build_user_message, collect_server_warnings
-from src.agent.schemas import ChatRequest, ChatResponse, Quality, SessionClearRequest, SourceItem, StructuredCitation
+from src.agent.prompts import (
+    answer_has_citation,
+    answer_has_disclaimer,
+    append_indexed_source_lines_if_needed,
+    build_user_message,
+    collect_server_warnings,
+)
+from src.agent.schemas import (
+    ChatRequest,
+    ChatResponse,
+    IngestUrlRequest,
+    Quality,
+    SessionClearRequest,
+    SourceItem,
+    StructuredCitation,
+)
 from src.config import get_settings
 from src.rate_limit import check_rate_limit_chat
 from src.session_store import get_session_store, new_session_id
@@ -135,20 +149,21 @@ async def api_chat(request: Request, body: ChatRequest):
         logger.exception("agent failed")
         return JSONResponse({"detail": str(e)}, status_code=502)
 
+    out_text = append_indexed_source_lines_if_needed(out.text, out.sources)
     sources = [_source_item_from_row(src) for src in out.sources[:20]]
-    quality = Quality(has_citation=answer_has_citation(out.text), has_disclaimer=answer_has_disclaimer(out.text))
-    warnings = collect_server_warnings(out.text, out.sources)
+    quality = Quality(has_citation=answer_has_citation(out_text), has_disclaimer=answer_has_disclaimer(out_text))
+    warnings = collect_server_warnings(out_text, out.sources)
     citations: list[StructuredCitation] | None = None
     if s.rag_structured_citations:
         citations = _build_citations(out.sources)
 
     clean = [{"role": m["role"], "content": m["content"]} for m in hist]
-    clean.append({"role": "assistant", "content": out.text})
+    clean.append({"role": "assistant", "content": out_text})
     max_m = get_settings().session_max_messages
     store.set_history(sid, clean[-max_m:])
 
     return ChatResponse(
-        answer=out.text,
+        answer=out_text,
         sources=sources,
         quality=quality,
         session_id=sid,
@@ -200,6 +215,36 @@ async def api_upload_pdf(
     except Exception as e:
         logger.exception("upload pdf failed")
         return JSONResponse({"detail": str(e)}, status_code=400)
+    return {"ok": True, "chunks": n}
+
+
+@router.post("/api/ingest-url")
+async def api_ingest_url(request: Request, body: IngestUrlRequest):
+    """Télécharge une URL allowlistée, extrait le texte et indexe dans Chroma uploads_session."""
+    ip = _client_ip(request)
+    if not check_rate_limit_chat(ip):
+        return JSONResponse({"detail": "rate_limited"}, status_code=429)
+    sid = body.session_id.strip()
+    if not sid:
+        return JSONResponse({"detail": "session_id requis"}, status_code=400)
+    url = (body.url or "").strip()
+    if not url:
+        return JSONResponse({"detail": "url requise"}, status_code=400)
+
+    from src.rag import uploads_store
+    from src.rag.url_fetch import fetch_text_from_url
+
+    def work() -> int:
+        plain, title = fetch_text_from_url(url)
+        return uploads_store.add_url_index_chunks(sid, url, title, plain)
+
+    try:
+        n = await asyncio.to_thread(work)
+    except ValueError as e:
+        return JSONResponse({"detail": str(e)}, status_code=400)
+    except Exception as e:
+        logger.exception("ingest url failed")
+        return JSONResponse({"detail": str(e)}, status_code=502)
     return {"ok": True, "chunks": n}
 
 
@@ -269,7 +314,7 @@ async def api_chat_stream(request: Request, body: ChatRequest):
             if not ans:
                 yield f"data: {json.dumps({'type': 'error', 'detail': 'empty_response'})}\n\n".encode()
                 return
-            text = ans.text
+            text = append_indexed_source_lines_if_needed(ans.text, ans.sources)
             sources = [_source_item_from_row(src).model_dump() for src in ans.sources[:20]]
             quality = {
                 "has_citation": answer_has_citation(text),

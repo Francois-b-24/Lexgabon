@@ -178,15 +178,18 @@ def search_expanded(
     k: int | None = None,
     *,
     domaine: str | None = None,
+    citation_intent: bool = False,
 ) -> list[dict[str, Any]]:
     """Plusieurs requêtes (question + variante domaine) fusionnées par id, score max conservé."""
     from src.agent.prompts import rag_search_query_variants
 
-    k = k or get_settings().rag_top_k
+    s = get_settings()
+    base_k = k or s.rag_top_k
+    k_eff = min(16, max(base_k, int(base_k * 1.75) + 2)) if citation_intent else base_k
     variants = rag_search_query_variants(query, domaine)
     by_id: dict[str, dict[str, Any]] = {}
     for v in variants:
-        rows = search_main(v, k)
+        rows = search_main(v, k_eff)
         for r in rows:
             rid = str(r.get("id") or "")
             if not rid:
@@ -196,8 +199,8 @@ def search_expanded(
             if prev is None or sc > float(prev.get("score", 0)):
                 by_id[rid] = dict(r)
     merged = sorted(by_id.values(), key=lambda x: float(x.get("score", 0)), reverse=True)
-    merged = merged[:k]
-    return _maybe_rerank_overlap(merged, query, k)
+    merged = merged[:k_eff]
+    return _maybe_rerank_overlap(merged, query, k_eff)
 
 
 def search(
@@ -207,12 +210,14 @@ def search(
     session_id: str | None = None,
     include_uploads: bool = False,
     domaine: str | None = None,
+    citation_intent: bool = False,
 ) -> list[dict[str, Any]]:
     """Recherche principale ; fusionne les chunks PDF de session si demandé."""
     s = get_settings()
-    k = k or s.rag_top_k
-    main = search_expanded(query, k, domaine=domaine)
+    k_base = k or s.rag_top_k
+    k_eff = min(16, max(k_base, int(k_base * 1.75) + 2)) if citation_intent else k_base
+    main = search_expanded(query, k, domaine=domaine, citation_intent=citation_intent)
     if not include_uploads or not session_id:
         return main
-    up = uploads_store.search_session_uploads(session_id, query, min(k, 8))
-    return merge_search_results(main, up, k, query)
+    up = uploads_store.search_session_uploads(session_id, query, min(k_eff, 8))
+    return merge_search_results(main, up, k_eff, query)

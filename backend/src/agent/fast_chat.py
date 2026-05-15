@@ -8,6 +8,7 @@ from src.agent import llm
 from src.agent.prompts import (
     SYSTEM_PROMPT_FAST,
     build_user_message,
+    question_seeks_citations,
     strip_markdown_heuristic,
 )
 from src.rag import retriever
@@ -63,11 +64,13 @@ def run_fast_chat(
     include_uploads: bool,
 ) -> AgentAnswer:
     """Récupère top-k Chroma puis un seul `create_text_only` (pas d'outils)."""
+    cite_intent = question_seeks_citations(question.strip())
     rows = retriever.search(
         question.strip(),
         session_id=session_id,
         include_uploads=include_uploads,
         domaine=domaine,
+        citation_intent=cite_intent,
     )
     rag_block = _format_rag_block(rows)
 
@@ -111,11 +114,13 @@ def stream_fast_tokens(
     holder: dict[str, Any],
 ):
     """Itère les deltas texte après RAG synchrone (holder reçoit l'AgentAnswer final)."""
+    cite_intent = question_seeks_citations(question.strip())
     rows = retriever.search(
         question.strip(),
         session_id=session_id,
         include_uploads=include_uploads,
         domaine=domaine,
+        citation_intent=cite_intent,
     )
     rag_block = _format_rag_block(rows)
     messages_anthropic = _anthropic_messages_from_history(hist)

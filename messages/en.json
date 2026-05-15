@@ -84,7 +84,26 @@
     "favoritesOnly": "Bookmarks only",
     "filterBySource": "Filter by source",
     "noResults": "No entries match these filters.",
-    "pagination": "Page"
+    "pagination": "Page",
+    "mySourcesTitle": "My indexed sources (this session)",
+    "mySourcesIntro": "Upload a PDF or enter an HTTPS URL on an allowed domain (Official Gazette, OHADA, BEAC, CEMAC). Text is chunked and indexed for Ama'IA when “include my indexed documents” is enabled in the chat.",
+    "mySourcesAllowlistHint": "Only domains listed in the project’s official configuration are accepted — no other sites, for security reasons (SSRF).",
+    "mySourcesEmpty": "No sources added yet.",
+    "uploadPdfLabel": "Add a PDF",
+    "urlPlaceholder": "https://journal-officiel.ga/…",
+    "indexUrl": "Index URL",
+    "indexing": "Indexing…",
+    "chunksIndexed": "{count} chunk(s) indexed.",
+    "uploadError": "Upload failed.",
+    "uploadNotPdf": "Please choose a PDF file.",
+    "urlError": "Indexing from URL failed.",
+    "removeSource": "Remove from local list",
+    "resetSession": "Reset session and index",
+    "resetSessionConfirm": "Clear server-side chat history, indexed documents for this session, and the local list on this device?",
+    "sessionResetDone": "Session reset.",
+    "kindPdf": "PDF",
+    "kindUrl": "Web",
+    "openIndexedUrl": "Open URL"
   },
   "Chatbot": {
     "title": "Ama'IA",
@@ -120,7 +139,11 @@
     "noAnswer": "No answer was returned by the server.",
     "qualityPrudence": "Caution: some elements are not fully supported by citations or a complete disclaimer. Verify sensitive points with a qualified professional.",
     "sourcesCount": "{count} source(s) returned by the server.",
-    "textareaHint": "Enter to send, Shift+Enter for a new line."
+    "textareaHint": "Enter to send, Shift+Enter for a new line.",
+    "includeUploads": "Include my indexed documents (Veille) in reply context",
+    "includeUploadsHint": "If you just indexed a PDF or URL on the Veille page, keep this checked so the server merges those excerpts with the LexGabon index.",
+    "resetSessionFull": "Reset session and index",
+    "resetSessionConfirm": "Delete server-side conversation history, indexed documents for this session, and the local list on this device? This cannot be undone for this session."
   },
   "Textes": {
     "downloadPdf": "Download official PDF",

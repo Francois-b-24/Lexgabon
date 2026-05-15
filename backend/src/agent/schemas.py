@@ -21,6 +21,11 @@ class SessionClearRequest(BaseModel):
     session_id: str
 
 
+class IngestUrlRequest(BaseModel):
+    session_id: str = Field(..., min_length=4, max_length=200)
+    url: str = Field(..., min_length=12, max_length=2048)
+
+
 class SourceItem(BaseModel):
     citation: str
     text: str

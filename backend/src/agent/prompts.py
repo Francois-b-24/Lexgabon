@@ -43,6 +43,34 @@ def rag_search_query_variants(question: str, domaine: str | None) -> list[str]:
     return out
 
 
+def question_seeks_citations(question: str) -> bool:
+    """Heuristique : l'utilisateur demande explicitement des citations, articles ou textes applicables."""
+    q = (question or "").lower()
+    needles = (
+        "citation",
+        "citations",
+        "citer",
+        "citez",
+        "articles applicables",
+        "article applicable",
+        "quel article",
+        "quels articles",
+        "texte applicable",
+        "textes applicables",
+        "fondement juridique",
+        "fondements juridiques",
+        "base légale",
+        "références juridiques",
+        "référence juridique",
+        "dispositions applicables",
+        "disposition applicable",
+        "norme applicable",
+        "sur quel texte",
+        "sur quels textes",
+    )
+    return any(n in q for n in needles)
+
+
 def build_user_message(question: str, domaine: str | None) -> str:
     parts: list[str] = []
     if domaine and domaine in DOMAINES:
@@ -73,6 +101,7 @@ Tu disposes d'outils (recherche juridique, lecture d'article, calculs indicatifs
 Citations :
 - Tout emprunt à un extrait d'outil ou de recherche : format exact [Source : …] (avec un espace avant les deux-points : « Source : »). Tu peux aussi utiliser la variante sans espace [Source: …] si nécessaire.
 - Les numéros d'actes, d'articles ou dates précises ne peuvent provenir que des sorties d'outils ou d'un texte fiable fourni ; ne les invente pas. Quand un extrait porte un article identifié, cite-le dans [Source : …] de façon explicite (ex. « … — article 12 »).
+- Si la question demande explicitement des citations, des articles applicables ou des références : priorise la partie « En lien avec la base indexée » ; liste les passages indexés utiles avec chaque fois une ligne [Source : …] complète (y compris numéro d'article si l'outil l'indique). Sans extrait indexé, réponds sur le fond puis « Sources indexées » comme d'habitude.
 
 Forme de la réponse finale :
 - Réponds en texte brut uniquement : **n'utilise pas** de markdown (pas de #, pas de **, pas de listes à tirets markdown, pas de blocs de code).
@@ -92,6 +121,7 @@ Méthode (une seule réponse, ordre obligatoire) :
 1) Commence par une réponse structurée, concise si la question le permet, fondée sur tes connaissances du droit gabonais et des normes régionales habituellement applicables au Gabon (OHADA, CEMAC, etc.). Tu dois toujours faire cet effort d'analyse : ne te limite ni à paraphraser l'index ni à annoncer l'absence de documents. Ne fabrique pas de numéros d'actes, d'articles ni de dates précises si tu ne les tiens pas des extraits ci-dessous.
 2) Si des extraits pertinents sont fournis sous le séparateur, ajoute ensuite une partie distincte (par ex. « En lien avec la base indexée : ») qui les intègre. Chaque affirmation issue d'un extrait utilisé doit comporter au moins une citation au format exact [Source : …] en reprenant la référence affichée pour l'extrait. Si la ligne d'en-tête sous la citation indique « Article / disposition : … », recopie ce numéro dans [Source : …] (obligatoire : ne pas paraphraser sans le numéro).
 3) Si aucun extrait n'est fourni ou s'ils ne sont pas utiles : après ta réponse de fond, ajoute un court paragraphe intitulé ou introduit par « Sources indexées » qui explique pourquoi l'index LexGabon n'apporte pas de passage à citer (corpus limité, thème non couvert, extrait non pertinent, etc.). Ne commence pas ta réponse par ce seul constat d'absence.
+4) Si la question porte expressément sur des citations, articles applicables ou références juridiques : mets l'accent sur la partie indexée lorsque des extraits sont présents ; chaque article ou passage invoqué doit être relié à une ligne [Source : …] reprenant la citation de l'extrait (et le numéro d'article s'il figure dans l'en-tête).
 
 Rôle :
 - Tu t'exprimes en français, de façon claire ; tu peux aller au niveau de précision attendu par un juriste lorsque la question l'exige.
@@ -114,8 +144,32 @@ def answer_has_disclaimer(answer: str) -> bool:
 
 
 def answer_has_citation(answer: str) -> bool:
-    low = answer.lower()
-    return "[source :" in low or "[source:" in low
+    if not (answer or "").strip():
+        return False
+    return bool(re.search(r"\[\s*source\s*:", answer, re.IGNORECASE))
+
+
+def append_indexed_source_lines_if_needed(answer: str, sources: list) -> str:
+    """Si des sources indexées existent mais aucun marqueur [Source : …], ajoute des lignes de citation."""
+    if not answer or not sources:
+        return answer
+    if answer_has_citation(answer):
+        return answer
+    lines: list[str] = []
+    seen: set[str] = set()
+    for s in sources[:6]:
+        if not isinstance(s, dict):
+            continue
+        c = str(s.get("citation") or "").strip()
+        if not c or c in seen:
+            continue
+        seen.add(c)
+        if len(c) > 500:
+            c = c[:499] + "…"
+        lines.append(f"[Source : {c}]")
+    if not lines:
+        return answer
+    return answer.rstrip() + "\n\nRéférences indexées (extraits LexGabon) :\n" + "\n".join(lines)
 
 
 def strip_markdown_heuristic(text: str) -> str:

@@ -1,6 +1,7 @@
 """Stockage Chroma des extraits PDF téléversés par session (CDC)."""
 from __future__ import annotations
 
+import hashlib
 import logging
 import uuid
 from typing import Any
@@ -47,6 +48,44 @@ def add_pdf_chunks(session_id: str, filename: str, data: bytes) -> int:
             "session_id": session_id,
             "source_filename": filename,
             "citation": f"Téléversement — {filename}",
+        }
+        for _ in chunks
+    ]
+    col.add(ids=ids, documents=chunks, metadatas=metadatas)
+    return len(chunks)
+
+
+def _fetch_source_key_for_url(session_id: str, url: str) -> str:
+    h = hashlib.sha256(url.encode("utf-8")).hexdigest()[:16]
+    return f"url:{session_id}:{h}"
+
+
+def delete_chunks_by_fetch_source_id(fetch_source_id: str) -> None:
+    try:
+        col = _get_upload_collection()
+        col.delete(where={"fetch_source_id": fetch_source_id})
+    except Exception as e:
+        logger.warning("delete_chunks_by_fetch_source_id failed: %s", e)
+
+
+def add_url_index_chunks(session_id: str, url: str, title: str, plain_text: str) -> int:
+    """Indexe le texte d'une URL allowlistée dans la collection uploads (remplace un précédent même URL)."""
+    chunks = chunk_text(plain_text)
+    if not chunks:
+        return 0
+    fetch_key = _fetch_source_key_for_url(session_id, url)
+    delete_chunks_by_fetch_source_id(fetch_key)
+    col = _get_upload_collection()
+    base = f"{session_id}:url:{uuid.uuid4().hex}"
+    ids = [f"{base}:{i}" for i in range(len(chunks))]
+    cit = f"{title} — {url}" if title else url
+    metadatas = [
+        {
+            "session_id": session_id,
+            "source_filename": title[:500] or url[:500],
+            "citation": cit[:4000],
+            "url": url[:4000],
+            "fetch_source_id": fetch_key,
         }
         for _ in chunks
     ]

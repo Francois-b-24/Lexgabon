@@ -84,7 +84,26 @@
     "favoritesOnly": "Favoris uniquement",
     "filterBySource": "Filtrer par source",
     "noResults": "Aucune entrée ne correspond à ces filtres.",
-    "pagination": "Page"
+    "pagination": "Page",
+    "mySourcesTitle": "Mes sources indexées (cette session)",
+    "mySourcesIntro": "Téléversez un PDF ou indiquez une URL HTTPS vers un domaine autorisé (Journal officiel, OHADA, BEAC, CEMAC). Le texte est découpé et indexé pour le chatbot Ama'IA lorsque l'option « inclure mes documents » est activée.",
+    "mySourcesAllowlistHint": "Seuls les domaines listés dans la configuration officielle du projet sont acceptés — pas d'autres sites, pour des raisons de sécurité (SSRF).",
+    "mySourcesEmpty": "Aucune source ajoutée pour l'instant.",
+    "uploadPdfLabel": "Ajouter un PDF",
+    "urlPlaceholder": "https://journal-officiel.ga/…",
+    "indexUrl": "Indexer l'URL",
+    "indexing": "Indexation…",
+    "chunksIndexed": "{count} extrait(s) indexé(s).",
+    "uploadError": "Échec du téléversement.",
+    "uploadNotPdf": "Veuillez choisir un fichier PDF.",
+    "urlError": "Échec de l'indexation depuis l'URL.",
+    "removeSource": "Retirer de la liste locale",
+    "resetSession": "Réinitialiser la session et l'index",
+    "resetSessionConfirm": "Effacer l'historique serveur, les documents indexés pour cette session et la liste locale ?",
+    "sessionResetDone": "Session réinitialisée.",
+    "kindPdf": "PDF",
+    "kindUrl": "Web",
+    "openIndexedUrl": "Ouvrir l'URL"
   },
   "Chatbot": {
     "title": "Ama'IA",
@@ -120,7 +139,11 @@
     "noAnswer": "Aucune réponse reçue du serveur.",
     "qualityPrudence": "Réponse de prudence : certains éléments ne sont pas appuyés par des citations ou un avertissement complet. Vérifiez les points sensibles avec un professionnel.",
     "sourcesCount": "{count} source(s) renvoyée(s) par le serveur.",
-    "textareaHint": "Entrée pour envoyer, Maj+Entrée pour un saut de ligne."
+    "textareaHint": "Entrée pour envoyer, Maj+Entrée pour un saut de ligne.",
+    "includeUploads": "Inclure mes documents indexés (Veille) dans le contexte des réponses",
+    "includeUploadsHint": "Si vous venez d'indexer un PDF ou une URL sur la page Veille, cochez cette case (ou laissez-la cochée) pour que le serveur fusionne ces extraits avec la base LexGabon.",
+    "resetSessionFull": "Réinitialiser session et index",
+    "resetSessionConfirm": "Supprimer l'historique de conversation côté serveur, les documents indexés pour cette session et la liste locale sur cet appareil ? Cette action est irréversible pour cette session."
   },
   "Textes": {
     "downloadPdf": "Télécharger le PDF officiel",

@@ -38,6 +38,11 @@ class Settings(BaseSettings):
 
     rag_structured_citations: bool = False
 
+    # Allowlist domaines pour POST /api/ingest-url (même fichier que fetch_official_sources.py).
+    corpus_sources_yaml: str = "./corpus/sources.yaml"
+    ingest_url_max_bytes: int = 15_000_000
+    ingest_url_timeout_seconds: float = 45.0
+
     # Mode CDC complet (multi-tours + outils) : plus lent ; désactivé par défaut en prod.
     use_full_agent_chat: bool = False
 
