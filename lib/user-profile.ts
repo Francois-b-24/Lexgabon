@@ -10,6 +10,7 @@ export const USER_PROFILES: readonly UserProfile[] = ["avocat", "juriste", "etud
 const COOKIE_NAME = "lg_profile";
 const LOCAL_STORAGE_KEY = "lexgabon:user-profile";
 const COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 365; // 1 an
+export const PROFILE_CHANGE_EVENT = "lexgabon:profile-change";
 
 function isUserProfile(v: unknown): v is UserProfile {
   return typeof v === "string" && (USER_PROFILES as readonly string[]).includes(v);
@@ -57,5 +58,13 @@ export function writeProfileClient(profile: UserProfile | null): void {
     document.cookie = `${COOKIE_NAME}=${encodeURIComponent(profile)}; Max-Age=${COOKIE_MAX_AGE_SECONDS}; Path=/; SameSite=Lax`;
   } else {
     document.cookie = `${COOKIE_NAME}=; Max-Age=0; Path=/; SameSite=Lax`;
+  }
+  // Notifie toutes les instances de useUserProfile() montées dans la page,
+  // sans quoi un changement dans le ProfileSwitcher ne se propage pas aux
+  // autres composants (chaque hook a son propre useState local).
+  try {
+    window.dispatchEvent(new CustomEvent(PROFILE_CHANGE_EVENT, { detail: profile }));
+  } catch {
+    /* env sans CustomEvent : tant pis, le prochain montage relira la valeur */
   }
 }
