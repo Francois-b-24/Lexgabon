@@ -5,7 +5,7 @@
  * Sert au bouton « Copier la citation normalisée » sur chaque article.
  */
 import { describe, expect, it } from "vitest";
-import { buildArticleCitation } from "@/components/textes/texte-actions";
+import { buildArticleCitation } from "@/lib/article-citation";
 
 describe("buildArticleCitation", () => {
   it("compose le format standard avec référence", () => {

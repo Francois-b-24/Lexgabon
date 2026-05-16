@@ -148,18 +148,6 @@ export function ArticleCitationButton({
   );
 }
 
-/**
- * Construit la chaîne normalisée pour la citation d'un article.
- * Forme cible : « Art. 12 du Code du travail (Loi n° 022/2021 du 19 novembre 2021) ».
- */
-export function buildArticleCitation(
-  articleNumero: string,
-  texteTitre: string,
-  reference: string | null,
-): string {
-  const codeName = texteTitre.replace(/\s*\(.*?\)\s*$/, "").trim();
-  const base = `Art. ${articleNumero} du ${codeName}`;
-  if (!reference) return base;
-  if (base.includes(reference)) return base;
-  return `${base} (${reference})`;
-}
+// `buildArticleCitation` vit dans `lib/article-citation.ts`. Ne pas re-exporter ici :
+// un re-export depuis un fichier "use client" reste « client » côté Next, donc
+// inutilisable depuis un server component (renvoie un proxy `undefined` au runtime).

@@ -10,8 +10,8 @@ import {
   TexteActions,
   ArticleAnchorButton,
   ArticleCitationButton,
-  buildArticleCitation,
 } from "@/components/textes/texte-actions";
+import { buildArticleCitation } from "@/lib/article-citation";
 
 type RouteParams = { locale: string; source: string; slug: string };
 
