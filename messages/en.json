@@ -283,6 +283,8 @@
     },
     "lastSyncLabel": "Last sync",
     "lastUpdatedLabel": "Index last updated",
+    "corpusVolume": "{chunks, number} indexed chunks · {articles, number} distinct articles",
+    "statsUnavailable": "(stats unavailable, reference data shown)",
     "contactTitle": "Something to report?",
     "contactBody": "If you spot an error in a text, a missing reference or a source we should add, write to the ALIN team — we promptly correct documented inaccuracies and publish the sources you flag when they fall within scope."
   },

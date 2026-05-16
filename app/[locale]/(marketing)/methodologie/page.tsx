@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { setRequestLocale, getTranslations } from "next-intl/server";
 import { IconExternalLink } from "@tabler/icons-react";
-import { CORPUS_LAST_UPDATED, CORPUS_SOURCES } from "@/lib/methodologie-data";
+import { getCorpusStatus } from "@/lib/corpus-status";
 import { getSiteUrl as siteUrl } from "@/lib/seo";
 
 type RouteParams = { locale: string };
@@ -41,6 +41,9 @@ export default async function MethodologiePage({
   const verificationItems = t.raw("verificationItems") as string[];
   const engagementsItems = t.raw("engagementsItems") as string[];
 
+  // D6 : stats live depuis le backend (revalidate 1h côté Next).
+  const corpus = await getCorpusStatus();
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "AboutPage",
@@ -53,7 +56,7 @@ export default async function MethodologiePage({
       name: "LexGabon",
       url: siteUrl(),
     },
-    dateModified: CORPUS_LAST_UPDATED,
+    dateModified: corpus.lastUpdated,
   };
 
   return (
@@ -111,9 +114,20 @@ export default async function MethodologiePage({
           <p className="mt-3 text-[14px] leading-relaxed text-lg-ink-mute">{t("frequencyBody")}</p>
           <p className="mt-3 text-[12px] text-lg-ink-mute/70">
             {t("lastUpdatedLabel")} :{" "}
-            <time dateTime={CORPUS_LAST_UPDATED} className="font-medium text-lg-ink">
-              {CORPUS_LAST_UPDATED}
+            <time dateTime={corpus.lastUpdated} className="font-medium text-lg-ink">
+              {corpus.lastUpdated}
             </time>
+            {corpus.totalChunks > 0 ? (
+              <span className="ml-2 text-lg-ink-mute/60">
+                · {t("corpusVolume", {
+                  chunks: corpus.totalChunks,
+                  articles: corpus.articlesDistincts,
+                })}
+              </span>
+            ) : null}
+            {corpus.degraded ? (
+              <span className="ml-2 italic text-amber-700/80">{t("statsUnavailable")}</span>
+            ) : null}
           </p>
         </section>
 
@@ -145,7 +159,7 @@ export default async function MethodologiePage({
             {t("sourcesIntro")}
           </p>
           <ul className="mt-5 space-y-4">
-            {CORPUS_SOURCES.map((source) => (
+            {corpus.sources.map((source) => (
               <li
                 key={source.dbCode}
                 className="rounded-lg border border-lg-ink/10 bg-white p-4 shadow-sm"
