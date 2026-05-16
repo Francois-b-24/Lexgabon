@@ -300,6 +300,8 @@
       "avocat": "Technical answers focused on litigation and procedure.",
       "juriste": "Operational summary, business applicability, OHADA and CEMAC.",
       "etudiant": "Pedagogical explanations, defined vocabulary, systemic landmarks."
-    }
+    },
+    "ariaWithProfile": "Change user profile (current: {profile})",
+    "ariaWithoutProfile": "Choose a user profile"
   }
 }

@@ -10,7 +10,7 @@
 import { eq, sql } from "drizzle-orm";
 
 import { getDb } from "../lib/db";
-import { domaines, textes } from "../lib/db/schema";
+import { domaines } from "../lib/db/schema";
 
 const DOMAINES_REFERENCE = [
   { code: "civil", libelleFr: "Droit civil", libelleEn: "Civil law" },

@@ -53,31 +53,31 @@ export function SiteHeader() {
         open && "shadow-lg shadow-black/20",
       )}
     >
-      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 px-3 py-3 sm:px-6 md:px-9 md:py-4">
-        <Link href="/" className="min-w-0 shrink-0">
+      <div className="flex min-w-0 items-center gap-2 px-3 py-3 sm:gap-3 sm:px-6 md:gap-6 md:px-9 md:py-4">
+        <Link href="/" className="min-w-0 flex-shrink overflow-hidden">
           <Logo tagline={t("tagline")} />
         </Link>
 
-        <div className="flex items-center gap-3 sm:gap-4 md:gap-6">
-          <div className="hidden max-w-full items-center gap-3 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] md:flex md:gap-6 [&::-webkit-scrollbar]:hidden">
-            {items.map((item) => (
-              <Link key={item.href} href={item.href} className={linkClass}>
-                {item.label}
-              </Link>
-            ))}
-          </div>
+        <div className="ml-auto hidden min-w-0 max-w-full items-center gap-3 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] md:flex md:gap-6 [&::-webkit-scrollbar]:hidden">
+          {items.map((item) => (
+            <Link key={item.href} href={item.href} className={linkClass}>
+              {item.label}
+            </Link>
+          ))}
+        </div>
 
+        <div className="ml-auto flex shrink-0 items-center gap-2 md:ml-0 md:gap-3">
           <ProfileSwitcher />
 
           <button
             type="button"
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md border border-white/15 text-white/80 transition-colors hover:border-lg-gold-soft/50 hover:text-lg-gold-soft focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lg-gold-soft md:hidden"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-white/15 text-white/80 transition-colors hover:border-lg-gold-soft/50 hover:text-lg-gold-soft focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lg-gold-soft md:hidden"
             aria-expanded={open}
             aria-controls="site-nav-mobile-menu"
             onClick={() => setOpen((o) => !o)}
           >
             <span className="sr-only">{open ? n("menuClose") : n("menuOpen")}</span>
-            {open ? <IconX size={22} stroke={1.5} aria-hidden /> : <IconMenu2 size={22} stroke={1.5} aria-hidden />}
+            {open ? <IconX size={20} stroke={1.5} aria-hidden /> : <IconMenu2 size={20} stroke={1.5} aria-hidden />}
           </button>
         </div>
       </div>

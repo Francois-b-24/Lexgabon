@@ -300,6 +300,8 @@
       "avocat": "Réponses techniques et rigoureuses, axées contentieux et procédure.",
       "juriste": "Synthèse opérationnelle, applicabilité business, OHADA et CEMAC.",
       "etudiant": "Explications pédagogiques, vocabulaire défini, repères systémiques."
-    }
+    },
+    "ariaWithProfile": "Changer de profil utilisateur (actuel : {profile})",
+    "ariaWithoutProfile": "Choisir un profil utilisateur"
   }
 }
