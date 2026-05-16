@@ -130,37 +130,36 @@ export const AMAIA_SUGGESTIONS: readonly AmaiaSuggestion[] = [
 ];
 
 const SUGGESTIONS_MAX = 9;
-const SUGGESTIONS_MIN_VISIBLE = 6;
 
 /**
- * Retourne 6 à 9 suggestions pertinentes pour le profil donné.
- * - Si le profil est défini : priorité aux suggestions qui le ciblent explicitement, puis
- *   complète avec les suggestions « tous profils » jusqu'à atteindre SUGGESTIONS_MIN_VISIBLE.
- * - Si pas de profil : on prend les suggestions « tous profils » (profils=[]) en priorité.
+ * Retourne les suggestions pertinentes pour le profil donné.
+ *
+ * - Profil défini : on **ne mélange jamais** avec les suggestions ciblant d'autres
+ *   profils. On affiche `targeted ∪ generic` (où `generic` = suggestions tous-profils,
+ *   `profils=[]`). Conséquence : changer de profil **change** la liste.
+ * - Profil null : on affiche les génériques en premier, puis on complète avec
+ *   l'ensemble (sans tri par profil — l'utilisateur n'a pas encore donné de signal).
+ *
+ * Plafond commun : SUGGESTIONS_MAX (9). Pas de plancher : si un profil n'a que
+ * 3 suggestions ciblées + 2 génériques, on affiche 5 cartes — c'est volontaire.
  */
 export function getSuggestionsForProfile(
   profile: UserProfile | null,
 ): AmaiaSuggestion[] {
   const all = AMAIA_SUGGESTIONS;
-  const targeted = profile ? all.filter((s) => s.profils.includes(profile)) : [];
   const generic = all.filter((s) => s.profils.length === 0);
+
+  const ordered: AmaiaSuggestion[] = profile
+    ? [...all.filter((s) => s.profils.includes(profile)), ...generic]
+    : [...generic, ...all.filter((s) => s.profils.length > 0)];
 
   const merged: AmaiaSuggestion[] = [];
   const seen = new Set<string>();
-  for (const s of [...targeted, ...generic]) {
+  for (const s of ordered) {
     if (seen.has(s.id)) continue;
     seen.add(s.id);
     merged.push(s);
     if (merged.length >= SUGGESTIONS_MAX) break;
-  }
-  if (merged.length < SUGGESTIONS_MIN_VISIBLE) {
-    // Fallback : complète avec n'importe quelles autres suggestions pour atteindre le minimum.
-    for (const s of all) {
-      if (seen.has(s.id)) continue;
-      seen.add(s.id);
-      merged.push(s);
-      if (merged.length >= SUGGESTIONS_MIN_VISIBLE) break;
-    }
   }
   return merged;
 }
