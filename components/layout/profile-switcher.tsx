@@ -109,37 +109,39 @@ export function ProfileSwitcher() {
             "right-0 top-full mt-2 w-[min(20rem,calc(100vw-1.5rem))] md:w-56",
           )}
         >
-          <p className="px-3 py-2 text-[10px] uppercase tracking-wider text-white/40">
+          <p className="whitespace-normal break-words px-3 py-2 text-[10px] uppercase tracking-wider text-white/40">
             {t("title")}
           </p>
-          <ul className="flex flex-col py-1">
+          <ul className="flex w-full min-w-0 flex-col py-1">
             {USER_PROFILES.map((p) => (
-              <li key={p}>
+              <li key={p} className="w-full min-w-0">
                 <button
                   type="button"
                   role="menuitemradio"
                   aria-checked={profile === p}
                   onClick={() => handleSelect(p)}
                   className={cn(
-                    "flex w-full flex-col items-start gap-0.5 px-3 py-2 text-left text-[12px] transition-colors hover:bg-white/[0.05]",
+                    "flex w-full min-w-0 flex-col items-start gap-0.5 px-3 py-2 text-left text-[12px] transition-colors hover:bg-white/[0.05]",
                     profile === p ? "text-lg-gold-light" : "text-white/85",
                   )}
                 >
-                  <span className="w-full font-medium leading-snug">{t(`option.${p}`)}</span>
+                  <span className="w-full whitespace-normal break-words font-medium leading-snug">
+                    {t(`option.${p}`)}
+                  </span>
                   <span className="w-full whitespace-normal break-words text-[10px] font-light leading-snug text-white/45">
                     {t(`hint.${p}`)}
                   </span>
                 </button>
               </li>
             ))}
-            <li>
+            <li className="w-full min-w-0">
               <button
                 type="button"
                 role="menuitemradio"
                 aria-checked={profile === null}
                 onClick={() => handleSelect(null)}
                 className={cn(
-                  "flex w-full items-center justify-between px-3 py-2 text-left text-[11px] italic text-white/55 transition-colors hover:bg-white/[0.05]",
+                  "flex w-full min-w-0 whitespace-normal break-words px-3 py-2 text-left text-[11px] italic text-white/55 transition-colors hover:bg-white/[0.05]",
                   profile === null && "text-lg-gold-light",
                 )}
               >

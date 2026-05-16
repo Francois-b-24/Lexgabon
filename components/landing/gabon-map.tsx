@@ -38,7 +38,16 @@ function librevilleSvg(): [number, number] {
 
 const [LIBREVILLE_CX, LIBREVILLE_CY] = librevilleSvg();
 
-export function GabonMap() {
+type GabonMapProps = {
+  /** "hero" = grande carte du flex principal ; "mini" = petite carte inline mobile. */
+  variant?: "hero" | "mini";
+  /** Allonge la durée de l'animation de tracé au mount (desktop : on veut voir le geste). */
+  slow?: boolean;
+  /** Permet d'écraser le container externe (positionnement, marge, etc.). */
+  className?: string;
+};
+
+export function GabonMap({ variant = "hero", slow = false, className }: GabonMapProps) {
   const reduce = useReducedMotion();
   const uid = useId().replace(/:/g, "");
   const filterId = `gabon-glow-${uid}`;
@@ -61,13 +70,15 @@ export function GabonMap() {
 
   useEffect(() => {
     if (reduce) return;
+    // « slow » double la durée — on veut voir le geste sur desktop, où il y a
+    // de la place. Sur la version mini mobile, on garde la version courte.
     const controls = animate(mountProgress, 1, {
-      duration: 1.6,
+      duration: slow ? 3.2 : 1.6,
       ease: [0.16, 1, 0.3, 1], // ease-out doux
       delay: 0.15, // laisse le temps au Reveal parent de fade-in
     });
     return () => controls.stop();
-  }, [mountProgress, reduce]);
+  }, [mountProgress, reduce, slow]);
 
   /** Source : max(scroll, mountProgress) pour ne jamais régresser visuellement. */
   const mergedSource = useMotionValue(reduce ? 1 : 0);
@@ -78,10 +89,14 @@ export function GabonMap() {
     mergedSource.set(Math.max(m, scrollYProgress.get()));
   });
 
-  /** Léger amortissement pour que le trait reste lisible même au scroll rapide */
+  /**
+   * Léger amortissement pour que le trait reste lisible même au scroll rapide.
+   * Quand `slow` est actif, on rabaisse stiffness pour que le spring ne « rattrape »
+   * pas l'animation de mount — sinon le trait apparaît d'un coup malgré la durée 3.2s.
+   */
   const drawProgress = useSpring(mergedSource, {
-    stiffness: reduce ? 999 : 44,
-    damping: reduce ? 90 : 18,
+    stiffness: reduce ? 999 : slow ? 22 : 44,
+    damping: reduce ? 90 : slow ? 26 : 18,
     mass: 0.72,
     restDelta: 0.001,
   });
@@ -105,10 +120,15 @@ export function GabonMap() {
     reduce ? [1, 1] : [0.82, 1, 1],
   );
 
+  const baseClassName =
+    variant === "mini"
+      ? "relative aspect-square w-[88px] sm:w-[110px] opacity-[0.94]"
+      : "relative aspect-square w-[min(300px,80vw)] opacity-[0.94] sm:w-[min(360px,70vw)] lg:w-[min(480px,58vw)]";
+
   return (
     <div
       ref={containerRef}
-      className="relative aspect-square w-[min(300px,80vw)] opacity-[0.94] sm:w-[min(360px,70vw)] lg:w-[min(480px,58vw)]"
+      className={className ? `${baseClassName} ${className}` : baseClassName}
     >
       <svg
         viewBox="0 0 900 960"

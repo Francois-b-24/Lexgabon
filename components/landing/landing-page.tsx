@@ -48,11 +48,15 @@ export async function LandingPage() {
           aria-hidden
         />
         <div className="relative z-[2] mx-auto flex max-w-6xl flex-col gap-10 lg:flex-row lg:items-start lg:justify-between">
-          <div className="order-2 max-w-[680px] flex-1 lg:order-1">
+          <div className="max-w-[680px] flex-1">
             <Reveal>
               <Eyebrow>{t("heroEyebrow")}</Eyebrow>
             </Reveal>
             <h1 className="font-landing-serif text-[clamp(42px,5.5vw,78px)] font-normal leading-[1.06] tracking-[-0.02em] text-lg-paper">
+              {/* Mini-carte mobile-only : float right pour que le titre coule autour. */}
+              <span className="float-right ml-3 mt-1 inline-block align-top lg:hidden">
+                <GabonMap variant="mini" />
+              </span>
               <Reveal delay={80}>
                 <span className="block">
                   <SplitText text={`${t("heroTitle1")} ${t("heroTitle2")}`} />
@@ -110,8 +114,8 @@ export async function LandingPage() {
               </div>
             </Reveal>
           </div>
-          <Reveal className="order-1 mx-auto shrink-0 lg:order-2 lg:mx-0 lg:block" delay={120}>
-            <GabonMap />
+          <Reveal className="hidden shrink-0 lg:block" delay={200}>
+            <GabonMap slow />
           </Reveal>
         </div>
       </section>
