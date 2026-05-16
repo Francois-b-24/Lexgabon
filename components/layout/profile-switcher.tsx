@@ -103,10 +103,10 @@ export function ProfileSwitcher() {
         <div
           role="menu"
           className={cn(
-            "absolute z-50 rounded-lg border border-white/10 bg-lg-navy-deep shadow-xl shadow-black/40",
-            // Mobile : aligné à droite du header, largeur max 18rem mais pas plus
-            // que la viewport. Desktop : ancré à droite du bouton, 14rem.
-            "right-0 top-full mt-2 w-72 max-w-[calc(100vw-1.5rem)] md:w-56",
+            "absolute z-50 overflow-hidden rounded-lg border border-white/10 bg-lg-navy-deep shadow-xl shadow-black/40",
+            // Mobile : ancré à droite du bouton, max-w-[calc(100vw-1.5rem)] empêche
+            // tout débordement même sur iPhone SE (320px). Desktop : 14rem fixe.
+            "right-0 top-full mt-2 w-[min(20rem,calc(100vw-1.5rem))] md:w-56",
           )}
         >
           <p className="px-3 py-2 text-[10px] uppercase tracking-wider text-white/40">
@@ -125,8 +125,8 @@ export function ProfileSwitcher() {
                     profile === p ? "text-lg-gold-light" : "text-white/85",
                   )}
                 >
-                  <span className="font-medium">{t(`option.${p}`)}</span>
-                  <span className="text-[10px] font-light text-white/45">
+                  <span className="w-full font-medium leading-snug">{t(`option.${p}`)}</span>
+                  <span className="w-full whitespace-normal break-words text-[10px] font-light leading-snug text-white/45">
                     {t(`hint.${p}`)}
                   </span>
                 </button>
