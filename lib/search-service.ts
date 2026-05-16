@@ -25,7 +25,7 @@ import {
   type SearchResponse,
 } from "@/lib/search-types";
 
-const MEILI_INDEX = "textes";
+const MEILI_INDEX = "articles";
 
 function getMeili() {
   const host = process.env.MEILISEARCH_HOST;
@@ -168,16 +168,22 @@ async function searchFulltext(filters: SearchFilters): Promise<SearchResponse> {
       const doc = h as Record<string, unknown>;
       const rawSource = typeof doc.source === "string" ? doc.source : "";
       const slug = isValidSourceUrlSlug(rawSource) ? rawSource : null;
+      // Le contenu Meili est le contenu complet de l'article ; on l'expose tronqué
+      // dans `resume` pour servir d'extrait dans la carte de résultat.
+      const contenu = typeof doc.contenu === "string" ? doc.contenu : "";
+      const resume = contenu ? contenu.slice(0, 280) + (contenu.length > 280 ? "…" : "") : null;
+      const articleNumero = typeof doc.articleNumero === "string" ? doc.articleNumero : null;
       return {
-        slug: String(doc.slug ?? ""),
+        slug: String(doc.texteSlug ?? ""),
         source: slug,
         sourceLabel: typeof doc.sourceLabel === "string" ? doc.sourceLabel : null,
         titre: String(doc.titre ?? ""),
-        resume: typeof doc.resume === "string" ? doc.resume : null,
+        resume,
         type: typeof doc.type === "string" ? doc.type : null,
         reference: typeof doc.reference === "string" ? doc.reference : null,
         datePublication: typeof doc.datePublication === "string" ? doc.datePublication : null,
         estEnVigueur: doc.estEnVigueur !== false,
+        articleNumero,
       };
     });
     return {
