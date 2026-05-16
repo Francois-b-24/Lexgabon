@@ -110,7 +110,7 @@ export async function LandingPage() {
               </div>
             </Reveal>
           </div>
-          <Reveal className="hidden shrink-0 lg:block" delay={200}>
+          <Reveal className="mx-auto shrink-0 lg:mx-0 lg:block" delay={200}>
             <GabonMap />
           </Reveal>
         </div>

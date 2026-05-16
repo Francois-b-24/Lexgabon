@@ -37,8 +37,9 @@ export function GabonMap() {
 
   const { scrollYProgress } = useScroll({
     target: containerRef,
-    /** Fenêtre large : le tracé évolue sur tout le passage du bloc dans le viewport */
-    offset: ["start 0.94", "end 0.06"],
+    /** Fenêtre resserrée : la séquence se joue pendant l'apparition du hero, et la carte
+     * reste « pleine » tant que l'utilisateur scrolle au-delà (cf. keyframes monotones). */
+    offset: ["start 0.85", "start 0.15"],
   });
 
   /** Hors animation scroll : progression figée à 1 (carte entièrement visible) */
@@ -54,26 +55,28 @@ export function GabonMap() {
   });
 
   const pathLength = useTransform(drawProgress, [0, 1], reduce ? [1, 1] : [0, 1]);
+  // Keyframes monotones : montée douce, plateau stable. Ne redescend plus à 0 en fin
+  // de scroll (régression visuelle corrigée — la carte ne « disparaît » plus).
   const fillOpacity = useTransform(
     drawProgress,
-    reduce ? [0, 1] : [0, 0.34, 0.52, 0.72, 1],
-    reduce ? [1, 1] : [0, 0.45, 1, 1, 0],
+    reduce ? [0, 1] : [0, 0.45, 1],
+    reduce ? [1, 1] : [0, 0.9, 1],
   );
   const dotOpacity = useTransform(
     drawProgress,
-    reduce ? [0, 1] : [0, 0.48, 0.62, 0.82, 1],
-    reduce ? [1, 1] : [0, 0, 1, 1, 0],
+    reduce ? [0, 1] : [0, 0.6, 1],
+    reduce ? [1, 1] : [0, 0, 1],
   );
   const dotScale = useTransform(
     drawProgress,
-    reduce ? [0, 1] : [0, 0.52, 0.68, 0.88, 1],
-    reduce ? [1, 1] : [0.82, 0.82, 1, 1, 0.88],
+    reduce ? [0, 1] : [0, 0.6, 1],
+    reduce ? [1, 1] : [0.82, 1, 1],
   );
 
   return (
     <div
       ref={containerRef}
-      className="relative h-[min(480px,58vw)] w-[min(480px,58vw)] opacity-[0.94]"
+      className="relative aspect-square w-[min(300px,80vw)] opacity-[0.94] sm:w-[min(360px,70vw)] lg:w-[min(480px,58vw)]"
     >
       <svg
         viewBox="0 0 900 960"
@@ -114,6 +117,23 @@ export function GabonMap() {
             transformBox: "fill-box",
           }}
         >
+          {/* Halo pulsant continu — désactivé en prefers-reduced-motion */}
+          {!reduce ? (
+            <motion.circle
+              cx={LIBREVILLE_CX}
+              cy={LIBREVILLE_CY}
+              r="11"
+              fill="rgba(196, 154, 42, 0.35)"
+              initial={{ scale: 1, opacity: 0.6 }}
+              animate={{ scale: [1, 1.8, 1], opacity: [0.6, 0, 0.6] }}
+              transition={{ duration: 2.4, repeat: Infinity, ease: "easeOut" }}
+              style={{
+                transformOrigin: `${LIBREVILLE_CX}px ${LIBREVILLE_CY}px`,
+                transformBox: "fill-box",
+              }}
+              className="pointer-events-none"
+            />
+          ) : null}
           <circle
             cx={LIBREVILLE_CX}
             cy={LIBREVILLE_CY}
