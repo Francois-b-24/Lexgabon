@@ -27,6 +27,48 @@ type BackendChatPayload = {
 };
 
 const CHAT_REQUEST_TIMEOUT_MS = 300_000;
+const CHAT_STORAGE_KEY = "lexgabon:chat-history";
+const CHAT_STORAGE_VERSION = 1;
+
+type StoredChat = {
+  v: number;
+  messages: ChatMsg[];
+};
+
+/** Charge l'historique persistant. Renvoie null si rien de valide. */
+function loadStoredMessages(): ChatMsg[] | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(CHAT_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as StoredChat;
+    if (parsed?.v !== CHAT_STORAGE_VERSION || !Array.isArray(parsed.messages)) return null;
+    // Garde-fou : au moins 2 messages (welcome + 1 user/assistant), sinon on repart à zéro.
+    if (parsed.messages.length < 2) return null;
+    return parsed.messages;
+  } catch {
+    return null;
+  }
+}
+
+function persistMessages(messages: ChatMsg[]): void {
+  if (typeof window === "undefined") return;
+  try {
+    const payload: StoredChat = { v: CHAT_STORAGE_VERSION, messages };
+    window.localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(payload));
+  } catch {
+    /* quota plein ou storage indisponible : on ignore silencieusement */
+  }
+}
+
+function clearStoredMessages(): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.removeItem(CHAT_STORAGE_KEY);
+  } catch {
+    /* ignore */
+  }
+}
 
 function parseErrorDetail(raw: unknown): string {
   if (typeof raw === "string") return raw;
@@ -50,6 +92,7 @@ export default function ChatbotPanel({ welcome }: { welcome: string }) {
   const { sessionId, syncFromServer } = useLegalAgentSession();
   const { profile } = useUserProfile();
   const [messages, setMessages] = useState<ChatMsg[]>([{ role: "assistant", content: welcome }]);
+  const [hydrated, setHydrated] = useState(false);
   const [question, setQuestion] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -58,6 +101,26 @@ export default function ChatbotPanel({ welcome }: { welcome: string }) {
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const shouldAutoScrollRef = useRef(true);
+
+  // Reprend l'historique depuis localStorage si présent. Doit s'exécuter côté client
+  // uniquement (pas en SSR) pour éviter tout mismatch d'hydratation.
+  useEffect(() => {
+    const stored = loadStoredMessages();
+    if (stored) setMessages(stored);
+    setHydrated(true);
+  }, []);
+
+  // Persiste l'historique à chaque mutation, mais seulement après hydratation (sinon
+  // on écraserait le storage avec l'état initial [welcome]).
+  useEffect(() => {
+    if (!hydrated) return;
+    // Pas la peine de stocker si on est revenu au seul message de bienvenue.
+    if (messages.length <= 1) {
+      clearStoredMessages();
+      return;
+    }
+    persistMessages(messages);
+  }, [messages, hydrated]);
 
   useEffect(() => {
     const container = messageContainerRef.current;

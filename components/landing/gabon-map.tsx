@@ -1,7 +1,16 @@
 "use client";
 
-import { motion, useMotionValue, useReducedMotion, useScroll, useSpring, useTransform } from "framer-motion";
-import { useId, useRef } from "react";
+import {
+  animate,
+  motion,
+  useMotionValue,
+  useMotionValueEvent,
+  useReducedMotion,
+  useScroll,
+  useSpring,
+  useTransform,
+} from "framer-motion";
+import { useEffect, useId, useRef } from "react";
 
 /**
  * Contour du Gabon (projection plate simplifiée) dérivé des données
@@ -37,17 +46,40 @@ export function GabonMap() {
 
   const { scrollYProgress } = useScroll({
     target: containerRef,
-    /** Fenêtre resserrée : la séquence se joue pendant l'apparition du hero, et la carte
-     * reste « pleine » tant que l'utilisateur scrolle au-delà (cf. keyframes monotones). */
+    /** Fenêtre resserrée : le scroll continue à piloter après l'animation initiale. */
     offset: ["start 0.85", "start 0.15"],
   });
 
-  /** Hors animation scroll : progression figée à 1 (carte entièrement visible) */
-  const staticProgress = useMotionValue(1);
-  const scrollSource = reduce ? staticProgress : scrollYProgress;
+  /**
+   * Progression « fusionnée » qui alimente le rendu :
+   * - Au mount, on l'anime de 0 → 1 sur ~1.6s (le tracé se dessine automatiquement).
+   * - Ensuite, le scroll continue à influencer (Math.max ci-dessous) — si l'utilisateur
+   *   remonte avant l'animation de mount, on prend toujours la valeur la plus élevée.
+   * En `prefers-reduced-motion` : fixé à 1 immédiatement.
+   */
+  const mountProgress = useMotionValue(reduce ? 1 : 0);
+
+  useEffect(() => {
+    if (reduce) return;
+    const controls = animate(mountProgress, 1, {
+      duration: 1.6,
+      ease: [0.16, 1, 0.3, 1], // ease-out doux
+      delay: 0.15, // laisse le temps au Reveal parent de fade-in
+    });
+    return () => controls.stop();
+  }, [mountProgress, reduce]);
+
+  /** Source : max(scroll, mountProgress) pour ne jamais régresser visuellement. */
+  const mergedSource = useMotionValue(reduce ? 1 : 0);
+  useMotionValueEvent(scrollYProgress, "change", (s) => {
+    mergedSource.set(Math.max(s, mountProgress.get()));
+  });
+  useMotionValueEvent(mountProgress, "change", (m) => {
+    mergedSource.set(Math.max(m, scrollYProgress.get()));
+  });
 
   /** Léger amortissement pour que le trait reste lisible même au scroll rapide */
-  const drawProgress = useSpring(scrollSource, {
+  const drawProgress = useSpring(mergedSource, {
     stiffness: reduce ? 999 : 44,
     damping: reduce ? 90 : 18,
     mass: 0.72,

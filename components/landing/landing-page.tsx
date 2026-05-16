@@ -48,7 +48,7 @@ export async function LandingPage() {
           aria-hidden
         />
         <div className="relative z-[2] mx-auto flex max-w-6xl flex-col gap-10 lg:flex-row lg:items-start lg:justify-between">
-          <div className="max-w-[680px] flex-1">
+          <div className="order-2 max-w-[680px] flex-1 lg:order-1">
             <Reveal>
               <Eyebrow>{t("heroEyebrow")}</Eyebrow>
             </Reveal>
@@ -110,7 +110,7 @@ export async function LandingPage() {
               </div>
             </Reveal>
           </div>
-          <Reveal className="mx-auto shrink-0 lg:mx-0 lg:block" delay={200}>
+          <Reveal className="order-1 mx-auto shrink-0 lg:order-2 lg:mx-0 lg:block" delay={120}>
             <GabonMap />
           </Reveal>
         </div>
