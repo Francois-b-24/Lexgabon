@@ -1,0 +1,1 @@
+ALTER TABLE "textes" ADD COLUMN "domaine_slug" text;

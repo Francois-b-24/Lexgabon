@@ -7,6 +7,7 @@ import { useLegalAgentSession } from "@/hooks/use-legal-agent-session";
 import { useUserProfile } from "@/hooks/use-user-profile";
 import { SourceList } from "@/components/chatbot/source-list";
 import { LegalNoteRenderer } from "@/components/chatbot/legal-note-renderer";
+import { QuestionSuggestions } from "@/components/chatbot/question-suggestions";
 import type { ChatSource, StructuredAnswer } from "@/lib/chatbot-types";
 
 type Role = "user" | "assistant";
@@ -224,6 +225,16 @@ export default function ChatbotPanel({ welcome }: { welcome: string }) {
               ) : null}
             </div>
           ))}
+
+          {messages.length === 1 && !loading ? (
+            <QuestionSuggestions
+              disabled={loading}
+              onPick={(text) => {
+                setQuestion(text);
+                textareaRef.current?.focus();
+              }}
+            />
+          ) : null}
 
           {loading ? (
             <div className="flex flex-col gap-1.5" role="status" aria-live="polite" aria-busy="true">

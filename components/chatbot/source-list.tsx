@@ -36,7 +36,13 @@ export function SourceList({ sources }: { sources: ChatSource[] }) {
               <span className="line-clamp-1 flex-1 text-white/85">{s.citation}</span>
               {slug ? (
                 <Link
-                  href={`/textes/${encodeURIComponent(slug)}`}
+                  href={
+                    s.source
+                      ? `/textes/${s.source}/${encodeURIComponent(slug)}${
+                          article ? `#article-${article}` : ""
+                        }`
+                      : `/textes/${encodeURIComponent(slug)}`
+                  }
                   className="shrink-0 text-[11px] text-lg-gold/90 underline-offset-2 hover:underline"
                 >
                   {t("sourceViewTexte")}

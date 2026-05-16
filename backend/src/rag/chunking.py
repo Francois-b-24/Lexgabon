@@ -195,14 +195,36 @@ def build_chunks_from_articles(
     *,
     base_meta: dict[str, str] | None = None,
     max_chars: int = 1500,
+    one_per_article: bool = False,
 ) -> list[Chunk]:
-    """Convertit des ArticleSegment en Chunks prêts pour Chroma."""
+    """Convertit des ArticleSegment en Chunks prêts pour Chroma.
+
+    Modes :
+      - `one_per_article=False` (défaut, legacy) : les articles longs sont
+        subdivisés en sous-chunks via `chunk_long_article`.
+      - `one_per_article=True` (T2.1) : un Chunk = un article complet, même
+        si > max_chars. Le texte intégral est stocké dans Chunk.text ; le
+        modèle d'embedding peut tronquer à sa fenêtre (E5-small ~512 tokens),
+        mais Chroma retourne le document complet pour le RAG / l'affichage.
+    """
     base = dict(base_meta or {})
     out: list[Chunk] = []
     for seg in segments:
         body = _normalize_spaces(seg.text).strip()
         if not body:
             continue
+
+        if one_per_article:
+            out.append(
+                Chunk(
+                    text=f"Article {seg.numero} — {body}",
+                    numero_article=seg.numero,
+                    titre_section=seg.titre_section,
+                    meta=base,
+                )
+            )
+            continue
+
         if len(body) <= max_chars:
             out.append(
                 Chunk(
@@ -230,6 +252,7 @@ def build_chunks_from_text(
     *,
     base_meta: dict[str, str] | None = None,
     max_chars: int = 1500,
+    one_per_article: bool = False,
 ) -> list[Chunk]:
     """Pipeline complet : normalise, tente le split article-aware, sinon fallback générique."""
     cleaned = normalize_pdf_text(text)
@@ -237,7 +260,9 @@ def build_chunks_from_text(
         return []
     segments = split_articles(cleaned)
     if segments:
-        return build_chunks_from_articles(segments, base_meta=base_meta, max_chars=max_chars)
+        return build_chunks_from_articles(
+            segments, base_meta=base_meta, max_chars=max_chars, one_per_article=one_per_article
+        )
     # Fallback : pas d'article détecté (préambules, exposé des motifs, doctrine, etc.)
     base = dict(base_meta or {})
     return [

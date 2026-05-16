@@ -44,6 +44,9 @@ export const textes = pgTable("textes", {
   urlSource: text("url_source").notNull(),
   pdfStorageKey: text("pdf_storage_key"),
   domaines: integer("domaines").array().default([]),
+  // T2.1 : slug texte court (civil, penal, travail, ...) aligné sur SUPPORTED_DOMAINES.
+  // Permet le filtre Meilisearch sans nécessiter la table `domaines` peuplée.
+  domaineSlug: text("domaine_slug"),
   estEnVigueur: boolean("est_en_vigueur").default(true),
   abrogePar: uuid("abroge_par"),
   resume: text("resume"),
@@ -83,6 +86,30 @@ export const chunks = pgTable("chunks", {
   position: integer("position").notNull(),
   metadata: jsonb("metadata").default({}),
 });
+
+/**
+ * T2.5 — Versions historiques d'un texte. Une ligne = un snapshot complet
+ * (label + date de validité + contenu JSON). Permet la comparaison côte à côte
+ * sur /textes/[source]/[slug]/comparer.
+ *
+ * contenuJson : { articles: [{ numero, contenu, titre?, titreSection? }] }
+ */
+export const textVersions = pgTable(
+  "text_versions",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    texteId: uuid("texte_id")
+      .notNull()
+      .references(() => textes.id, { onDelete: "cascade" }),
+    label: text("label").notNull(),
+    dateValidite: date("date_validite").notNull(),
+    contenuJson: jsonb("contenu_json").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  },
+  (t) => [
+    index("text_versions_texte_date_idx").on(t.texteId, t.dateValidite),
+  ],
+);
 
 export const profils = pgTable("profils", {
   id: uuid("id").primaryKey(),
@@ -135,6 +162,35 @@ export const messages = pgTable("messages", {
   tokensOutput: integer("tokens_output"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
 });
+
+/**
+ * T2.4 — Veille dynamique. Une ligne = un texte/acte/publication suivi sur les
+ * portails officiels (JO Gabon, OHADA, CEMAC, COBAC, CIMA).
+ * Source de vérité de la page /veille et du flux RSS public.
+ */
+export const veilleItems = pgTable(
+  "veille_items",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    slug: text("slug").notNull().unique(),
+    source: text("source").notNull(), // slug URL : jo-ga, ohada, cemac, cobac, cima
+    type: text("type"), // loi, ordonnance, décret, acte uniforme, règlement, circulaire
+    titre: text("titre").notNull(),
+    resume: text("resume"),
+    url: text("url").notNull(), // lien vers la source officielle
+    portal: text("portal").notNull(), // libellé court (« journal-officiel.ga »)
+    domaine: text("domaine"), // slug texte aligné sur SUPPORTED_DOMAINES
+    datePublication: date("date_publication"),
+    dateIngest: timestamp("date_ingest", { withTimezone: true }).defaultNow(),
+    estNouveau: boolean("est_nouveau").default(true),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+  },
+  (t) => [
+    index("veille_source_date_idx").on(t.source, t.datePublication),
+    index("veille_date_publication_idx").on(t.datePublication),
+  ],
+);
 
 export const quotasUsage = pgTable(
   "quotas_usage",

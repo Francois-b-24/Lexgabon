@@ -1,6 +1,6 @@
 "use client";
 
-import { IconCheck, IconCopy, IconLink, IconShare } from "@tabler/icons-react";
+import { IconCheck, IconCopy, IconLink, IconQuote, IconShare } from "@tabler/icons-react";
 import { useCallback, useState } from "react";
 import { useTranslations } from "next-intl";
 
@@ -114,4 +114,52 @@ export function ArticleAnchorButton({ permalink, ariaLabel }: { permalink: strin
       {done ? <IconCheck size={12} className="text-emerald-300" /> : <IconLink size={12} />}
     </button>
   );
+}
+
+/**
+ * Bouton qui copie la citation normalisée d'un article (T2.1).
+ * Format : « Art. N de <Code> (<reference>) ».
+ */
+export function ArticleCitationButton({
+  citation,
+  ariaLabel,
+}: {
+  citation: string;
+  ariaLabel: string;
+}) {
+  const [done, setDone] = useState(false);
+  const handleClick = useCallback(async () => {
+    const ok = await copyToClipboard(citation);
+    if (ok) {
+      setDone(true);
+      window.setTimeout(() => setDone(false), 1600);
+    }
+  }, [citation]);
+  return (
+    <button
+      type="button"
+      aria-label={ariaLabel}
+      title={ariaLabel}
+      onClick={() => void handleClick()}
+      className="ml-1 inline-flex h-6 w-6 items-center justify-center rounded text-white/30 transition hover:bg-white/[0.06] hover:text-lg-gold"
+    >
+      {done ? <IconCheck size={12} className="text-emerald-300" /> : <IconQuote size={12} />}
+    </button>
+  );
+}
+
+/**
+ * Construit la chaîne normalisée pour la citation d'un article.
+ * Forme cible : « Art. 12 du Code du travail (Loi n° 022/2021 du 19 novembre 2021) ».
+ */
+export function buildArticleCitation(
+  articleNumero: string,
+  texteTitre: string,
+  reference: string | null,
+): string {
+  const codeName = texteTitre.replace(/\s*\(.*?\)\s*$/, "").trim();
+  const base = `Art. ${articleNumero} du ${codeName}`;
+  if (!reference) return base;
+  if (base.includes(reference)) return base;
+  return `${base} (${reference})`;
 }

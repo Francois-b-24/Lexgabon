@@ -2,10 +2,16 @@ import { setRequestLocale, getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { IconExternalLink } from "@tabler/icons-react";
-import { findTexteBySourceAndSlug } from "@/lib/textes-service";
+import { findTexteBySourceAndSlug, listVersionsForTexteSlug } from "@/lib/textes-service";
 import { isValidSourceUrlSlug, sourceLabelFr } from "@/lib/sources";
 import { getSiteUrl as siteUrl } from "@/lib/seo";
-import { TexteActions, ArticleAnchorButton } from "@/components/textes/texte-actions";
+import { Link } from "@/i18n/navigation";
+import {
+  TexteActions,
+  ArticleAnchorButton,
+  ArticleCitationButton,
+  buildArticleCitation,
+} from "@/components/textes/texte-actions";
 
 type RouteParams = { locale: string; source: string; slug: string };
 
@@ -54,6 +60,8 @@ export default async function TexteSourceDetailPage({
 
   const { texte, articles } = found;
   const t = await getTranslations("Textes");
+  const versions = await listVersionsForTexteSlug(slug);
+  const hasMultipleVersions = versions.length >= 2;
 
   const canonicalUrl = `${siteUrl()}/${locale}/textes/${source}/${slug}`;
   const sourceLabel = sourceLabelFr(source);
@@ -135,6 +143,15 @@ export default async function TexteSourceDetailPage({
 
           <TexteActions reference={texte.reference} shareTitle={texte.titre} shareUrl={canonicalUrl} />
 
+          {hasMultipleVersions ? (
+            <Link
+              href={`/textes/${source}/${slug}/comparer`}
+              className="flex items-center justify-center gap-1.5 rounded-md border border-lg-gold/30 px-3 py-2 text-[11px] font-medium uppercase tracking-wider text-lg-gold-light transition hover:bg-lg-gold/10"
+            >
+              {t("compareVersions", { count: versions.length })}
+            </Link>
+          ) : null}
+
           {articles.length > 0 ? (
             <nav aria-label={t("tableOfContents")} className="border-t border-white/10 pt-4">
               <p className="mb-2 text-[10px] font-medium uppercase tracking-wider text-lg-gold/70">
@@ -187,6 +204,10 @@ export default async function TexteSourceDetailPage({
                         {a.titre ? <span className="font-normal text-white/75"> — {a.titre}</span> : null}
                       </h2>
                       <ArticleAnchorButton permalink={permalink} ariaLabel={t("articleAnchorLabel")} />
+                      <ArticleCitationButton
+                        citation={buildArticleCitation(a.numero, texte.titre, texte.reference)}
+                        ariaLabel={t("articleCitationLabel")}
+                      />
                     </div>
                     <p className="mt-2 whitespace-pre-wrap text-[14px] leading-relaxed text-white/85">
                       {a.contenu}

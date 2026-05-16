@@ -41,8 +41,14 @@ def chunks_from_pdf(
     *,
     base_meta: dict[str, str] | None = None,
     max_chars: int = 1500,
+    one_per_article: bool = False,
 ) -> list[Chunk]:
-    """Pipeline complet : PDF bytes → chunks Chroma-ready (article-aware ou fallback)."""
+    """Pipeline complet : PDF bytes → chunks Chroma-ready (article-aware ou fallback).
+
+    Si `one_per_article=True` (T2.1), un Chunk = un article complet, même long.
+    """
     pages = extract_pdf_pages(data)
     full = reconstruct_full_text(pages)
-    return build_chunks_from_text(full, base_meta=base_meta, max_chars=max_chars)
+    return build_chunks_from_text(
+        full, base_meta=base_meta, max_chars=max_chars, one_per_article=one_per_article
+    )

@@ -11,6 +11,8 @@ export type ChatSource = {
   slug?: string | null;
   numero_article?: string | null;
   url?: string | null;
+  /** Slug d'URL Source (jo-ga, ohada, cemac, cobac, cima) — T2.1. */
+  source?: string | null;
 };
 
 export type StructuredRef = {
@@ -20,6 +22,8 @@ export type StructuredRef = {
   code?: string | null;
   slug?: string | null;
   url?: string | null;
+  /** Slug d'URL côté Next (jo-ga, ohada, ...) — T2.3. */
+  source?: string | null;
   source_index?: number | null;
 };
 

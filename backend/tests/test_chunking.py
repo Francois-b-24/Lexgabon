@@ -90,3 +90,27 @@ def test_no_article_returns_empty_segments():
     text = "Préambule sans article numéroté. Considérations générales."
     segs = split_articles(text)
     assert segs == []
+
+
+def test_one_per_article_keeps_long_articles_intact():
+    """T2.1 : one_per_article=True produit 1 Chunk par article, même très long."""
+    long_body = "Disposition. " * 300  # ~3600 chars, dépasse largement max_chars=1500
+    text = f"Article 1: {long_body}\n\nArticle 2: Texte court."
+    chunks = build_chunks_from_text(text, one_per_article=True, max_chars=1500)
+    # Sans one_per_article, l'article 1 aurait été subdivisé en plusieurs chunks.
+    assert len(chunks) == 2
+    nums = [c.numero_article for c in chunks]
+    assert nums == ["1", "2"]
+    # Le texte complet est conservé dans le chunk (même si > 1500 chars).
+    assert len(chunks[0].text) > 1500
+
+
+def test_default_mode_still_splits_long_articles():
+    """Vérifie qu'on n'a pas régressé sur le comportement par défaut (T1.1)."""
+    long_body = "Disposition. " * 300
+    text = f"Article 1: {long_body}\n\nArticle 2: Court."
+    chunks = build_chunks_from_text(text, max_chars=1500)
+    # Article 1 doit être subdivisé, donc len > 2.
+    assert len(chunks) > 2
+    nums = {c.numero_article for c in chunks}
+    assert nums == {"1", "2"}

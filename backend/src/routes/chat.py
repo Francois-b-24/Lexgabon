@@ -53,6 +53,42 @@ def _prepare_history(body: ChatRequest) -> list[dict[str, str]]:
     return h
 
 
+_SOURCE_CODE_TO_URL_SLUG: dict[str, str] = {
+    "JOG": "jo-ga",
+    "JO-GA": "jo-ga",
+    "GABON": "jo-ga",
+    "OHADA": "ohada",
+    "CEMAC": "cemac",
+    "COBAC": "cobac",
+    "CIMA": "cima",
+}
+
+
+def _derive_source_url_slug(meta: dict[str, Any]) -> str | None:
+    """Récupère le slug d'URL (jo-ga, ohada, ...) depuis les métadonnées Chroma.
+
+    Préférence : `source_code` (JOG, OHADA, ...) → mapping ; fallback heuristique
+    sur `autorite` ou `code` si la métadonnée n'a pas été posée à l'ingestion.
+    """
+    raw_code = meta.get("source_code")
+    if isinstance(raw_code, str) and raw_code.strip():
+        mapped = _SOURCE_CODE_TO_URL_SLUG.get(raw_code.strip().upper())
+        if mapped:
+            return mapped
+    autorite = str(meta.get("autorite") or "").lower()
+    if "gabon" in autorite:
+        return "jo-ga"
+    if "ohada" in autorite:
+        return "ohada"
+    if "cemac" in autorite:
+        return "cemac"
+    if "cobac" in autorite:
+        return "cobac"
+    if "cima" in autorite:
+        return "cima"
+    return None
+
+
 def _source_item_from_row(src: dict[str, Any]) -> SourceItem:
     meta = src.get("metadata") if isinstance(src.get("metadata"), dict) else {}
     slug_raw = meta.get("slug")
@@ -73,6 +109,7 @@ def _source_item_from_row(src: dict[str, Any]) -> SourceItem:
         slug=slug_out,
         numero_article=num_out,
         url=url_out,
+        source=_derive_source_url_slug(meta),
     )
 
 

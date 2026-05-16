@@ -71,19 +71,32 @@ def _citation_for(meta: dict[str, Any], numero: str | None, default_label: str) 
     return base
 
 
-def _meta_payload(file_meta: dict[str, Any], chunk_meta: dict[str, Any], *, source_key: str, source_filename: str) -> dict[str, Any]:
+def _meta_payload(
+    file_meta: dict[str, Any],
+    chunk_meta: dict[str, Any],
+    *,
+    source_key: str,
+    source_filename: str,
+    text_id: str,
+) -> dict[str, Any]:
     out: dict[str, Any] = {
         "source_key": source_key,
         "source_filename": source_filename,
         "kind": "corpus_pdf",
+        "text_id": text_id,
     }
-    for key in ("titre", "code", "autorite", "date", "reference", "source"):
+    for key in ("titre", "code", "autorite", "date", "reference", "source", "source_code", "type", "domaine"):
         v = file_meta.get(key)
         if isinstance(v, str) and v.strip():
             out[key] = v.strip()[:500]
+    # Slug d'URL côté front (jo-ga, ohada, ...) ; le mapping a lieu côté Next via lib/sources.ts.
+    # On stocke aussi le `slug` du texte (= text_id) pour la résolution rapide.
+    out["slug"] = text_id
+
     num = chunk_meta.get("numero_article")
     if isinstance(num, str) and num.strip():
         out["numero_article"] = num.strip()[:32]
+        out["article_id"] = f"{text_id}:{num.strip()[:32]}"
     section = chunk_meta.get("titre_section")
     if isinstance(section, str) and section.strip():
         out["titre_section"] = section.strip()[:240]
@@ -151,7 +164,10 @@ def main() -> None:
             continue
 
         try:
-            chunks = chunks_from_pdf(data, max_chars=args.max_chars)
+            # T2.1 : un Chunk = un article entier. Les articles longs ne sont plus
+            # subdivisés ; le modèle d'embedding tronque éventuellement à sa
+            # fenêtre mais Chroma retourne le document complet.
+            chunks = chunks_from_pdf(data, max_chars=args.max_chars, one_per_article=True)
         except Exception as e:
             logger.warning("parsing PDF échoué %s: %s", rel, e)
             continue
@@ -166,6 +182,9 @@ def main() -> None:
         except Exception as e:
             logger.warning("delete Chroma (source_key=%s): %s", skey, e)
 
+        # text_id = slug du texte (utilisé pour le permalien /textes/<source>/<slug>
+        # côté front et pour le upsert SQL côté table `articles`).
+        text_id = str(file_meta.get("slug") or pdf_path.stem)
         default_label = file_meta.get("code") or file_meta.get("titre") or pdf_path.stem
         ids: list[str] = []
         docs: list[str] = []
@@ -177,17 +196,25 @@ def main() -> None:
                 {"numero_article": ch.numero_article, "titre_section": ch.titre_section},
                 source_key=skey,
                 source_filename=pdf_path.name,
+                text_id=text_id,
             )
             meta["citation"] = citation
             meta["sha256"] = digest[:16]
-            ids.append(f"corpus-pdf:{skey}:{i}")
+            # ID Chroma stable par article + position : la position garantit l'unicité quand
+            # un PDF restart la numérotation dans une annexe (cas du Code du travail).
+            stable_id = (
+                f"corpus-pdf:{skey}:art:{ch.numero_article}:p{i}"
+                if ch.numero_article
+                else f"corpus-pdf:{skey}:{i}"
+            )
+            ids.append(stable_id)
             docs.append(ch.text)
             metas.append(meta)
 
         col.add(ids=ids, documents=docs, metadatas=metas)
         articles = len({m["numero_article"] for m in metas if m.get("numero_article")})
         total_chunks += len(chunks)
-        logger.info("ingéré %s : %d chunks · %d articles distincts", rel, len(chunks), articles)
+        logger.info("ingéré %s : %d chunks · %d articles distincts (1 embedding par article)", rel, len(chunks), articles)
 
         # Génération du JSONL d'articles entiers pour la table SQL `articles`.
         # On re-parse via parse_pdf_articles pour obtenir un ArticleSegment par article complet,
@@ -205,6 +232,7 @@ def main() -> None:
                     "source_filename": pdf_path.name,
                     "source_key": skey,
                     "type": file_meta.get("type") or "loi",
+                    "domaine": file_meta.get("domaine"),
                     "code": file_meta.get("code"),
                     "reference": file_meta.get("reference"),
                     "titre_texte": file_meta.get("titre"),

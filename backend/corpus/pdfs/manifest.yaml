@@ -6,6 +6,9 @@
 #   source_code: code court de la source côté DB (ex. « JOG », « OHADA »).
 #                Mappé vers le segment d'URL via lib/sources.ts.
 #   type       : famille du texte (« loi », « ordonnance », « décret », « acte uniforme »…).
+#   domaine    : domaine juridique principal (« civil », « penal », « commercial »,
+#                « travail », « administratif », « fiscal », « famille », « social »).
+#                Aligné sur SUPPORTED_DOMAINES côté front (lib/search-service.ts).
 #   titre      : nom complet du texte (ex. « Code du travail »).
 #   code       : code court pour les citations LLM (ex. « Code du travail »).
 #   autorite   : émetteur (ex. « République gabonaise », « OHADA », « CEMAC »).
@@ -21,6 +24,7 @@ files:
     slug: "code-travail-2021"
     source_code: "JOG"
     type: "loi"
+    domaine: "travail"
     titre: "Code du travail de la République gabonaise"
     code: "Code du travail"
     autorite: "République gabonaise"
@@ -33,6 +37,7 @@ files:
     slug: "code-travail-2021"
     source_code: "JOG"
     type: "loi"
+    domaine: "travail"
     titre: "Code du travail de la République gabonaise (doublon)"
     code: "Code du travail"
     autorite: "République gabonaise"
@@ -44,6 +49,7 @@ files:
     slug: "code-travail-2021"
     source_code: "JOG"
     type: "loi"
+    domaine: "travail"
     titre: "Code du travail de la République gabonaise (doublon)"
     code: "Code du travail"
     autorite: "République gabonaise"

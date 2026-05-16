@@ -89,6 +89,7 @@ def _resolve_article_ref(
             code=code_label.strip(),
             slug=src.slug,
             url=src.url,
+            source=src.source,
             source_index=matched_index,
         )
 
@@ -115,6 +116,7 @@ def _resolve_source_ref(reference: str, sources: list[SourceItem]) -> Structured
             label=reference.strip(),
             slug=src.slug,
             url=src.url,
+            source=src.source,
             source_index=matched_index,
         )
 

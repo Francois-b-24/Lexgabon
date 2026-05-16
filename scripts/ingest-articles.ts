@@ -23,6 +23,7 @@ type Row = {
   source_filename?: string;
   source_key?: string;
   type?: string;
+  domaine?: string | null;
   code?: string;
   reference?: string | null;
   titre_texte?: string | null;
@@ -121,6 +122,7 @@ async function ensureTexte(
         titre: row.titre_texte ?? row.texte_slug,
         datePublication: row.date_publication ?? new Date().toISOString().slice(0, 10),
         urlSource: row.url_source ?? "",
+        domaineSlug: row.domaine ?? null,
         updatedAt: new Date(),
       })
       .where(eq(textes.id, existing[0].id));
@@ -136,6 +138,7 @@ async function ensureTexte(
       titre: row.titre_texte ?? row.texte_slug,
       datePublication: row.date_publication ?? new Date().toISOString().slice(0, 10),
       urlSource: row.url_source ?? "",
+      domaineSlug: row.domaine ?? null,
       estEnVigueur: true,
     })
     .returning({ id: textes.id });
@@ -148,9 +151,24 @@ async function upsertArticlesBulk(
   rows: Row[],
 ): Promise<number> {
   if (rows.length === 0) return 0;
+  // Dédoublonnage défensif : certains PDF redémarrent la numérotation en annexes
+  // (cas du Code du travail gabonais avec deux "Article 1" et "Article 2"). On garde
+  // la première occurrence (corps principal) et on ignore les renumérotations en fin.
+  const seenNumeros = new Set<string>();
+  const uniqueRows = rows.filter((r) => {
+    if (seenNumeros.has(r.numero)) return false;
+    seenNumeros.add(r.numero);
+    return true;
+  });
+  const skipped = rows.length - uniqueRows.length;
+  if (skipped > 0) {
+    console.warn(
+      `[ingest-articles] ${skipped} articles dupliqués ignorés pour texte_id=${texteId} (annexes avec renumérotation).`,
+    );
+  }
   // Stratégie simple et idempotente : on supprime tous les articles du texte puis on réinsère.
   await db.delete(articles).where(eq(articles.texteId, texteId));
-  const values = rows.map((r) => ({
+  const values = uniqueRows.map((r) => ({
     texteId,
     numero: r.numero,
     titre: null,

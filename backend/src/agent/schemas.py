@@ -28,6 +28,9 @@ class SourceItem(BaseModel):
     slug: str | None = None
     numero_article: str | None = None
     url: str | None = None
+    # T2.1 : slug d'URL côté Next pour reconstruire le permalien /textes/<source>/<slug>#article-N.
+    # Dérivé du `source_code` (JOG, OHADA, ...) côté backend si présent en métadonnée Chroma.
+    source: str | None = None
 
 
 class Quality(BaseModel):
@@ -51,6 +54,8 @@ class StructuredRef(BaseModel):
     code: str | None = None
     slug: str | None = None
     url: str | None = None
+    # T2.3 : slug d'URL côté Next (jo-ga, ohada, ...) pour le lien direct et le popover.
+    source: str | None = None
     source_index: int | None = None  # index dans ChatResponse.sources (résolution côté front)
 
 
