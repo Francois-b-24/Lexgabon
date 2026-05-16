@@ -1,29 +1,24 @@
-"use client";
-
+import type { Metadata } from "next";
+import { setRequestLocale, getTranslations, getLocale } from "next-intl/server";
 import {
   IconBellRinging,
   IconExternalLink,
+  IconRss,
   IconSearch,
-  IconShare,
-  IconStar,
-  IconStarFilled,
-  IconX,
 } from "@tabler/icons-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useLocale, useTranslations } from "next-intl";
-import { useVeilleFavorites } from "@/hooks/use-veille-favorites";
-import { mockVeille, type VeilleItem } from "@/lib/mock/veille";
-import { openVeilleSource } from "@/lib/veille/open-source";
+import { Link } from "@/i18n/navigation";
+import { listVeilleItems, parseVeilleQuery, VEILLE_FILTER_OPTIONS } from "@/lib/veille-service";
+import type { VeilleQuery } from "@/lib/veille-service";
+import { VeilleGrid } from "@/components/veille/veille-grid";
 import { cn } from "@/lib/utils";
 
-const badge: Record<VeilleItem["source"], string> = {
-  OHADA: "bg-lg-gold/15 text-lg-gold-light",
-  CEMAC: "bg-sky-500/15 text-sky-300",
-  COBAC: "bg-emerald-500/15 text-emerald-300",
-  Gabon: "bg-amber-800/20 text-amber-200",
-};
+export const dynamic = "force-dynamic";
 
-const SOURCES: Array<VeilleItem["source"] | "all"> = ["all", "Gabon", "OHADA", "CEMAC", "COBAC"];
+export const metadata: Metadata = {
+  title: "Veille — LexGabon",
+  description:
+    "Flux dynamique des publications officielles suivies par LexGabon : Journal officiel du Gabon, OHADA, CEMAC, COBAC, CIMA.",
+};
 
 type Portal = { name: string; url: string };
 const OFFICIAL_PORTALS: Portal[] = [
@@ -34,158 +29,119 @@ const OFFICIAL_PORTALS: Portal[] = [
   { name: "CEMAC", url: "https://cemac.int/" },
 ];
 
-async function copyUrlToClipboard(url: string): Promise<boolean> {
-  try {
-    if (navigator.clipboard?.writeText) {
-      await navigator.clipboard.writeText(url);
-      return true;
-    }
-  } catch {
-    /* fallback */
+const SOURCE_LABEL_FR: Record<string, string> = {
+  "jo-ga": "Gabon",
+  ohada: "OHADA",
+  cemac: "CEMAC",
+  cobac: "COBAC",
+  cima: "CIMA",
+};
+
+function toSearchParamsObj(
+  raw: Record<string, string | string[] | undefined>,
+): URLSearchParams {
+  const out = new URLSearchParams();
+  for (const [k, v] of Object.entries(raw)) {
+    if (v === undefined) continue;
+    if (Array.isArray(v)) v.forEach((vv) => out.append(k, vv));
+    else out.append(k, v);
   }
-  try {
-    const ta = document.createElement("textarea");
-    ta.value = url;
-    ta.setAttribute("readonly", "");
-    ta.style.position = "fixed";
-    ta.style.left = "-9999px";
-    document.body.appendChild(ta);
-    ta.select();
-    const ok = document.execCommand("copy");
-    document.body.removeChild(ta);
-    return ok;
-  } catch {
-    return false;
-  }
+  return out;
 }
 
-export default function VeillePage() {
-  const t = useTranslations("Veille");
-  const locale = useLocale();
-  const [q, setQ] = useState("");
-  const [showAlert, setShowAlert] = useState(true);
-  const [sourceFilter, setSourceFilter] = useState<(typeof SOURCES)[number]>("all");
-  const [favoritesOnly, setFavoritesOnly] = useState(false);
-  const [feedback, setFeedback] = useState<string | null>(null);
-  const feedbackTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const { ids, toggle, has } = useVeilleFavorites();
+function buildHref(query: VeilleQuery, override: Partial<{ source: string; q: string }>): string {
+  const sp = new URLSearchParams();
+  const sources =
+    "source" in override
+      ? override.source
+        ? [override.source]
+        : []
+      : query.sources;
+  sources.forEach((s) => sp.append("source", s));
+  query.domaines.forEach((d) => sp.append("domaine", d));
+  const q = override.q !== undefined ? override.q : query.q;
+  if (q) sp.set("q", q);
+  const qs = sp.toString();
+  return qs ? `/veille?${qs}` : "/veille";
+}
 
-  const showFeedback = useCallback((message: string) => {
-    if (feedbackTimer.current) clearTimeout(feedbackTimer.current);
-    setFeedback(message);
-    feedbackTimer.current = setTimeout(() => {
-      setFeedback(null);
-      feedbackTimer.current = null;
-    }, 2800);
-  }, []);
+export default async function VeillePage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ locale: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const { locale } = await params;
+  setRequestLocale(locale);
+  const t = await getTranslations("Veille");
+  const localeNow = await getLocale();
+  const raw = await searchParams;
+  const query = parseVeilleQuery(toSearchParamsObj(raw));
+  const { items, degraded } = await listVeilleItems(query);
 
-  useEffect(() => {
-    return () => {
-      if (feedbackTimer.current) clearTimeout(feedbackTimer.current);
-    };
-  }, []);
-
-  const newCount = useMemo(() => mockVeille.filter((c) => c.isNew).length, []);
-
-  const filtered = useMemo(() => {
-    let list = mockVeille;
-    if (sourceFilter !== "all") {
-      list = list.filter((c) => c.source === sourceFilter);
-    }
-    if (favoritesOnly) {
-      list = list.filter((c) => ids.has(c.id));
-    }
-    const s = q.trim().toLowerCase();
-    if (!s) return list;
-    return list.filter(
-      (c) =>
-        c.titre.toLowerCase().includes(s) ||
-        c.resume.toLowerCase().includes(s) ||
-        c.portal.toLowerCase().includes(s),
-    );
-  }, [q, sourceFilter, favoritesOnly, ids]);
-
-  const handleShare = useCallback(
-    async (card: VeilleItem) => {
-      const data: ShareData = {
-        title: card.titre,
-        text: `${card.titre}\n${card.url}`,
-        url: card.url,
-      };
-      if (typeof navigator.share === "function") {
-        try {
-          if (!navigator.canShare || navigator.canShare(data)) {
-            await navigator.share(data);
-            return;
-          }
-        } catch (e) {
-          if ((e as Error).name === "AbortError") return;
-        }
-      }
-      const ok = await copyUrlToClipboard(card.url);
-      showFeedback(ok ? t("toastLinkCopied") : t("toastShareError"));
-    },
-    [showFeedback, t],
-  );
+  const newCount = items.filter((i) => i.estNouveau).length;
+  const allOption = query.sources.length === 0;
 
   return (
     <div className="flex min-h-screen flex-col">
-      <div aria-live="polite" className="sr-only">
-        {feedback ?? ""}
-      </div>
-      {feedback && (
-        <div
-          className="fixed bottom-5 left-1/2 z-50 max-w-[min(90vw,24rem)] -translate-x-1/2 rounded-lg border border-white/15 bg-lg-navy px-4 py-2.5 text-center text-xs text-white shadow-lg"
-          role="status"
-        >
-          {feedback}
-        </div>
-      )}
-
       <header className="sticky top-0 z-10 flex items-center gap-3 border-b border-white/10 bg-lg-app-navy px-5 py-3.5">
-        <div className="flex flex-1 items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2">
+        <form
+          method="get"
+          action="/veille"
+          className="flex flex-1 items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2 focus-within:border-lg-gold/40"
+        >
           <IconSearch size={14} className="text-white/25" />
           <input
-            className="w-full bg-transparent text-sm text-white outline-none placeholder:text-white/25"
+            type="search"
+            name="q"
+            defaultValue={query.q}
             placeholder={t("searchPlaceholder")}
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
+            className="w-full bg-transparent text-sm text-white outline-none placeholder:text-white/25"
+            maxLength={128}
           />
-        </div>
+          {query.sources.map((s) => (
+            <input key={s} type="hidden" name="source" value={s} />
+          ))}
+        </form>
         <p className="hidden shrink-0 items-center gap-1.5 text-[11px] text-white/25 sm:flex">
           <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
           {t("updated")} ·{" "}
-          {new Date().toLocaleDateString(locale === "en" ? "en-GB" : "fr-FR", {
+          {new Date().toLocaleDateString(localeNow === "en" ? "en-GB" : "fr-FR", {
             day: "numeric",
             month: "long",
             year: "numeric",
           })}
         </p>
+        <a
+          href={`/${locale}/veille/rss.xml`}
+          className="hidden shrink-0 items-center gap-1.5 rounded-md border border-lg-gold/30 px-2.5 py-1.5 text-[10px] uppercase tracking-wider text-lg-gold-light hover:bg-lg-gold/10 sm:flex"
+          aria-label={t("rssLink")}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <IconRss size={12} />
+          {t("rssLabel")}
+        </a>
       </header>
 
-      {showAlert && (
-        <div className="mx-5 mt-3 flex items-center justify-between rounded-lg border border-lg-gold/25 bg-lg-gold/10 px-3.5 py-2.5">
-          <div className="flex items-center gap-2">
-            <IconBellRinging size={16} className="text-lg-gold" />
-            <p className="text-xs text-lg-gold-light">
-              <strong>{t("alertIntro", { count: newCount })}</strong> {t("alertOutro")}
-            </p>
-          </div>
-          <button
-            type="button"
-            className="text-lg-gold/40 hover:text-lg-gold"
-            aria-label={t("dismissAlert")}
-            onClick={() => setShowAlert(false)}
-          >
-            <IconX size={18} />
-          </button>
+      {newCount > 0 ? (
+        <div className="mx-5 mt-3 flex items-center gap-2 rounded-lg border border-lg-gold/25 bg-lg-gold/10 px-3.5 py-2.5">
+          <IconBellRinging size={16} className="text-lg-gold" />
+          <p className="text-xs text-lg-gold-light">
+            <strong>{t("alertIntro", { count: newCount })}</strong> {t("alertOutro")}
+          </p>
         </div>
-      )}
+      ) : null}
 
       <div className="flex-1 space-y-4 p-3.5 sm:p-5">
         <section className="rounded-[11px] border border-white/10 bg-white/[0.03] p-4">
-          <h2 className="font-app-serif text-sm font-semibold text-lg-gold-light">{t("officialPortalsTitle")}</h2>
-          <p className="mt-1 max-w-2xl text-[11px] font-light leading-relaxed text-white/55">{t("officialPortalsIntro")}</p>
+          <h2 className="font-app-serif text-sm font-semibold text-lg-gold-light">
+            {t("officialPortalsTitle")}
+          </h2>
+          <p className="mt-1 max-w-2xl text-[11px] font-light leading-relaxed text-white/55">
+            {t("officialPortalsIntro")}
+          </p>
           <ul className="mt-3 flex flex-wrap gap-2">
             {OFFICIAL_PORTALS.map((p) => (
               <li key={p.url}>
@@ -203,120 +159,56 @@ export default function VeillePage() {
           </ul>
         </section>
 
-        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-[10px] uppercase tracking-wider text-white/35">{t("filterBySource")}</span>
-            <div className="flex flex-wrap gap-1.5">
-              {SOURCES.map((src) => (
-                <button
-                  key={src}
-                  type="button"
-                  onClick={() => setSourceFilter(src)}
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-[10px] uppercase tracking-wider text-white/35">
+            {t("filterBySource")}
+          </span>
+          <div className="flex flex-wrap gap-1.5">
+            <Link
+              href={buildHref(query, { source: "" })}
+              className={cn(
+                "rounded-full px-3 py-1 text-[11px] font-medium transition-colors",
+                allOption
+                  ? "bg-lg-gold text-lg-navy"
+                  : "border border-white/15 bg-white/5 text-white/60 hover:border-lg-gold/30 hover:text-white",
+              )}
+            >
+              {t("filterAll")}
+            </Link>
+            {VEILLE_FILTER_OPTIONS.sources.map((s) => {
+              const active = query.sources.length === 1 && query.sources[0] === s;
+              return (
+                <Link
+                  key={s}
+                  href={buildHref(query, { source: s })}
                   className={cn(
                     "rounded-full px-3 py-1 text-[11px] font-medium transition-colors",
-                    sourceFilter === src
+                    active
                       ? "bg-lg-gold text-lg-navy"
                       : "border border-white/15 bg-white/5 text-white/60 hover:border-lg-gold/30 hover:text-white",
                   )}
                 >
-                  {src === "all" ? t("filterAll") : src}
-                </button>
-              ))}
-            </div>
+                  {SOURCE_LABEL_FR[s] ?? s}
+                </Link>
+              );
+            })}
           </div>
-          {ids.size > 0 && (
-            <button
-              type="button"
-              onClick={() => setFavoritesOnly((v) => !v)}
-              className={cn(
-                "self-start rounded-full border px-3 py-1 text-[11px] font-medium transition-colors sm:self-auto",
-                favoritesOnly
-                  ? "border-lg-gold bg-lg-gold/15 text-lg-gold-light"
-                  : "border-white/15 text-white/60 hover:border-lg-gold/30 hover:text-white",
-              )}
-            >
-              {t("favoritesOnly")}
-              {ids.size > 0 ? ` (${ids.size})` : ""}
-            </button>
-          )}
         </div>
 
-        <div className="grid gap-2.5 sm:grid-cols-2">
-          {filtered.map((card) => (
-            <article
-              key={card.id}
-              onClick={(e) => {
-                if ((e.target as HTMLElement).closest("a,button")) return;
-                openVeilleSource(card.url);
-              }}
-              className={cn(
-                "relative cursor-pointer rounded-[11px] border border-white/10 bg-white/[0.03] p-4 text-left transition-colors hover:border-lg-gold/25 hover:bg-white/[0.05]",
-                card.isNew && "after:absolute after:right-3 after:top-3 after:h-1.5 after:w-1.5 after:rounded-full after:bg-lg-gold",
-              )}
-            >
-              <div className="mb-2 flex items-center gap-2">
-                <span
-                  className={cn(
-                    "rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase",
-                    badge[card.source],
-                  )}
-                >
-                  {card.source}
-                </span>
-                <span className="ml-auto text-[10px] text-white/25">{card.date}</span>
-              </div>
-              <h3 className="font-app-serif text-sm font-semibold leading-snug text-white">{card.titre}</h3>
-              <p className="mt-2 text-[11px] font-light leading-relaxed text-white/50">{card.resume}</p>
-              <div className="mt-3 flex items-center justify-between">
-                <a
-                  href={card.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-1 text-[10px] text-white/25 hover:text-lg-gold"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <IconExternalLink size={12} />
-                  {card.portal}
-                </a>
-                <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
-                  <button
-                    type="button"
-                    className={cn(
-                      "rounded p-1 transition-colors hover:text-lg-gold",
-                      has(card.id) ? "text-lg-gold" : "text-white/25",
-                    )}
-                    aria-label={has(card.id) ? t("ariaRemoveFavorite") : t("ariaAddFavorite")}
-                    aria-pressed={has(card.id)}
-                    onClick={() => toggle(card.id)}
-                  >
-                    {has(card.id) ? <IconStarFilled size={16} /> : <IconStar size={16} />}
-                  </button>
-                  <button
-                    type="button"
-                    className="rounded p-1 text-white/25 hover:text-lg-gold"
-                    aria-label={t("ariaShare")}
-                    onClick={() => void handleShare(card)}
-                  >
-                    <IconShare size={16} />
-                  </button>
-                  <button
-                    type="button"
-                    className="rounded p-1 text-white/25 hover:text-lg-gold"
-                    aria-label={t("ariaConsultSource")}
-                    onClick={() => openVeilleSource(card.url)}
-                  >
-                    <IconExternalLink size={16} />
-                  </button>
-                </div>
-              </div>
-            </article>
-          ))}
-        </div>
-        {filtered.length === 0 && (
-          <p className="py-8 text-center text-sm text-white/40">{t("noResults")}</p>
-        )}
-        <p className="mx-auto max-w-3xl text-center text-[10px] leading-relaxed text-white/35">{t("curatedFootnote")}</p>
-        <p className="mx-auto mt-2 max-w-3xl text-center text-[10px] leading-relaxed text-white/30">{t("sourceOpenHint")}</p>
+        {degraded ? (
+          <p className="rounded-md border border-amber-400/30 bg-amber-500/10 px-3 py-2 text-[11px] text-amber-100/85">
+            {t("degradedNotice")}
+          </p>
+        ) : null}
+
+        <VeilleGrid items={items} />
+
+        <p className="mx-auto max-w-3xl text-center text-[10px] leading-relaxed text-white/35">
+          {t("curatedFootnote")}
+        </p>
+        <p className="mx-auto mt-2 max-w-3xl text-center text-[10px] leading-relaxed text-white/30">
+          {t("sourceOpenHint")}
+        </p>
       </div>
     </div>
   );
