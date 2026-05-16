@@ -12,6 +12,8 @@
     "db:generate": "drizzle-kit generate",
     "db:push": "drizzle-kit push",
     "db:ingest-articles": "tsx scripts/ingest-articles.ts",
+    "db:seed-veille": "tsx scripts/seed-veille.ts",
+    "db:seed-text-versions": "tsx scripts/seed-text-versions.ts",
     "search:index": "tsx scripts/index-meilisearch.ts"
   },
   "dependencies": {

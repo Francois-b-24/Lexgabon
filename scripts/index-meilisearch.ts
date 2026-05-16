@@ -29,6 +29,8 @@ type MeiliTexteDoc = {
   datePublicationTs: number;
   estEnVigueur: boolean;
   domaines: number[];
+  /** Slug texte du domaine (civil, travail, ...) pour le filtre Meili — T2.1. */
+  domaine: string | null;
   resume: string;
 };
 
@@ -52,7 +54,7 @@ async function ensureIndexSettings(client: Meilisearch) {
   const index = client.index(INDEX);
   await index.updateSettings({
     searchableAttributes: ["titre", "reference", "resume"],
-    filterableAttributes: ["source", "type", "domaines", "datePublicationTs", "estEnVigueur"],
+    filterableAttributes: ["source", "type", "domaine", "domaines", "datePublicationTs", "estEnVigueur"],
     sortableAttributes: ["datePublicationTs"],
     rankingRules: [
       "words",
@@ -81,6 +83,7 @@ async function fetchAllTextes(): Promise<MeiliTexteDoc[]> {
       datePublication: textes.datePublication,
       estEnVigueur: textes.estEnVigueur,
       domaines: textes.domaines,
+      domaineSlug: textes.domaineSlug,
       resume: textes.resume,
       sourceCode: sources.code,
       sourceNom: sources.nom,
@@ -109,6 +112,7 @@ async function fetchAllTextes(): Promise<MeiliTexteDoc[]> {
       datePublicationTs: Number.isFinite(ts) ? ts : 0,
       estEnVigueur: row.estEnVigueur ?? true,
       domaines: row.domaines ?? [],
+      domaine: row.domaineSlug ?? null,
       resume: row.resume ?? "",
     });
   }

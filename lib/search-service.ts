@@ -50,8 +50,10 @@ function buildMeiliFilter(filters: SearchFilters): string[] {
     clauses.push(`type IN [${list}]`);
   }
   if (filters.domaines.length > 0) {
+    // T2.1 : on filtre sur le champ `domaine` (slug string) indexé via T1.3 schéma + ingest-articles.
+    // `domaines` int[] reste pour compat future (table `domaines` peuplée).
     const list = filters.domaines.map((d) => `"${d}"`).join(", ");
-    clauses.push(`domaines IN [${list}]`);
+    clauses.push(`domaine IN [${list}]`);
   }
   if (filters.dateFrom) {
     clauses.push(`datePublicationTs >= ${dateToTimestamp(filters.dateFrom)}`);
