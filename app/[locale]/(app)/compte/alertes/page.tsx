@@ -9,7 +9,7 @@ export default async function AlertesPage({
   setRequestLocale(locale);
   const t = await getTranslations("Compte");
   return (
-    <div className="p-6">
+    <div className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 md:px-9 md:py-10">
       <h1 className="font-app-serif text-xl text-white">{t("alertes")}</h1>
       <p className="mt-2 text-sm text-white/50">{t("wipAlertes")}</p>
     </div>

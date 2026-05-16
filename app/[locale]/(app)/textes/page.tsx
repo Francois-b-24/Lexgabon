@@ -13,7 +13,7 @@ export default async function TextesIndexPage({
   const t = await getTranslations("Nav");
 
   return (
-    <div className="p-6">
+    <div className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 md:px-9 md:py-10">
       <h1 className="font-app-serif text-xl font-semibold text-white">{t("textes")}</h1>
       <ul className="mt-4 space-y-2">
         {mockVeille.map((m) => {

@@ -89,7 +89,7 @@ export default async function TexteSourceDetailPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <div className="grid min-h-screen gap-8 p-5 lg:grid-cols-[300px_1fr]">
+      <div className="mx-auto grid min-h-screen w-full max-w-7xl gap-8 px-4 py-6 sm:px-6 md:px-9 md:py-10 lg:grid-cols-[300px_1fr]">
         <aside className="top-24 h-fit space-y-5 rounded-lg border border-white/10 bg-white/[0.03] p-5 lg:sticky">
           <div className="space-y-2">
             <p className="text-[10px] uppercase tracking-wider text-lg-gold">{texte.reference}</p>

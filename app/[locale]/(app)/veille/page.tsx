@@ -84,7 +84,7 @@ export default async function VeillePage({
   const allOption = query.sources.length === 0;
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="mx-auto flex min-h-screen w-full max-w-6xl flex-col">
       <header className="sticky top-0 z-10 flex items-center gap-3 border-b border-white/10 bg-lg-app-navy px-5 py-3.5">
         <form
           method="get"
