@@ -130,7 +130,10 @@
     "noResults": "No entries match these filters.",
     "pagination": "Page",
     "officialPortalsTitle": "Official portals",
-    "officialPortalsIntro": "Direct access to the main official publication portals monitored by LexGabon."
+    "officialPortalsIntro": "Direct access to the main official publication portals monitored by LexGabon.",
+    "rssLabel": "RSS feed",
+    "rssLink": "Subscribe to the RSS feed",
+    "degradedNotice": "Monitoring index unavailable: demo entries shown."
   },
   "Chatbot": {
     "title": "Ama'IA",
@@ -152,7 +155,34 @@
     "sourcesTitle": "Cited sources",
     "sourceArticle": "Article {article}",
     "sourceViewTexte": "View text",
-    "textareaHint": "Enter to send · Shift+Enter for a new line."
+    "popover": {
+      "loading": "Loading article…",
+      "articleHeader": "Article {article}",
+      "openFull": "Open the full article",
+      "notIndexed": "This article is not indexed on LexGabon yet.",
+      "openExternal": "Open official source"
+    },
+    "textareaHint": "Enter to send · Shift+Enter for a new line.",
+    "suggestions": {
+      "title": "Suggestions to get started",
+      "hint": "Set your profile in the header to personalise these suggestions.",
+      "filteredByProfile": "Tailored for: {profile}",
+      "profileLabel": {
+        "avocat": "Lawyer",
+        "juriste": "In-house counsel",
+        "etudiant": "Student"
+      },
+      "domaine": {
+        "travail": "Labour law",
+        "commercial": "Commercial law",
+        "fiscal": "Tax law",
+        "civil": "Civil law",
+        "penal": "Criminal law",
+        "famille": "Family law",
+        "social": "Social law",
+        "general": "General"
+      }
+    }
   },
   "Textes": {
     "downloadPdf": "Download official PDF",
@@ -172,7 +202,17 @@
     "statusInForce": "In force",
     "statusRepealed": "Repealed",
     "articleAnchorLabel": "Direct link to this article",
-    "section": "Section"
+    "articleCitationLabel": "Copy normalized citation",
+    "section": "Section",
+    "compareVersions": "Compare versions ({count})"
+  },
+  "TextesCompare": {
+    "title": "Compare versions — {titre}",
+    "backToTexte": "Back to text",
+    "versionBefore": "Original version",
+    "versionAfter": "Compared version",
+    "compare": "Compare",
+    "notEnoughVersions": "This text does not have a second indexed version yet. Comparison requires at least two recorded versions."
   },
   "Auth": {
     "signIn": "Sign in",

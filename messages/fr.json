@@ -130,7 +130,10 @@
     "noResults": "Aucune entrée ne correspond à ces filtres.",
     "pagination": "Page",
     "officialPortalsTitle": "Portails officiels",
-    "officialPortalsIntro": "Accès direct aux principaux portails de publication officielle suivis par LexGabon."
+    "officialPortalsIntro": "Accès direct aux principaux portails de publication officielle suivis par LexGabon.",
+    "rssLabel": "Flux RSS",
+    "rssLink": "S'abonner au flux RSS",
+    "degradedNotice": "Index veille indisponible : entrées de démonstration affichées."
   },
   "Chatbot": {
     "title": "Ama'IA",
@@ -152,7 +155,34 @@
     "sourcesTitle": "Sources citées",
     "sourceArticle": "Article {article}",
     "sourceViewTexte": "Voir le texte",
-    "textareaHint": "Entrée pour envoyer · Maj+Entrée pour un saut de ligne."
+    "popover": {
+      "loading": "Chargement de l'article…",
+      "articleHeader": "Article {article}",
+      "openFull": "Voir l'article complet",
+      "notIndexed": "Cet article n'est pas encore indexé sur LexGabon.",
+      "openExternal": "Ouvrir la source officielle"
+    },
+    "textareaHint": "Entrée pour envoyer · Maj+Entrée pour un saut de ligne.",
+    "suggestions": {
+      "title": "Suggestions pour commencer",
+      "hint": "Choisissez votre profil dans l'en-tête pour personnaliser les suggestions.",
+      "filteredByProfile": "Adapté au profil : {profile}",
+      "profileLabel": {
+        "avocat": "Avocat",
+        "juriste": "Juriste d'entreprise",
+        "etudiant": "Étudiant"
+      },
+      "domaine": {
+        "travail": "Droit du travail",
+        "commercial": "Droit commercial",
+        "fiscal": "Droit fiscal",
+        "civil": "Droit civil",
+        "penal": "Droit pénal",
+        "famille": "Droit de la famille",
+        "social": "Droit social",
+        "general": "Général"
+      }
+    }
   },
   "Textes": {
     "downloadPdf": "Télécharger le PDF officiel",
@@ -172,7 +202,17 @@
     "statusInForce": "En vigueur",
     "statusRepealed": "Abrogé",
     "articleAnchorLabel": "Lien direct vers cet article",
-    "section": "Section"
+    "articleCitationLabel": "Copier la citation normalisée",
+    "section": "Section",
+    "compareVersions": "Comparer les versions ({count})"
+  },
+  "TextesCompare": {
+    "title": "Comparer les versions — {titre}",
+    "backToTexte": "Retour au texte",
+    "versionBefore": "Version d'origine",
+    "versionAfter": "Version comparée",
+    "compare": "Comparer",
+    "notEnoughVersions": "Ce texte n'a pas encore de deuxième version indexée. La comparaison nécessite au moins deux versions enregistrées."
   },
   "Auth": {
     "signIn": "Connexion",

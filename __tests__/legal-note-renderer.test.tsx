@@ -82,9 +82,13 @@ describe("LegalNoteRenderer", () => {
       disclaimer: null,
     };
     const { container } = render(<LegalNoteRenderer structured={structured} />);
-    const badges = container.querySelectorAll("span");
-    const articleBadge = Array.from(badges).find((b) => b.textContent === "Article 5 du Code OHADA");
-    const sourceBadge = Array.from(badges).find((b) => b.textContent === "JO n°1");
+    // On cible les feuilles textuelles (sans descendants) pour ignorer les wrappers
+    // (`<span class="relative inline-block">` ajouté par le popover en T2.3).
+    const leafSpans = Array.from(container.querySelectorAll("span")).filter(
+      (b) => b.children.length === 0,
+    );
+    const articleBadge = leafSpans.find((b) => b.textContent === "Article 5 du Code OHADA");
+    const sourceBadge = leafSpans.find((b) => b.textContent === "JO n°1");
     expect(articleBadge?.className).toMatch(/lg-gold/);
     expect(sourceBadge?.className).not.toMatch(/lg-gold/);
   });
