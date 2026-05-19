@@ -7,7 +7,7 @@ from src.agent.response_parser import parse_legal_note
 from src.agent.schemas import SourceItem
 
 
-DISCLAIMER = "Il s'agit d'une information juridique générale : cela ne remplace pas le conseil d'un avocat inscrit au barreau."
+DISCLAIMER = "Cette réponse ne constitue pas un conseil juridique, veuillez si nécessaire consulter un professionnel du droit."
 
 
 @pytest.fixture

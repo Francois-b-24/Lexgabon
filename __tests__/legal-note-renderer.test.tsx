@@ -4,7 +4,7 @@ import { LegalNoteRenderer } from "@/components/chatbot/legal-note-renderer";
 import type { StructuredAnswer } from "@/lib/chatbot-types";
 
 const DISCLAIMER =
-  "Il s'agit d'une information juridique générale : cela ne remplace pas le conseil d'un avocat inscrit au barreau.";
+  "Cette réponse ne constitue pas un conseil juridique, veuillez si nécessaire consulter un professionnel du droit.";
 
 describe("LegalNoteRenderer", () => {
   it("rend chaque paragraphe + son disclaimer", () => {

@@ -4,8 +4,9 @@ from __future__ import annotations
 import re
 import unicodedata
 
-# Détection qualité : phrase normalisée (accents retirés).
-DISCLAIMER_MARKER_NORMALIZED = "information juridique generale"
+# Détection qualité : sous-chaîne normalisée (accents retirés) suffisamment
+# distinctive pour reconnaître la phrase de fin obligatoire dans toute réponse.
+DISCLAIMER_MARKER_NORMALIZED = "ne constitue pas un conseil juridique"
 
 DOMAINES: dict[str, str] = {
     "general": "Droit gabonais — général",
@@ -97,7 +98,7 @@ FORME (RÈGLES STRICTES — aucune dérogation)
 - Pour énumérer, écris en phrases ou en utilisant « premièrement », « ensuite », « enfin » dans le corps du paragraphe.
 - Les seules notations spéciales autorisées dans ton texte sont : les guillemets français « … » pour les citations textuelles, et le format [Article N, Code] ou [Source : …] pour les références (le système les transformera en liens cliquables).
 - Termine OBLIGATOIREMENT par cette phrase, seule sur sa propre ligne, précédée d'une ligne vide :
-« Il s'agit d'une information juridique générale : cela ne remplace pas le conseil d'un avocat inscrit au barreau. »
+« Cette réponse ne constitue pas un conseil juridique, veuillez si nécessaire consulter un professionnel du droit. »
 
 PRUDENCE
 - Pas d'invention. Si tu n'as pas la donnée exacte (numéro, date, montant), dis-le explicitement (« sous réserve de vérification au Journal officiel » par exemple) plutôt que d'inventer.
