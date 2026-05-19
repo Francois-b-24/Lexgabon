@@ -48,6 +48,30 @@ export async function POST(req: Request) {
   }
 
   const text = await res.text();
-  const ct = res.headers.get("content-type") ?? "application/json";
-  return new NextResponse(text, { status: res.status, headers: { "Content-Type": ct } });
+  const ct = res.headers.get("content-type") ?? "";
+
+  // Si le backend renvoie déjà du JSON, on le retransmet tel quel.
+  if (ct.toLowerCase().includes("application/json")) {
+    return new NextResponse(text, {
+      status: res.status,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  // Sinon (HTML d'erreur 502 d'edge, page Render au cold-start, plain text),
+  // on encapsule la réponse dans une enveloppe JSON pour que le front puisse
+  // toujours faire .json() sans planter sur un "Unexpected token '<'".
+  const snippet = text.trim().slice(0, 240);
+  const status = res.status >= 400 ? res.status : 502;
+  return NextResponse.json(
+    {
+      detail:
+        status === 502 || status === 503 || status === 504
+          ? "Le service Ama'IA est temporairement indisponible. Réessayez dans quelques instants."
+          : `Réponse inattendue du service (status ${res.status}).`,
+      upstream_status: res.status,
+      upstream_snippet: snippet || null,
+    },
+    { status },
+  );
 }

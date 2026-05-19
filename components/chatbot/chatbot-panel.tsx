@@ -194,12 +194,26 @@ export default function ChatbotPanel({ welcome }: { welcome: string }) {
         window.clearTimeout(timeoutId);
       });
 
-      const payload = (await response.json()) as BackendChatPayload;
+      // Lecture défensive : si la réponse n'est pas du JSON valide (HTML
+      // d'erreur 502 d'un edge, plain text, etc.), on évite le crash
+      // "Unexpected token '<'" et on transforme ça en BackendChatPayload.detail.
+      const rawText = await response.text();
+      let payload: BackendChatPayload;
+      try {
+        payload = rawText ? (JSON.parse(rawText) as BackendChatPayload) : {};
+      } catch {
+        payload = {
+          detail: rawText.slice(0, 240) || t("error"),
+        };
+      }
 
       if (!response.ok) {
         const detailStr = parseErrorDetail(payload);
         if (response.status === 429) {
           throw new Error(t("errorRateLimited"));
+        }
+        if (response.status === 502 || response.status === 503 || response.status === 504) {
+          throw new Error(detailStr.trim() || t("errorNetwork"));
         }
         throw new Error(detailStr.trim() || t("error"));
       }
