@@ -187,8 +187,27 @@ def search(
     domaine: str | None = None,
     citation_intent: bool = False,
 ) -> list[dict[str, Any]]:
-    """Point d'entrée unique : recherche RAG sur la collection principale."""
-    return search_expanded(query, k, domaine=domaine, citation_intent=citation_intent)
+    """Point d'entrée unique : recherche RAG sur la collection principale.
+
+    Filtre par `rag_min_score` : un chunk dont le score hybride est en
+    dessous du seuil est considéré comme hors-sujet et écarté avant tout
+    rendu. Si rien ne passe le seuil, on renvoie []. Le LLM répondra alors
+    sur ses connaissances générales sans citer d'article hors-sujet.
+    """
+    rows = search_expanded(query, k, domaine=domaine, citation_intent=citation_intent)
+    s = get_settings()
+    threshold = float(getattr(s, "rag_min_score", 0.0) or 0.0)
+    if threshold <= 0.0 or not rows:
+        return rows
+    filtered = [r for r in rows if float(r.get("score", 0.0)) >= threshold]
+    if not filtered:
+        logger.info(
+            "rag search dropped all %d rows below score threshold %.2f (top=%.3f)",
+            len(rows),
+            threshold,
+            float(rows[0].get("score", 0.0)) if rows else 0.0,
+        )
+    return filtered
 
 
 def format_context_for_llm(rows: list[dict[str, Any]], max_chars_per: int = 900) -> str:

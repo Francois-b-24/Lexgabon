@@ -1,6 +1,7 @@
 """Moteur du chatbot : RAG une fois + un appel LLM (pas d'outils, pas de session uploads)."""
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -13,6 +14,50 @@ from src.agent.prompts import (
     strip_meta_rag_paragraphs,
 )
 from src.rag import retriever
+
+
+# Capture les marqueurs [Article 12, Code …] / [Article 12 bis, …] dans la
+# réponse LLM pour savoir quels extraits ont réellement été cités.
+_ARTICLE_CITATION_RE = re.compile(
+    r"\[\s*article\s+([0-9]+(?:\s*(?:bis|ter|quater))?)\s*[,;:]?",
+    re.IGNORECASE,
+)
+
+
+def _cited_article_numbers(answer_text: str) -> set[str]:
+    """Renvoie l'ensemble des numéros d'articles que le LLM a explicitement cités."""
+    out: set[str] = set()
+    for m in _ARTICLE_CITATION_RE.finditer(answer_text or ""):
+        raw = (m.group(1) or "").strip().lower()
+        if not raw:
+            continue
+        # On normalise « 12 bis » → « 12bis » pour matcher les métadonnées.
+        out.add(re.sub(r"\s+", "", raw))
+    return out
+
+
+def _filter_sources_to_cited(
+    sources: list[dict[str, Any]], cited: set[str]
+) -> list[dict[str, Any]]:
+    """Garde uniquement les sources dont le numero_article apparaît dans la réponse.
+
+    Si la réponse ne cite explicitement aucun article (cited est vide), on
+    renvoie une liste vide : pas de sources affichées sous une réponse qui
+    n'en a pas utilisé. Évite d'afficher 12 articles du Code du travail
+    sous une réponse sur le droit fiscal qui n'a cité aucun d'entre eux.
+    """
+    if not cited:
+        return []
+    kept: list[dict[str, Any]] = []
+    for s in sources:
+        meta = s.get("metadata") if isinstance(s.get("metadata"), dict) else {}
+        num_raw = meta.get("numero_article") if meta else None
+        if num_raw is None:
+            continue
+        normalized = re.sub(r"\s+", "", str(num_raw).strip().lower())
+        if normalized and normalized in cited:
+            kept.append(s)
+    return kept
 
 
 @dataclass
@@ -89,4 +134,11 @@ def run_chat(
                 "metadata": meta,
             }
         )
+
+    # On n'affiche que les sources que le LLM a effectivement citées. Si la
+    # réponse n'a cité aucun article (cas type : question hors droit du travail
+    # alors que la base ne contient que ce code), on retourne une liste vide
+    # — pas de « Sources citées » trompeuses sous la réponse.
+    cited = _cited_article_numbers(text)
+    sources = _filter_sources_to_cited(sources, cited)
     return ChatAnswer(text=text, sources=sources)

@@ -33,6 +33,13 @@ class Settings(BaseSettings):
 
     rag_structured_citations: bool = False
 
+    # Seuil de pertinence : un chunk dont le score hybride (vectoriel+lexical)
+    # tombe en dessous est considéré comme hors-sujet et n'est ni envoyé au LLM
+    # ni affiché à l'utilisateur dans la liste des sources citées. Évite que
+    # le LLM cite un article du Code du travail pour une question fiscale
+    # simplement parce que c'est le seul code intégralement indexé.
+    rag_min_score: float = 0.30
+
     # Allowlist domaines pour les scripts d'ingestion (fetch_official_sources, ingest_pdfs).
     corpus_sources_yaml: str = "./corpus/sources.yaml"
 
