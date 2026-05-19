@@ -164,22 +164,18 @@
     "textareaHint": "Enter to send · Shift+Enter for a new line.",
     "suggestions": {
       "title": "Suggestions to get started",
-      "hint": "Set your profile in the header to personalise these suggestions.",
-      "filteredByProfile": "Tailored for: {profile}",
-      "profileLabel": {
-        "non_juriste": "Non-lawyer",
-        "professionnel": "Legal professional",
-        "etudiant": "Student"
-      },
-      "domaine": {
-        "travail": "Labour law",
-        "commercial": "Commercial law",
-        "fiscal": "Tax law",
+      "chooseTheme": "Choose a theme above to see suggestions.",
+      "filteredByTheme": "Theme: {theme}"
+    },
+    "themeSelector": {
+      "label": "Theme",
+      "placeholder": "Choose a theme…",
+      "option": {
         "civil": "Civil law",
-        "penal": "Criminal law",
-        "famille": "Family law",
-        "social": "Social law",
-        "general": "General"
+        "commercial": "Commercial law",
+        "travail": "Labour law",
+        "fonction_publique": "Civil service",
+        "fiscal": "Tax law"
       }
     }
   },

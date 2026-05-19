@@ -1,52 +1,36 @@
 /**
- * Tests du filtrage des suggestions Ama'IA par profil (T2.2).
+ * Tests des suggestions Ama'IA filtrées par thème.
  */
 import { describe, expect, it } from "vitest";
 import {
   AMAIA_SUGGESTIONS,
+  SUGGESTION_DOMAINES,
   buildSuggestionMessage,
-  getSuggestionsForProfile,
+  getSuggestionsForDomaine,
 } from "@/lib/amaia-suggestions";
 
-describe("getSuggestionsForProfile", () => {
-  it("retourne au moins 6 suggestions quel que soit le profil", () => {
-    for (const p of [null, "professionnel", "etudiant"] as const) {
-      const result = getSuggestionsForProfile(p);
-      expect(result.length).toBeGreaterThanOrEqual(6);
-      expect(result.length).toBeLessThanOrEqual(9);
+describe("getSuggestionsForDomaine", () => {
+  it("retourne 5 suggestions pour chaque thème", () => {
+    for (const d of SUGGESTION_DOMAINES) {
+      const result = getSuggestionsForDomaine(d);
+      expect(result).toHaveLength(5);
+      for (const s of result) {
+        expect(s.domaine).toBe(d);
+      }
     }
   });
 
-  it("ne retourne aucun doublon", () => {
-    const result = getSuggestionsForProfile("professionnel");
-    const ids = result.map((s) => s.id);
+  it("retourne un tableau vide quand aucun thème n'est sélectionné", () => {
+    expect(getSuggestionsForDomaine(null)).toEqual([]);
+  });
+
+  it("ne contient aucun doublon d'id", () => {
+    const ids = AMAIA_SUGGESTIONS.map((s) => s.id);
     expect(new Set(ids).size).toBe(ids.length);
   });
 
-  it("priorise les suggestions ciblant le profil professionnel", () => {
-    const result = getSuggestionsForProfile("professionnel");
-    const targeted = AMAIA_SUGGESTIONS.filter((s) => s.profils.includes("professionnel"));
-    for (const s of targeted) {
-      expect(result.some((r) => r.id === s.id)).toBe(true);
-    }
-  });
-
-  it("priorise les suggestions ciblant le profil etudiant", () => {
-    const result = getSuggestionsForProfile("etudiant");
-    const etudiantTargeted = AMAIA_SUGGESTIONS.filter((s) => s.profils.includes("etudiant"));
-    for (const s of etudiantTargeted) {
-      expect(result.some((r) => r.id === s.id)).toBe(true);
-    }
-  });
-
-  it("pour un profil sans suggestions ciblées, retombe sur les génériques", () => {
-    // Note : il n'y a pas de profil sans aucune suggestion ciblée dans notre corpus, mais
-    // on vérifie au moins que les génériques (profils=[]) sont toujours présentes pour null.
-    const result = getSuggestionsForProfile(null);
-    const generic = AMAIA_SUGGESTIONS.filter((s) => s.profils.length === 0);
-    for (const s of generic) {
-      expect(result.some((r) => r.id === s.id)).toBe(true);
-    }
+  it("expose exactement 25 suggestions (5 thèmes × 5)", () => {
+    expect(AMAIA_SUGGESTIONS).toHaveLength(25);
   });
 });
 
@@ -63,8 +47,7 @@ describe("buildSuggestionMessage", () => {
   it("ne touche pas au prompt si contextHint absent", () => {
     const fake = {
       id: "no-context",
-      domaine: "general" as const,
-      profils: [],
+      domaine: "civil" as const,
       prompt: "Question seule.",
     };
     expect(buildSuggestionMessage(fake)).toBe("Question seule.");

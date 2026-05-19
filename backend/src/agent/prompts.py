@@ -16,6 +16,7 @@ DOMAINES: dict[str, str] = {
     "administratif": "Droit administratif gabonais",
     "fiscal": "Droit fiscal gabonais",
     "famille": "Droit de la famille",
+    "fonction_publique": "Droit de la fonction publique gabonaise",
 }
 
 # Suffixes courts pour élargir la recherche vectorielle (RAG) selon le domaine indiqué.
@@ -28,6 +29,7 @@ _DOMAIN_RAG_BOOST: dict[str, str] = {
     "administratif": "recours contentieux administratif acte administratif Gabon",
     "fiscal": "impôt taxe code général des impôts Gabon",
     "famille": "mariage divorce filiation succession famille Gabon",
+    "fonction_publique": "statut général fonctionnaire agent public concours avancement Gabon",
 }
 
 

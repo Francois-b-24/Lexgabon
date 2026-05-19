@@ -164,22 +164,18 @@
     "textareaHint": "Entrée pour envoyer · Maj+Entrée pour un saut de ligne.",
     "suggestions": {
       "title": "Suggestions pour commencer",
-      "hint": "Choisissez votre profil dans l'en-tête pour personnaliser les suggestions.",
-      "filteredByProfile": "Adapté au profil : {profile}",
-      "profileLabel": {
-        "non_juriste": "Non juriste",
-        "professionnel": "Professionnel du droit",
-        "etudiant": "Étudiant"
-      },
-      "domaine": {
-        "travail": "Droit du travail",
-        "commercial": "Droit commercial",
-        "fiscal": "Droit fiscal",
+      "chooseTheme": "Choisissez un thème ci-dessus pour voir les suggestions.",
+      "filteredByTheme": "Thème : {theme}"
+    },
+    "themeSelector": {
+      "label": "Thème",
+      "placeholder": "Choisir un thème…",
+      "option": {
         "civil": "Droit civil",
-        "penal": "Droit pénal",
-        "famille": "Droit de la famille",
-        "social": "Droit social",
-        "general": "Général"
+        "commercial": "Droit commercial",
+        "travail": "Droit du travail",
+        "fonction_publique": "Fonction publique",
+        "fiscal": "Droit fiscal"
       }
     }
   },

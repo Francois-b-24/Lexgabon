@@ -8,6 +8,8 @@ import { useUserProfile } from "@/hooks/use-user-profile";
 import { SourceList } from "@/components/chatbot/source-list";
 import { LegalNoteRenderer } from "@/components/chatbot/legal-note-renderer";
 import { QuestionSuggestions } from "@/components/chatbot/question-suggestions";
+import { ThemeSelector } from "@/components/chatbot/theme-selector";
+import type { SuggestionDomaine } from "@/lib/amaia-suggestions";
 import type { ChatSource, StructuredAnswer } from "@/lib/chatbot-types";
 
 type Role = "user" | "assistant";
@@ -97,6 +99,7 @@ export default function ChatbotPanel({ welcome }: { welcome: string }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hint, setHint] = useState<string | null>(null);
+  const [domaine, setDomaine] = useState<SuggestionDomaine | null>(null);
   const messageContainerRef = useRef<HTMLDivElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const bottomRef = useRef<HTMLDivElement | null>(null);
@@ -183,6 +186,7 @@ export default function ChatbotPanel({ welcome }: { welcome: string }) {
           history: historyForApi,
           session_id: sessionId,
           profile: profile ?? null,
+          domaine: domaine ?? null,
         }),
         signal: controller.signal,
       }).finally(() => {
@@ -293,13 +297,21 @@ export default function ChatbotPanel({ welcome }: { welcome: string }) {
           ))}
 
           {messages.length === 1 && !loading ? (
-            <QuestionSuggestions
-              disabled={loading}
-              onPick={(text) => {
-                setQuestion(text);
-                textareaRef.current?.focus();
-              }}
-            />
+            <div className="flex flex-col gap-3">
+              <ThemeSelector
+                value={domaine}
+                onChange={setDomaine}
+                disabled={loading}
+              />
+              <QuestionSuggestions
+                domaine={domaine}
+                disabled={loading}
+                onPick={(text) => {
+                  setQuestion(text);
+                  textareaRef.current?.focus();
+                }}
+              />
+            </div>
           ) : null}
 
           {loading ? (
