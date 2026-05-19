@@ -3,9 +3,9 @@
  * Aucun lien avec Supabase : choix entièrement local, modifiable à tout moment.
  */
 
-export type UserProfile = "avocat" | "juriste" | "etudiant";
+export type UserProfile = "non_juriste" | "professionnel" | "etudiant";
 
-export const USER_PROFILES: readonly UserProfile[] = ["avocat", "juriste", "etudiant"] as const;
+export const USER_PROFILES: readonly UserProfile[] = ["non_juriste", "professionnel", "etudiant"] as const;
 
 const COOKIE_NAME = "lg_profile";
 const LOCAL_STORAGE_KEY = "lexgabon:user-profile";

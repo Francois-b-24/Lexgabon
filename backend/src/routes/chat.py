@@ -14,6 +14,7 @@ from src.agent.prompts import (
     answer_has_disclaimer,
     append_indexed_source_lines_if_needed,
     build_user_message,
+    strip_citation_markers,
 )
 from src.agent.response_parser import parse_legal_note
 from src.agent.schemas import (
@@ -164,24 +165,34 @@ async def api_chat(request: Request, body: ChatRequest):
         logger.exception("chat failed")
         return JSONResponse({"detail": str(e)}, status_code=502)
 
-    out_text = append_indexed_source_lines_if_needed(out.text, out.sources)
-    sources = [_source_item_from_row(src) for src in out.sources[:20]]
+    # Profil non_juriste : pas de citations, pas de sources rendues côté front, pas de structured.
+    # Filet de sécurité — le prompt système l'interdit déjà côté LLM.
+    is_non_juriste = body.profile == "non_juriste"
+
+    if is_non_juriste:
+        out_text = strip_citation_markers(out.text)
+        sources: list[SourceItem] = []
+    else:
+        out_text = append_indexed_source_lines_if_needed(out.text, out.sources)
+        sources = [_source_item_from_row(src) for src in out.sources[:20]]
+
     quality = Quality(
         has_citation=answer_has_citation(out_text),
         has_disclaimer=answer_has_disclaimer(out_text),
     )
     citations: list[StructuredCitation] | None = None
-    if s.rag_structured_citations:
+    if s.rag_structured_citations and not is_non_juriste:
         citations = _build_citations(out.sources)
 
     structured: StructuredAnswer | None = None
-    try:
-        structured = parse_legal_note(out_text, sources)
-        if not structured.paragraphs and not structured.disclaimer:
+    if not is_non_juriste:
+        try:
+            structured = parse_legal_note(out_text, sources)
+            if not structured.paragraphs and not structured.disclaimer:
+                structured = None
+        except Exception:
+            logger.exception("legal note parsing failed; falling back to plain answer")
             structured = None
-    except Exception:
-        logger.exception("legal note parsing failed; falling back to plain answer")
-        structured = None
 
     clean = [{"role": m["role"], "content": m["content"]} for m in hist]
     clean.append({"role": "assistant", "content": out_text})

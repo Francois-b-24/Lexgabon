@@ -276,14 +276,17 @@ export default function ChatbotPanel({ welcome }: { welcome: string }) {
                 <div className="self-end max-w-[85%] rounded-lg border border-lg-gold/25 bg-lg-gold/10 px-3.5 py-2.5 text-[15px] leading-relaxed text-white">
                   <p className="whitespace-pre-wrap [overflow-wrap:anywhere]">{m.content}</p>
                 </div>
-              ) : m.structured ? (
+              ) : m.structured && profile !== "non_juriste" ? (
                 <LegalNoteRenderer structured={m.structured} />
               ) : (
                 <div className="text-[15px] leading-relaxed text-white/90">
                   <p className="whitespace-pre-wrap [overflow-wrap:anywhere]">{m.content}</p>
                 </div>
               )}
-              {m.role === "assistant" && m.sources && m.sources.length > 0 ? (
+              {m.role === "assistant" &&
+              profile !== "non_juriste" &&
+              m.sources &&
+              m.sources.length > 0 ? (
                 <SourceList sources={m.sources} />
               ) : null}
             </div>
@@ -350,7 +353,9 @@ export default function ChatbotPanel({ welcome }: { welcome: string }) {
               {hint}
             </p>
           ) : null}
-          <p className="text-center text-[10px] text-white/35">{t("disclaimer")}</p>
+          <p className="text-center text-[10px] text-white/35">
+            {profile === "non_juriste" ? t("disclaimerNonJuriste") : t("disclaimer")}
+          </p>
         </form>
       </div>
     </div>

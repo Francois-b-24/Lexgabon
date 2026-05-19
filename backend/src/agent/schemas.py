@@ -9,7 +9,7 @@ class HistoryItem(BaseModel):
     content: str
 
 
-UserProfile = Literal["avocat", "juriste", "etudiant"]
+UserProfile = Literal["non_juriste", "professionnel", "etudiant"]
 
 
 class ChatRequest(BaseModel):

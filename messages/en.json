@@ -138,6 +138,7 @@
     "welcome": "Hello. I am Ama'IA, a Gabonese law assistant. Ask your question — I cite applicable articles when the indexed corpus allows.",
     "subtitle": "Legal assistant — Gabonese law",
     "disclaimer": "Ama'IA can make mistakes. The Official Gazette or the authentic text prevails.",
+    "disclaimerNonJuriste": "This answer is not legal advice — consult a qualified legal professional if needed.",
     "newChat": "New conversation",
     "placeholder": "Your legal question…",
     "send": "Send",
@@ -166,8 +167,8 @@
       "hint": "Set your profile in the header to personalise these suggestions.",
       "filteredByProfile": "Tailored for: {profile}",
       "profileLabel": {
-        "avocat": "Lawyer",
-        "juriste": "In-house counsel",
+        "non_juriste": "Non-lawyer",
+        "professionnel": "Legal professional",
         "etudiant": "Student"
       },
       "domaine": {
@@ -270,13 +271,13 @@
     "title": "Tailor LexGabon to your profile",
     "none": "Profile not set",
     "option": {
-      "avocat": "Lawyer",
-      "juriste": "In-house counsel",
+      "non_juriste": "Non-lawyer",
+      "professionnel": "Legal professional",
       "etudiant": "Law student"
     },
     "hint": {
-      "avocat": "Technical answers focused on litigation and procedure.",
-      "juriste": "Operational summary, business applicability, OHADA and CEMAC.",
+      "non_juriste": "Plain language, no jargon, no article citations.",
+      "professionnel": "Technical answer, precise legal vocabulary, detailed citations.",
       "etudiant": "Pedagogical explanations, defined vocabulary, systemic landmarks."
     },
     "ariaWithProfile": "Change user profile (current: {profile})",

@@ -138,6 +138,7 @@
     "welcome": "Bonjour. Je suis Ama'IA, assistant en droit gabonais. Posez votre question : je réponds avec citation des articles applicables lorsque la base indexée le permet.",
     "subtitle": "Assistant juridique — droit gabonais",
     "disclaimer": "Ama'IA peut se tromper. Le Journal officiel ou le texte authentique fait foi.",
+    "disclaimerNonJuriste": "Cette réponse ne constitue pas un conseil juridique, veuillez si nécessaire consulter un professionnel du droit.",
     "newChat": "Nouvelle conversation",
     "placeholder": "Votre question juridique…",
     "send": "Envoyer",
@@ -166,8 +167,8 @@
       "hint": "Choisissez votre profil dans l'en-tête pour personnaliser les suggestions.",
       "filteredByProfile": "Adapté au profil : {profile}",
       "profileLabel": {
-        "avocat": "Avocat",
-        "juriste": "Juriste d'entreprise",
+        "non_juriste": "Non juriste",
+        "professionnel": "Professionnel du droit",
         "etudiant": "Étudiant"
       },
       "domaine": {
@@ -270,13 +271,13 @@
     "title": "Adapter LexGabon à votre profil",
     "none": "Profil non défini",
     "option": {
-      "avocat": "Avocat",
-      "juriste": "Juriste d'entreprise",
+      "non_juriste": "Non juriste",
+      "professionnel": "Professionnel du droit",
       "etudiant": "Étudiant en droit"
     },
     "hint": {
-      "avocat": "Réponses techniques et rigoureuses, axées contentieux et procédure.",
-      "juriste": "Synthèse opérationnelle, applicabilité business, OHADA et CEMAC.",
+      "non_juriste": "Explication simple, langage courant, sans jargon ni citations d'articles.",
+      "professionnel": "Réponse technique, vocabulaire juridique précis, citations détaillées.",
       "etudiant": "Explications pédagogiques, vocabulaire défini, repères systémiques."
     },
     "ariaWithProfile": "Changer de profil utilisateur (actuel : {profile})",

@@ -46,7 +46,7 @@ export const AMAIA_SUGGESTIONS: readonly AmaiaSuggestion[] = [
   {
     id: "travail-cdd-renouvellement",
     domaine: "travail",
-    profils: ["avocat", "juriste"],
+    profils: ["professionnel"],
     prompt:
       "Quelles sont les conditions de renouvellement d'un contrat à durée déterminée au Gabon ?",
     contextHint: "Code du travail gabonais — formation, conditions et limites du CDD.",
@@ -72,7 +72,7 @@ export const AMAIA_SUGGESTIONS: readonly AmaiaSuggestion[] = [
   {
     id: "commercial-ohada-recouvrement",
     domaine: "commercial",
-    profils: ["avocat", "juriste"],
+    profils: ["professionnel"],
     prompt:
       "Quelles sont les procédures simplifiées de recouvrement de créance prévues par l'OHADA ?",
     contextHint: "Acte uniforme OHADA portant organisation des procédures simplifiées de recouvrement et des voies d'exécution.",
@@ -82,7 +82,7 @@ export const AMAIA_SUGGESTIONS: readonly AmaiaSuggestion[] = [
   {
     id: "fiscal-tva",
     domaine: "fiscal",
-    profils: ["juriste"],
+    profils: ["professionnel"],
     prompt:
       "Quel est le régime de la TVA applicable aux prestations de services au Gabon ?",
     contextHint: "Code général des impôts du Gabon — régime de TVA.",
@@ -92,7 +92,7 @@ export const AMAIA_SUGGESTIONS: readonly AmaiaSuggestion[] = [
   {
     id: "penal-prescription",
     domaine: "penal",
-    profils: ["avocat"],
+    profils: ["professionnel"],
     prompt:
       "Quels sont les délais de prescription de l'action publique en droit gabonais ?",
     contextHint: "Code pénal et Code de procédure pénale gabonais — prescription de l'action publique.",
@@ -102,7 +102,7 @@ export const AMAIA_SUGGESTIONS: readonly AmaiaSuggestion[] = [
   {
     id: "famille-divorce-procedure",
     domaine: "famille",
-    profils: ["avocat", "etudiant"],
+    profils: ["professionnel", "etudiant"],
     prompt:
       "Quelle est la procédure de divorce contentieux au Gabon ?",
     contextHint: "Code civil gabonais — procédure de divorce contentieux et juge compétent.",
@@ -112,7 +112,7 @@ export const AMAIA_SUGGESTIONS: readonly AmaiaSuggestion[] = [
   {
     id: "social-cnss-affiliation",
     domaine: "social",
-    profils: ["juriste"],
+    profils: ["professionnel"],
     prompt:
       "Quelles sont les obligations d'affiliation à la CNSS pour un employeur au Gabon ?",
     contextHint: "Sécurité sociale gabonaise et CNSS — obligations d'affiliation employeur.",

@@ -10,7 +10,7 @@ import {
 
 describe("getSuggestionsForProfile", () => {
   it("retourne au moins 6 suggestions quel que soit le profil", () => {
-    for (const p of [null, "avocat", "juriste", "etudiant"] as const) {
+    for (const p of [null, "professionnel", "etudiant"] as const) {
       const result = getSuggestionsForProfile(p);
       expect(result.length).toBeGreaterThanOrEqual(6);
       expect(result.length).toBeLessThanOrEqual(9);
@@ -18,15 +18,15 @@ describe("getSuggestionsForProfile", () => {
   });
 
   it("ne retourne aucun doublon", () => {
-    const result = getSuggestionsForProfile("avocat");
+    const result = getSuggestionsForProfile("professionnel");
     const ids = result.map((s) => s.id);
     expect(new Set(ids).size).toBe(ids.length);
   });
 
-  it("priorise les suggestions ciblant le profil avocat", () => {
-    const result = getSuggestionsForProfile("avocat");
-    const avocatTargeted = AMAIA_SUGGESTIONS.filter((s) => s.profils.includes("avocat"));
-    for (const s of avocatTargeted) {
+  it("priorise les suggestions ciblant le profil professionnel", () => {
+    const result = getSuggestionsForProfile("professionnel");
+    const targeted = AMAIA_SUGGESTIONS.filter((s) => s.profils.includes("professionnel"));
+    for (const s of targeted) {
       expect(result.some((r) => r.id === s.id)).toBe(true);
     }
   });
