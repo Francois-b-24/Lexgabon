@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { getLocale, getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { getLandingStats, type LandingStats } from "@/lib/landing-stats";
@@ -265,18 +266,14 @@ export async function LandingPage() {
         <div className="mx-auto grid max-w-6xl items-center gap-16 md:grid-cols-[1fr_1.5fr]">
           <Reveal>
             <div className="relative mx-auto aspect-square max-w-[300px] overflow-hidden bg-lg-navy">
-              <div className="absolute inset-0 z-[2] flex flex-col items-center justify-center p-7 text-center">
-                <div className="mb-4 grid h-20 w-20 place-items-center border border-lg-gold font-logo text-[38px] font-bold text-lg-gold">
-                  A
-                </div>
-                <div className="font-logo text-[22px] font-bold tracking-[2px] text-lg-paper">
-                  ALIN
-                </div>
-                <div className="mt-2 h-0.5 w-4/5 bg-lg-gold" />
-                <span className="mt-2 text-[9px] uppercase tracking-[0.2em] text-[#9bb0c8]">
-                  African Legal Innovation Network
-                </span>
-              </div>
+              <Image
+                src="/alin-logo.jpeg"
+                alt="Logo ALIN — African Legal Innovation Network"
+                fill
+                sizes="(min-width: 768px) 300px, 80vw"
+                quality={90}
+                className="object-cover"
+              />
             </div>
           </Reveal>
           <div>

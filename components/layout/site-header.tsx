@@ -25,7 +25,6 @@ export function SiteHeader() {
     { href: "/veille", label: n("veille") },
     { href: "/recherche", label: n("recherche") },
     { href: "/chatbot", label: n("chatbot") },
-    { href: "/#api", label: n("api") },
   ] as const;
 
   useEffect(() => {
