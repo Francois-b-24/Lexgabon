@@ -7,7 +7,6 @@
     "apropos": "About",
     "veille": "Monitoring",
     "chatbot": "Ama'IA",
-    "methodologie": "Methodology",
     "api": "ALIN",
     "home": "Home",
     "favoris": "Bookmarks",
@@ -241,52 +240,6 @@
     "equipe": "Team",
     "mentions": "Legal notice",
     "cgu": "Terms of use"
-  },
-  "Methodologie": {
-    "title": "Methodology",
-    "intro": "LexGabon is an open-access platform for the law applicable in Gabon. This page documents how our corpus is built, verified and maintained — so you can use our content confidently, and know exactly what we do and what we do not do.",
-    "principleTitle": "Guiding principle",
-    "principleBody": "The Official Gazette of the Gabonese Republic or the authentic text published by the issuing authority is alone authoritative. LexGabon centralises, structures and makes these texts searchable; we do not create law, we make it accessible.",
-    "collectionTitle": "How texts are collected",
-    "collectionItems": [
-      "Manual download of the official PDFs published in the Official Gazette or by regional bodies (OHADA, CEMAC, COBAC, CIMA).",
-      "SHA-256 fingerprint verification to detect duplicates and ensure integrity.",
-      "Text extraction with automatic splitting by article (« Article N », « Art. N », variants including bis, ter, ordinals).",
-      "Concurrent indexing in a relational database (Postgres) for article-by-article display, and in a vector database (ChromaDB) for Ama'IA semantic search.",
-      "Targeted scraping of the official portals listed below, within a strict domain allowlist."
-    ],
-    "verificationTitle": "Verification chain",
-    "verificationItems": [
-      "Per-text metadata maintained manually: code, authority, publication date, legal reference.",
-      "Regular corpus audit via the `verify_corpus.py` script: volume, distinct articles, alerts on missing metadata.",
-      "Systematic preservation of the link to the official source on every text record.",
-      "When a text is repealed, the record states so and points to the replacement version."
-    ],
-    "frequencyTitle": "Update frequency",
-    "frequencyBody": "The corpus is enriched on each relevant official publication. Automated monitoring runs daily at 03:00 UTC to spot new entries on monitored portals. Full code ingestions remain manual, triggered by our team.",
-    "engagementsTitle": "Our commitments",
-    "engagementsItems": [
-      "No generative AI is used to produce legal text. Ama'IA does not author law; it points to the applicable text and cites its sources.",
-      "No paywall, no forced sign-up to consult the corpus.",
-      "No advertising tracking, no third-party commercial cookies.",
-      "Ama'IA answers do not commit LexGabon or ALIN and do not constitute personalised legal advice.",
-      "Any factual statement produced by Ama'IA must be backed by an explicit citation; if the index does not supply a passage to cite, Ama'IA says so."
-    ],
-    "limitsTitle": "Current limitations",
-    "limitsBody": "The corpus is being built. At this date, only the Gabonese Labour Code is fully ingested and indexed article by article. Other codes (civil, criminal, commerce, tax, electoral, Constitution) are being added. Searches in areas not yet indexed will return fewer results — Ama'IA states this in its response rather than fabricating a reference.",
-    "sourcesTitle": "Primary sources monitored",
-    "sourcesIntro": "Only the official portals listed below are fetched by our scraping. No other domain is queried automatically.",
-    "sourceStatus": {
-      "indexed": "Indexed",
-      "partial": "Partially indexed",
-      "monitored": "Monitored (ingestion to come)"
-    },
-    "lastSyncLabel": "Last sync",
-    "lastUpdatedLabel": "Index last updated",
-    "corpusVolume": "{chunks, number} indexed chunks · {articles, number} distinct articles",
-    "statsUnavailable": "(stats unavailable, reference data shown)",
-    "contactTitle": "Something to report?",
-    "contactBody": "If you spot an error in a text, a missing reference or a source we should add, write to the ALIN team — we promptly correct documented inaccuracies and publish the sources you flag when they fall within scope."
   },
   "Apropos": {
     "metaTitle": "About",

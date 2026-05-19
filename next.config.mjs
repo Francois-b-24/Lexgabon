@@ -11,6 +11,8 @@ const nextConfig = {
       // Legacy /textes/[slug] → /textes/jo-ga/[slug] (heuristique : corpus principal gabonais).
       // Les slugs OHADA/CEMAC/COBAC doivent désormais utiliser /textes/<source>/<slug> directement.
       { source: "/:locale/textes/:slug", destination: "/:locale/textes/jo-ga/:slug", permanent: true },
+      // Page Méthodologie supprimée — redirection 301 vers la home pour préserver le SEO.
+      { source: "/:locale/methodologie", destination: "/:locale", permanent: true },
     ];
   },
   async headers() {

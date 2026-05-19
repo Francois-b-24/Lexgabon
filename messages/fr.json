@@ -7,7 +7,6 @@
     "apropos": "À propos",
     "veille": "Veille",
     "chatbot": "Ama'IA",
-    "methodologie": "Méthodologie",
     "api": "ALIN",
     "home": "Accueil",
     "favoris": "Favoris",
@@ -241,52 +240,6 @@
     "equipe": "Équipe",
     "mentions": "Mentions légales",
     "cgu": "Conditions d'utilisation"
-  },
-  "Methodologie": {
-    "title": "Méthodologie",
-    "intro": "LexGabon est une plateforme d'accès ouvert au droit applicable au Gabon. Cette page documente la manière dont notre corpus est constitué, vérifié et maintenu — pour que vous puissiez utiliser nos contenus en confiance, et savoir précisément ce que nous faisons et ce que nous ne faisons pas.",
-    "principleTitle": "Le principe directeur",
-    "principleBody": "Le Journal officiel de la République gabonaise ou le texte authentique publié par l'autorité fait seul foi. LexGabon centralise, structure et rend recherchables ces textes ; nous ne créons pas de droit, nous le rendons accessible.",
-    "collectionTitle": "Comment les textes sont collectés",
-    "collectionItems": [
-      "Téléchargement manuel des PDF officiels publiés au Journal officiel ou par les organisations régionales (OHADA, CEMAC, COBAC, CIMA).",
-      "Vérification par empreinte SHA-256 pour détecter les doublons et garantir l'intégrité.",
-      "Extraction du texte et découpage automatique par article (« Article N », « Art. N », variantes incluant bis, ter, ordinaux).",
-      "Indexation simultanée en base relationnelle (Postgres) pour l'affichage article par article et en base vectorielle (ChromaDB) pour la recherche sémantique d'Ama'IA.",
-      "Scraping ciblé des portails officiels listés ci-dessous, dans le respect d'une allowlist stricte de domaines."
-    ],
-    "verificationTitle": "La chaîne de vérification",
-    "verificationItems": [
-      "Métadonnées renseignées manuellement par texte : code, autorité, date de publication, référence légale.",
-      "Audit régulier du corpus via le script `verify_corpus.py` : volume, articles distincts, alertes sur métadonnées manquantes.",
-      "Conservation systématique du lien vers la source officielle sur chaque fiche texte.",
-      "Lorsqu'un texte est abrogé, la fiche en informe l'utilisateur et propose le lien vers la version remplaçante."
-    ],
-    "frequencyTitle": "Fréquence de mise à jour",
-    "frequencyBody": "Le corpus est enrichi à chaque nouvelle publication officielle pertinente. La veille automatisée tourne quotidiennement à 03:00 UTC pour repérer les nouvelles entrées sur les portails suivis. Les ingestions de codes complets restent manuelles, déclenchées par notre équipe.",
-    "engagementsTitle": "Nos engagements",
-    "engagementsItems": [
-      "Pas d'intelligence artificielle générative pour produire des textes juridiques. Ama'IA ne rédige pas de droit, il oriente vers le texte applicable et cite ses sources.",
-      "Pas de paywall ni d'inscription forcée pour consulter le corpus.",
-      "Pas de tracking publicitaire, pas de cookies tiers à visée commerciale.",
-      "Les réponses d'Ama'IA n'engagent pas LexGabon ni ALIN et ne constituent pas un conseil juridique personnalisé.",
-      "Toute affirmation produite par Ama'IA doit être appuyée par une citation explicite ; si l'index ne fournit pas de passage à citer, Ama'IA le déclare."
-    ],
-    "limitsTitle": "Limites actuelles",
-    "limitsBody": "Le corpus est en cours de constitution. À cette date, seul le Code du travail gabonais est intégralement ingéré et indexé article par article. D'autres codes (civil, pénal, commerce, fiscal, électoral, Constitution) sont en cours d'ajout. Les recherches sur des matières non encore indexées renverront moins de résultats — Ama'IA le signale dans sa réponse plutôt que d'inventer une référence.",
-    "sourcesTitle": "Sources primaires suivies",
-    "sourcesIntro": "Seuls les portails officiels listés ci-dessous sont fetchés par notre scraping. Aucun autre domaine n'est interrogé automatiquement.",
-    "sourceStatus": {
-      "indexed": "Indexé",
-      "partial": "Partiellement indexé",
-      "monitored": "Suivi (ingestion à venir)"
-    },
-    "lastSyncLabel": "Dernière synchronisation",
-    "lastUpdatedLabel": "Dernière mise à jour de l'index",
-    "corpusVolume": "{chunks, number} chunks indexés · {articles, number} articles distincts",
-    "statsUnavailable": "(stats indisponibles, données de référence affichées)",
-    "contactTitle": "Une remarque ?",
-    "contactBody": "Vous repérez une erreur dans un texte, une référence manquante ou une source à ajouter ? Écrivez à l'équipe ALIN — nous corrigeons rapidement les imprécisions documentées et publions les sources que vous nous signalez quand elles relèvent du périmètre."
   },
   "Apropos": {
     "metaTitle": "À propos",

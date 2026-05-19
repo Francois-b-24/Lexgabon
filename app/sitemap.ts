@@ -9,7 +9,7 @@ const LOCALES = ["fr", "en"] as const;
 
 const STATIC_PATHS = [
   { path: "", priority: 1.0 },
-  { path: "/methodologie", priority: 0.8 },
+  { path: "/a-propos", priority: 0.8 },
   { path: "/chatbot", priority: 0.7 },
   { path: "/recherche", priority: 0.7 },
   { path: "/veille", priority: 0.6 },
