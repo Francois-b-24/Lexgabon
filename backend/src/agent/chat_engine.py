@@ -10,6 +10,7 @@ from src.agent.prompts import (
     build_user_message,
     question_seeks_citations,
     strip_markdown_heuristic,
+    strip_meta_rag_paragraphs,
 )
 from src.rag import retriever
 
@@ -73,6 +74,7 @@ def run_chat(
     system_prompt = build_system_prompt(profile)
     msg = llm.create_text_only(system=system_prompt, messages=messages)
     text = strip_markdown_heuristic(llm.extract_text_blocks(msg.content))
+    text = strip_meta_rag_paragraphs(text)
 
     sources: list[dict[str, Any]] = []
     for r in rows[:20]:

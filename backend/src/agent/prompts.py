@@ -90,7 +90,17 @@ MÉTHODE (réponse unique, dans cet ordre)
    - Sinon, utilise [Source : <référence affichée pour l'extrait>].
    Chaque affirmation factuelle doit être citée. Ne paraphrase pas un extrait sans citer son article.
    - Quand tu reprends mot pour mot un fragment de texte indexé, mets-le entre guillemets français « … ».
-3) Si aucun extrait n'est pertinent ou que le bloc indexé est vide, réponds quand même sur le fond à partir de tes connaissances solides du droit gabonais, en adoptant un ton neutre, sobre et accessible. Tu ne mentionnes jamais l'index LexGabon, les extraits retournés, le moteur RAG, le corpus, le Code du travail s'il n'a rien à voir avec la question, ou toute autre considération technique : l'utilisateur n'a pas besoin de savoir comment le système fonctionne. Pas de paragraphe « Sources indexées », pas de « les extraits retournés relèvent de… », pas de méta-commentaire sur ce que tu as ou n'as pas trouvé.
+3) Si aucun extrait n'est pertinent ou que le bloc indexé est vide, réponds quand même sur le fond à partir de tes connaissances solides du droit gabonais, en adoptant un ton neutre, sobre et accessible.
+
+INTERDICTION ABSOLUE de méta-commentaire technique. L'utilisateur ne doit jamais lire de phrases comme :
+- « Sources indexées : … »
+- « L'index LexGabon n'a pas fourni de passage … »
+- « Les extraits retournés relèvent de … / sont sans rapport avec … »
+- « Les extraits disponibles relevaient exclusivement du Code du travail … »
+- « Les éléments ci-dessus sont fondés sur les connaissances générales … »
+- toute mention de l'index, du moteur RAG, du corpus, des « extraits retournés », du « passage indexé », ou de ce que tu as / n'as pas trouvé.
+
+L'utilisateur n'a pas besoin de savoir comment le système fonctionne. Tu réponds simplement à sa question, comme un juriste expérimenté qui maîtrise le droit gabonais — sans expliquer les coulisses.
 
 FORME (RÈGLES STRICTES — aucune dérogation)
 - Tu rédiges des paragraphes courts de 3 à 5 lignes maximum chacun, séparés par une ligne vide.
@@ -235,6 +245,57 @@ def append_indexed_source_lines_if_needed(answer: str, sources: list) -> str:
     if not lines:
         return answer
     return answer.rstrip() + "\n\nArticles applicables :\n" + "\n".join(lines)
+
+
+_META_RAG_PARAGRAPH_TRIGGERS = (
+    "sources indexees",
+    "sources indexes",  # tolerance frappe sans accent
+    "references indexees",
+    "reference indexee",
+    "l'index lexgabon",
+    "lindex lexgabon",
+    "l'index n'a pas",
+    "lindex na pas",
+    "les extraits retournes",
+    "les extraits disponibles",
+    "le moteur rag",
+    "le corpus indexe",
+    "passage indexe",
+    "passages indexes",
+    "aucun extrait pertinent",
+)
+
+
+def strip_meta_rag_paragraphs(text: str) -> str:
+    """Retire les paragraphes de méta-commentaire sur le RAG.
+
+    Filet de sécurité : si le LLM persiste à expliquer à l'utilisateur que
+    l'index LexGabon n'a pas fourni de passage pertinent (paragraphe « Sources
+    indexées : … », « Les extraits retournés relèvent de… »), on coupe ce
+    paragraphe avant rendu. Le system prompt l'interdit déjà, mais le modèle
+    peut occasionnellement y déroger — l'utilisateur ne doit pas voir cette
+    plomberie technique.
+
+    Un paragraphe est défini ici comme un bloc séparé par une ligne vide.
+    """
+    if not text:
+        return text
+    paragraphs = re.split(r"\n\s*\n", text)
+    kept: list[str] = []
+    for p in paragraphs:
+        head = p.strip()
+        if not head:
+            continue
+        # Normalisation pour la détection (lowercase + accents retirés + ponctuation atténuée).
+        head_norm = normalize_for_disclaimer_check(head)
+        # On regarde les 200 premiers caractères du paragraphe — assez pour capter
+        # « Sources indexées : … » ou « L'index LexGabon n'a pas fourni de … ».
+        probe = head_norm[:200]
+        if any(trigger in probe for trigger in _META_RAG_PARAGRAPH_TRIGGERS):
+            continue
+        kept.append(p)
+    rebuilt = "\n\n".join(kept).strip()
+    return rebuilt
 
 
 def strip_markdown_heuristic(text: str) -> str:
