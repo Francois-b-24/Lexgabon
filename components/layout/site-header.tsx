@@ -21,7 +21,7 @@ export function SiteHeader() {
   const [open, setOpen] = useState(false);
 
   const items = [
-    { href: "/#textes", label: n("textes") },
+    { href: "/a-propos", label: n("apropos") },
     { href: "/veille", label: n("veille") },
     { href: "/recherche", label: n("recherche") },
     { href: "/chatbot", label: n("chatbot") },

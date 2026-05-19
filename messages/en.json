@@ -4,7 +4,7 @@
     "description": "Open legal data platform for Gabon, OHADA, CEMAC and COBAC."
   },
   "Nav": {
-    "textes": "Official sources",
+    "apropos": "About",
     "veille": "Monitoring",
     "chatbot": "Ama'IA",
     "methodologie": "Methodology",
@@ -287,6 +287,32 @@
     "statsUnavailable": "(stats unavailable, reference data shown)",
     "contactTitle": "Something to report?",
     "contactBody": "If you spot an error in a text, a missing reference or a source we should add, write to the ALIN team — we promptly correct documented inaccuracies and publish the sources you flag when they fall within scope."
+  },
+  "Apropos": {
+    "metaTitle": "About",
+    "metaDescription": "Discover the mission of LexGabon, the ALIN team and our commitment to open access to Gabonese and regional law.",
+    "title": "About",
+    "objectifEyebrow": "Our purpose",
+    "objectifTitle": "Open up access to law",
+    "objectifBody": "LexGabon is a digital platform dedicated to opening up access to Gabonese and regional law. It centralises legal texts from Gabon, as well as those of OHADA, CEMAC and COBAC, and offers AI-assisted exploration through Ama'IA, our conversational legal assistant.",
+    "equipeEyebrow": "The team",
+    "equipeTitle": "The ALIN team",
+    "equipeIntro": "LexGabon is led by a multidisciplinary team gathered around the African Legal Innovation Network initiative.",
+    "memberRole": "Role to be specified",
+    "memberBio": "Bio to be added soon.",
+    "memberName1": "Team member — to be added",
+    "memberName2": "Team member — to be added",
+    "memberName3": "Team member — to be added",
+    "missionsEyebrow": "Our missions",
+    "missionsTitle": "What we stand for",
+    "mission1Title": "Open access to law",
+    "mission1Body": "For citizens, students and legal professionals — no paywall, no technical barrier.",
+    "mission2Title": "Centralise official sources",
+    "mission2Body": "Legal publications from Gabon and the CEMAC zone, gathered in a single structured reference.",
+    "mission3Title": "Support practitioners",
+    "mission3Body": "Modern tools — semantic search, AI assistant — designed for everyday legal work.",
+    "mission4Title": "Contribute to transparency",
+    "mission4Body": "Modernise the regional legal landscape by making the law readable, verifiable and shareable."
   },
   "Profile": {
     "title": "Tailor LexGabon to your profile",

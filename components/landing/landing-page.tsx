@@ -340,8 +340,8 @@ export async function LandingPage() {
                   </Link>
                 </li>
                 <li>
-                  <Link href="/#textes" className="hover:text-lg-gold">
-                    {n("textes")}
+                  <Link href="/a-propos" className="hover:text-lg-gold">
+                    {n("apropos")}
                   </Link>
                 </li>
                 <li>

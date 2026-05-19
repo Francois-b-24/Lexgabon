@@ -4,7 +4,7 @@
     "description": "Plateforme de données juridiques ouvertes pour le Gabon, l’OHADA, la CEMAC et le COBAC."
   },
   "Nav": {
-    "textes": "Sources officielles",
+    "apropos": "À propos",
     "veille": "Veille",
     "chatbot": "Ama'IA",
     "methodologie": "Méthodologie",
@@ -287,6 +287,32 @@
     "statsUnavailable": "(stats indisponibles, données de référence affichées)",
     "contactTitle": "Une remarque ?",
     "contactBody": "Vous repérez une erreur dans un texte, une référence manquante ou une source à ajouter ? Écrivez à l'équipe ALIN — nous corrigeons rapidement les imprécisions documentées et publions les sources que vous nous signalez quand elles relèvent du périmètre."
+  },
+  "Apropos": {
+    "metaTitle": "À propos",
+    "metaDescription": "Découvrez la mission de LexGabon, l'équipe ALIN et notre engagement pour l'accès au droit gabonais et régional.",
+    "title": "À propos",
+    "objectifEyebrow": "Notre objectif",
+    "objectifTitle": "Démocratiser l'accès au droit",
+    "objectifBody": "LexGabon est une plateforme numérique dédiée à la démocratisation de l'accès au droit gabonais et régional. Elle centralise les textes juridiques du Gabon, ainsi que ceux de l'OHADA, de la CEMAC et de la COBAC, et propose une exploration assistée par intelligence artificielle grâce à Ama'IA, notre assistant juridique conversationnel.",
+    "equipeEyebrow": "L'équipe",
+    "equipeTitle": "L'équipe ALIN",
+    "equipeIntro": "LexGabon est porté par une équipe pluridisciplinaire réunie autour de l'initiative African Legal Innovation Network.",
+    "memberRole": "Rôle à préciser",
+    "memberBio": "Présentation à compléter prochainement.",
+    "memberName1": "Membre — à compléter",
+    "memberName2": "Membre — à compléter",
+    "memberName3": "Membre — à compléter",
+    "missionsEyebrow": "Nos missions",
+    "missionsTitle": "Ce que nous portons",
+    "mission1Title": "Démocratiser l'accès au droit",
+    "mission1Body": "Pour les citoyens, les étudiants et les professionnels du droit, sans paywall ni barrière technique.",
+    "mission2Title": "Centraliser les sources officielles",
+    "mission2Body": "Les publications juridiques du Gabon et de la zone CEMAC, réunies dans un référentiel unique et structuré.",
+    "mission3Title": "Accompagner les praticiens",
+    "mission3Body": "Des outils modernes — recherche sémantique, assistant IA — pensés pour le terrain juridique.",
+    "mission4Title": "Contribuer à la transparence",
+    "mission4Body": "Moderniser le paysage juridique régional en rendant le droit lisible, vérifiable et partageable."
   },
   "Profile": {
     "title": "Adapter LexGabon à votre profil",
