@@ -272,9 +272,9 @@
       "etudiant": "Étudiant en droit"
     },
     "hint": {
-      "non_juriste": "Explication simple, langage courant, sans jargon ni citations d'articles.",
+      "non_juriste": "Réponses détaillées simplifiées.",
       "professionnel": "Réponse technique, vocabulaire juridique précis, citations détaillées.",
-      "etudiant": "Explications pédagogiques, vocabulaire défini, repères systémiques."
+      "etudiant": "Explications pédagogiques et détaillées."
     },
     "ariaWithProfile": "Changer de profil utilisateur (actuel : {profile})",
     "ariaWithoutProfile": "Choisir un profil utilisateur"

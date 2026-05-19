@@ -272,9 +272,9 @@
       "etudiant": "Law student"
     },
     "hint": {
-      "non_juriste": "Plain language, no jargon, no article citations.",
+      "non_juriste": "Detailed answers in plain language.",
       "professionnel": "Technical answer, precise legal vocabulary, detailed citations.",
-      "etudiant": "Pedagogical explanations, defined vocabulary, systemic landmarks."
+      "etudiant": "Pedagogical and detailed explanations."
     },
     "ariaWithProfile": "Change user profile (current: {profile})",
     "ariaWithoutProfile": "Choose a user profile"
