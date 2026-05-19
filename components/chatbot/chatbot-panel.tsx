@@ -38,15 +38,28 @@ type StoredChat = {
   messages: ChatMsg[];
 };
 
-/** Charge l'historique persistant. Renvoie null si rien de valide. */
+/** Charge l'historique de la session navigateur en cours (sessionStorage).
+ *
+ * Choix volontaire : on n'utilise PAS localStorage. La conversation ne survit
+ * pas à la fermeture du navigateur. Important sur un poste partagé pour qu'un
+ * nouvel arrivant ne tombe pas sur la conversation d'un autre utilisateur.
+ *
+ * On profite du démarrage pour purger toute trace résiduelle dans localStorage
+ * laissée par d'anciennes versions du site.
+ */
 function loadStoredMessages(): ChatMsg[] | null {
   if (typeof window === "undefined") return null;
   try {
-    const raw = window.localStorage.getItem(CHAT_STORAGE_KEY);
+    // Migration silencieuse : on supprime l'ancien historique persistant.
+    window.localStorage.removeItem(CHAT_STORAGE_KEY);
+  } catch {
+    /* ignore */
+  }
+  try {
+    const raw = window.sessionStorage.getItem(CHAT_STORAGE_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as StoredChat;
     if (parsed?.v !== CHAT_STORAGE_VERSION || !Array.isArray(parsed.messages)) return null;
-    // Garde-fou : au moins 2 messages (welcome + 1 user/assistant), sinon on repart à zéro.
     if (parsed.messages.length < 2) return null;
     return parsed.messages;
   } catch {
@@ -58,7 +71,7 @@ function persistMessages(messages: ChatMsg[]): void {
   if (typeof window === "undefined") return;
   try {
     const payload: StoredChat = { v: CHAT_STORAGE_VERSION, messages };
-    window.localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(payload));
+    window.sessionStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(payload));
   } catch {
     /* quota plein ou storage indisponible : on ignore silencieusement */
   }
@@ -67,7 +80,7 @@ function persistMessages(messages: ChatMsg[]): void {
 function clearStoredMessages(): void {
   if (typeof window === "undefined") return;
   try {
-    window.localStorage.removeItem(CHAT_STORAGE_KEY);
+    window.sessionStorage.removeItem(CHAT_STORAGE_KEY);
   } catch {
     /* ignore */
   }
