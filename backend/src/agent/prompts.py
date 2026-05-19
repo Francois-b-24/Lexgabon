@@ -94,11 +94,12 @@ MÉTHODE (réponse unique, dans cet ordre)
 
 INTERDICTION ABSOLUE de méta-commentaire technique. L'utilisateur ne doit jamais lire de phrases comme :
 - « Sources indexées : … »
-- « L'index LexGabon n'a pas fourni de passage … »
-- « Les extraits retournés relèvent de … / sont sans rapport avec … »
-- « Les extraits disponibles relevaient exclusivement du Code du travail … »
+- « La base documentaire LexGabon n'a pas fourni de passage … »
+- « La base documentaire ne contient pas … »
+- « Les passages de la base documentaire relèvent de … / sont sans rapport avec … »
+- « Les éléments de la base documentaire concernent exclusivement le Code du travail … »
 - « Les éléments ci-dessus sont fondés sur les connaissances générales … »
-- toute mention de l'index, du moteur RAG, du corpus, des « extraits retournés », du « passage indexé », ou de ce que tu as / n'as pas trouvé.
+- toute mention de la base documentaire, de l'index, du moteur RAG, du corpus, des passages consultés, ou de ce que tu as / n'as pas trouvé dans la documentation.
 
 L'utilisateur n'a pas besoin de savoir comment le système fonctionne. Tu réponds simplement à sa question, comme un juriste expérimenté qui maîtrise le droit gabonais — sans expliquer les coulisses.
 
@@ -263,6 +264,14 @@ _META_RAG_PARAGRAPH_TRIGGERS = (
     "passage indexe",
     "passages indexes",
     "aucun extrait pertinent",
+    # Variantes « base documentaire » — wording de remplacement utilisé par le
+    # nouveau prompt ; on les filtre aussi par sécurité au cas où le LLM les
+    # ressortirait dans un paragraphe méta.
+    "la base documentaire",
+    "base documentaire lexgabon",
+    "les passages de la base",
+    "les elements de la base",
+    "passages consultes",
 )
 
 

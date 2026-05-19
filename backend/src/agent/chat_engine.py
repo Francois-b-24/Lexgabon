@@ -27,7 +27,7 @@ def _format_rag_block(rows: list[dict[str, Any]]) -> str:
             "Contexte indexé LexGabon : aucun passage n'a été retourné pour cette requête.\n\n"
             "Instructions :\n"
             "— Si la question relève bien du droit gabonais ou d'une norme régionale applicable (OHADA, CEMAC, COBAC, CIMA), réponds sur le fond à partir de tes connaissances juridiques fiables sans inventer de numéros d'articles ni de dates.\n"
-            "— Adopte un ton neutre, sobre et accessible. Ne mentionne pas l'index, le moteur RAG, le corpus, les extraits retournés, ni l'absence de passage indexé. L'utilisateur n'a pas besoin de cette information technique. Réponds simplement à sa question."
+            "— Adopte un ton neutre, sobre et accessible. Ne mentionne pas la base documentaire, l'index, le moteur RAG, le corpus, les passages consultés, ni l'absence de passage trouvé. L'utilisateur n'a pas besoin de cette information technique. Réponds simplement à sa question."
         )
     body = retriever.format_context_for_llm(rows, max_chars_per=900)
     return (

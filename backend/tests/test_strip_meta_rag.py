@@ -46,6 +46,20 @@ def test_keeps_substantive_paragraphs_intact():
     assert "Cette réponse ne constitue pas un conseil juridique" in out
 
 
+def test_removes_base_documentaire_variants():
+    raw = (
+        "Au Gabon, la succession est régie par le Code civil.\n\n"
+        "La base documentaire LexGabon ne contient pas de passage pertinent "
+        "sur la dévolution successorale ; les passages consultés relèvent "
+        "tous du Code du travail.\n\n"
+        "Cette réponse ne constitue pas un conseil juridique."
+    )
+    out = strip_meta_rag_paragraphs(raw)
+    assert "base documentaire" not in out.lower()
+    assert "passages consultés" not in out.lower()
+    assert "succession est régie par le Code civil" in out
+
+
 def test_empty_input_passes_through():
     assert strip_meta_rag_paragraphs("") == ""
     assert strip_meta_rag_paragraphs("   ") == ""
