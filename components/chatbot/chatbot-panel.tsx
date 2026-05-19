@@ -9,6 +9,7 @@ import { SourceList } from "@/components/chatbot/source-list";
 import { LegalNoteRenderer } from "@/components/chatbot/legal-note-renderer";
 import { QuestionSuggestions } from "@/components/chatbot/question-suggestions";
 import { ThemeSelector } from "@/components/chatbot/theme-selector";
+import { ProfileSwitcher } from "@/components/layout/profile-switcher";
 import type { SuggestionDomaine } from "@/lib/amaia-suggestions";
 import type { ChatSource, StructuredAnswer } from "@/lib/chatbot-types";
 
@@ -253,15 +254,18 @@ export default function ChatbotPanel({ welcome }: { welcome: string }) {
             <p className="truncate text-[11px] font-light text-white/45">{t("subtitle")}</p>
           </div>
         </div>
-        <button
-          type="button"
-          onClick={() => clearConversation()}
-          disabled={loading}
-          className="flex shrink-0 items-center gap-1.5 rounded-md border border-white/10 px-2.5 py-1.5 text-[11px] text-white/70 transition hover:border-lg-gold/35 hover:text-white disabled:opacity-40"
-        >
-          <IconRefresh size={14} />
-          <span className="whitespace-nowrap">{t("newChat")}</span>
-        </button>
+        <div className="flex shrink-0 items-center gap-2">
+          <ProfileSwitcher />
+          <button
+            type="button"
+            onClick={() => clearConversation()}
+            disabled={loading}
+            className="flex shrink-0 items-center gap-1.5 rounded-md border border-white/10 px-2.5 py-1.5 text-[11px] text-white/70 transition hover:border-lg-gold/35 hover:text-white disabled:opacity-40"
+          >
+            <IconRefresh size={14} />
+            <span className="whitespace-nowrap">{t("newChat")}</span>
+          </button>
+        </div>
       </header>
 
       <div

@@ -8,11 +8,11 @@ import { USER_PROFILES, type UserProfile } from "@/lib/user-profile";
 import { cn } from "@/lib/utils";
 
 /**
- * Sélecteur de profil utilisateur, intégré au header.
+ * Sélecteur de profil utilisateur, monté dans le header du panel chatbot.
  *
- * - Desktop (md+) : pill avec label « Profil non défini » / « Avocat » / etc.
+ * - Desktop (md+) : pill avec label « Choisir un profil » / « Non juriste » / etc.
  * - Mobile (<md) : icône seule avec un point or si profil actif. Le popover
- *   prend toute la largeur sous le header pour éviter tout débordement.
+ *   prend toute la largeur sous le bouton pour éviter tout débordement.
  */
 export function ProfileSwitcher() {
   const t = useTranslations("Profile");
@@ -37,14 +37,14 @@ export function ProfileSwitcher() {
   }, [open]);
 
   const handleSelect = useCallback(
-    (next: UserProfile | null) => {
+    (next: UserProfile) => {
       setProfile(next);
       setOpen(false);
     },
     [setProfile],
   );
 
-  const currentLabel = profile ? t(`option.${profile}`) : t("none");
+  const currentLabel = profile ? t(`option.${profile}`) : t("chooseProfile");
 
   // Avant hydratation : placeholder sobre, même empreinte qu'après pour éviter
   // tout saut visuel. Compact (icône) au mobile, pill au desktop.
@@ -134,20 +134,6 @@ export function ProfileSwitcher() {
                 </button>
               </li>
             ))}
-            <li className="w-full min-w-0">
-              <button
-                type="button"
-                role="menuitemradio"
-                aria-checked={profile === null}
-                onClick={() => handleSelect(null)}
-                className={cn(
-                  "flex w-full min-w-0 whitespace-normal break-words px-3 py-2 text-left text-[11px] italic text-white/55 transition-colors hover:bg-white/[0.05]",
-                  profile === null && "text-lg-gold-light",
-                )}
-              >
-                {t("none")}
-              </button>
-            </li>
           </ul>
         </div>
       ) : null}

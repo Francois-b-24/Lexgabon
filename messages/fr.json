@@ -135,12 +135,12 @@
   },
   "Chatbot": {
     "title": "Ama'IA",
-    "welcome": "Bonjour. Je suis Ama'IA, assistant en droit gabonais. Posez votre question : je réponds avec citation des articles applicables lorsque la base indexée le permet.",
+    "welcome": "Bonjour, je suis Ama'IA, votre assistant en droit gabonais. Posez votre question et j'y répondrai en vous citant les articles applicables.",
     "subtitle": "Assistant juridique — droit gabonais",
-    "disclaimer": "Ama'IA peut se tromper. Le Journal officiel ou le texte authentique fait foi.",
+    "disclaimer": "Ama'IA peut se tromper, veuillez vérifier les réponses fournies.",
     "disclaimerNonJuriste": "Cette réponse ne constitue pas un conseil juridique, veuillez si nécessaire consulter un professionnel du droit.",
     "newChat": "Nouvelle conversation",
-    "placeholder": "Votre question juridique…",
+    "placeholder": "Tapez votre question ici…",
     "send": "Envoyer",
     "thinking": "Ama'IA recherche…",
     "minLengthHint": "Saisissez au moins 3 caractères.",
@@ -264,8 +264,8 @@
     "mission4Body": "Moderniser le paysage juridique régional en rendant le droit lisible, vérifiable et partageable."
   },
   "Profile": {
-    "title": "Adapter LexGabon à votre profil",
-    "none": "Profil non défini",
+    "title": "Adapter Ama'IA à votre profil",
+    "chooseProfile": "Choisir un profil",
     "option": {
       "non_juriste": "Non juriste",
       "professionnel": "Professionnel du droit",

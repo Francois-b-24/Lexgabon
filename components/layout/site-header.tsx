@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { IconMenu2, IconX } from "@tabler/icons-react";
 import { Logo } from "@/components/brand/logo";
-import { ProfileSwitcher } from "@/components/layout/profile-switcher";
 import { cn } from "@/lib/utils";
 import { Link, usePathname } from "@/i18n/navigation";
 
@@ -65,8 +64,6 @@ export function SiteHeader() {
         </div>
 
         <div className="ml-auto flex shrink-0 items-center gap-2 md:ml-0 md:gap-3">
-          <ProfileSwitcher />
-
           <button
             type="button"
             className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-white/15 text-white/80 transition-colors hover:border-lg-gold-soft/50 hover:text-lg-gold-soft focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lg-gold-soft md:hidden"

@@ -135,12 +135,12 @@
   },
   "Chatbot": {
     "title": "Ama'IA",
-    "welcome": "Hello. I am Ama'IA, a Gabonese law assistant. Ask your question — I cite applicable articles when the indexed corpus allows.",
+    "welcome": "Hello, I am Ama'IA, your Gabonese law assistant. Ask your question and I will answer by citing the applicable articles.",
     "subtitle": "Legal assistant — Gabonese law",
-    "disclaimer": "Ama'IA can make mistakes. The Official Gazette or the authentic text prevails.",
+    "disclaimer": "Ama'IA can make mistakes — please verify the answers provided.",
     "disclaimerNonJuriste": "This answer is not legal advice — consult a qualified legal professional if needed.",
     "newChat": "New conversation",
-    "placeholder": "Your legal question…",
+    "placeholder": "Type your question here…",
     "send": "Send",
     "thinking": "Ama'IA is searching…",
     "minLengthHint": "Enter at least 3 characters.",
@@ -264,8 +264,8 @@
     "mission4Body": "Modernise the regional legal landscape by making the law readable, verifiable and shareable."
   },
   "Profile": {
-    "title": "Tailor LexGabon to your profile",
-    "none": "Profile not set",
+    "title": "Tailor Ama'IA to your profile",
+    "chooseProfile": "Choose a profile",
     "option": {
       "non_juriste": "Non-lawyer",
       "professionnel": "Legal professional",
