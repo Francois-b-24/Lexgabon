@@ -244,7 +244,7 @@ export default function ChatbotPanel({ welcome }: { welcome: string }) {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden pb-[max(0.5rem,env(safe-area-inset-bottom,0px))]">
-      <header className="flex shrink-0 items-center justify-between gap-3 border-b border-white/10 px-4 py-3 sm:px-6">
+      <header className="grid shrink-0 grid-cols-[1fr_auto_1fr] items-center gap-3 border-b border-white/10 px-4 py-3 sm:px-6">
         <div className="flex min-w-0 items-center gap-3">
           <div className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-lg-gold/25 bg-lg-gold/10 font-logo text-sm font-semibold text-lg-gold">
             A
@@ -254,8 +254,10 @@ export default function ChatbotPanel({ welcome }: { welcome: string }) {
             <p className="truncate text-[11px] font-light text-white/45">{t("subtitle")}</p>
           </div>
         </div>
-        <div className="flex shrink-0 items-center gap-2">
+        <div className="flex justify-center">
           <ProfileSwitcher />
+        </div>
+        <div className="flex justify-end">
           <button
             type="button"
             onClick={() => clearConversation()}
