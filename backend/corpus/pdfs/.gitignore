@@ -1,2 +1,2 @@
-# Par défaut les PDF restent locaux (poids du dépôt). Pour les versionner : supprimer la ligne ci-dessous ou utiliser Git LFS.
-*.pdf
+# Les PDF du corpus sont versionnés pour permettre l'ingestion sur Render.
+# Voir docs/ingestion-pdf-guide.md. Si le repo devient trop lourd, migrer vers Git LFS.
