@@ -54,6 +54,12 @@ export type SearchResponse = {
    * `null` quand non disponible (mode sémantique, fallback mock, ou Meili indisponible).
    */
   facets: FacetDistribution | null;
+  /**
+   * Vrai quand l'utilisateur a sélectionné le mode sémantique mais que la requête
+   * est trop courte (< 3 caractères). On retourne une réponse vide et un message clair
+   * plutôt qu'un fallback silencieux sur le mode fulltext.
+   */
+  semanticQueryTooShort?: boolean;
 };
 
 export const SEARCH_PAGE_SIZE = 20;

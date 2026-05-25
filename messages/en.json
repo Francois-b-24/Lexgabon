@@ -35,6 +35,8 @@
     "next": "Next",
     "degradedNotice": "Index unavailable: demo results shown.",
     "clearFilters": "Reset filters",
+    "applyFilters": "Apply filters",
+    "semanticTooShort": "Type at least 3 characters to run a semantic search.",
     "matchedArticle": "Article {article}",
     "typeOption": {
       "loi": "Law",

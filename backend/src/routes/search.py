@@ -49,9 +49,16 @@ class SemanticSearchHit(BaseModel):
     score: float
 
 
+class SemanticFacets(BaseModel):
+    source: dict[str, int] = Field(default_factory=dict)
+    type: dict[str, int] = Field(default_factory=dict)
+    domaine: dict[str, int] = Field(default_factory=dict)
+
+
 class SemanticSearchResponse(BaseModel):
     hits: list[SemanticSearchHit]
     total: int
+    facets: SemanticFacets = Field(default_factory=SemanticFacets)
 
 
 # Mapping des slugs d'URL côté Next vers les libellés probables côté métadonnées Chroma.
@@ -76,6 +83,24 @@ def _matches_source_filter(meta: dict[str, Any], allowed_slugs: list[str]) -> bo
             if kw in haystack:
                 return True
     return False
+
+
+def _source_slug_from_meta(meta: dict[str, Any]) -> str | None:
+    autorite = str(meta.get("autorite") or "").lower()
+    code = str(meta.get("code") or "").lower()
+    haystack = f"{autorite} {code}"
+    for slg, kws in _URL_SLUG_KEYWORDS.items():
+        if any(kw in haystack for kw in kws):
+            return slg
+    return None
+
+
+def _matches_value_filter(meta: dict[str, Any], field: str, allowed: list[str]) -> bool:
+    """Vrai si `allowed` est vide (= pas de filtre) ou si `meta[field]` est dans `allowed`."""
+    if not allowed:
+        return True
+    value = str(meta.get(field) or "").strip()
+    return value in allowed
 
 
 def _matches_date_range(meta: dict[str, Any], date_from: str | None, date_to: str | None) -> bool:
@@ -112,13 +137,32 @@ async def api_search_semantic(request: Request, body: SemanticSearchRequest):
         meta = r.get("metadata") if isinstance(r.get("metadata"), dict) else {}
         if not _matches_source_filter(meta, body.sources):
             continue
+        if not _matches_value_filter(meta, "type", body.types):
+            continue
+        if not _matches_value_filter(meta, "domaine", body.domaines):
+            continue
         if not _matches_date_range(meta, body.date_from, body.date_to):
             continue
         filtered.append(r)
 
     total = len(filtered)
-    sliced = filtered[body.offset : body.offset + body.limit]
 
+    # Calcul des facettes sur l'ENSEMBLE des résultats filtrés (pas seulement la page courante).
+    # Sans ça les compteurs côté UI sont sous-estimés et trompent l'utilisateur.
+    facets = SemanticFacets()
+    for r in filtered:
+        meta = r.get("metadata") if isinstance(r.get("metadata"), dict) else {}
+        src = _source_slug_from_meta(meta)
+        if src:
+            facets.source[src] = facets.source.get(src, 0) + 1
+        type_v = str(meta.get("type") or "").strip()
+        if type_v:
+            facets.type[type_v] = facets.type.get(type_v, 0) + 1
+        domaine_v = str(meta.get("domaine") or "").strip()
+        if domaine_v:
+            facets.domaine[domaine_v] = facets.domaine.get(domaine_v, 0) + 1
+
+    sliced = filtered[body.offset : body.offset + body.limit]
     hits: list[SemanticSearchHit] = []
     for r in sliced:
         meta = r.get("metadata") if isinstance(r.get("metadata"), dict) else {}
@@ -126,12 +170,7 @@ async def api_search_semantic(request: Request, body: SemanticSearchRequest):
         # Reconstruit le titre depuis citation ou titre stocké
         titre = str(meta.get("titre") or meta.get("code") or r.get("citation") or "Document indexé")[:300]
         article_numero = meta.get("numero_article")
-        autorite = str(meta.get("autorite") or "").lower()
-        source_slug: str | None = None
-        for slg, kws in _URL_SLUG_KEYWORDS.items():
-            if any(kw in autorite for kw in kws):
-                source_slug = slg
-                break
+        source_slug = _source_slug_from_meta(meta)
 
         hits.append(
             SemanticSearchHit(
@@ -150,4 +189,4 @@ async def api_search_semantic(request: Request, body: SemanticSearchRequest):
             )
         )
 
-    return SemanticSearchResponse(hits=hits, total=total)
+    return SemanticSearchResponse(hits=hits, total=total, facets=facets)

@@ -10,7 +10,6 @@ import {
 } from "@/lib/search-service";
 import type { SearchFilters } from "@/lib/search-types";
 import { ClearFiltersButton } from "@/components/recherche/clear-filters-button";
-import { FiltersForm } from "@/components/recherche/filters-form";
 
 export const dynamic = "force-dynamic";
 
@@ -67,7 +66,11 @@ export default async function RechercheSSRPage({
     <div className="mx-auto flex max-w-5xl flex-col gap-6 px-4 py-6 sm:px-6">
       <h1 className="font-app-serif text-xl font-semibold text-white">{t("title")}</h1>
 
-      <FiltersForm>
+      <form
+        method="get"
+        action="/recherche"
+        className="grid gap-4 rounded-lg border border-white/10 bg-white/[0.03] p-4 sm:p-5"
+      >
         <div className="flex flex-col gap-2 sm:flex-row">
           <div className="flex flex-1 items-center gap-2 rounded-md border border-white/10 bg-white/5 px-3 py-2 focus-within:border-lg-gold/40">
             <input
@@ -169,12 +172,16 @@ export default async function RechercheSSRPage({
           </div>
         </details>
 
-        {hasActiveFilters(filters) ? (
-          <div className="flex items-center gap-3">
-            <ClearFiltersButton />
-          </div>
-        ) : null}
-      </FiltersForm>
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            type="submit"
+            className="rounded-md bg-lg-gold/90 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-lg-navy transition hover:bg-lg-gold"
+          >
+            {t("applyFilters")}
+          </button>
+          {hasActiveFilters(filters) ? <ClearFiltersButton /> : null}
+        </div>
+      </form>
 
       <div className="flex items-baseline justify-between text-[11px] text-white/45">
         <p>{t("totalResults", { total: response.total })}</p>
@@ -187,8 +194,16 @@ export default async function RechercheSSRPage({
         </p>
       ) : null}
 
+      {response.semanticQueryTooShort ? (
+        <p className="rounded-md border border-lg-gold/30 bg-lg-gold/[0.08] px-3 py-2 text-[12px] text-lg-gold-light">
+          {t("semanticTooShort")}
+        </p>
+      ) : null}
+
       {!hasResults ? (
-        <p className="py-8 text-center text-[13px] text-white/45">{t("noResults")}</p>
+        <p className="py-8 text-center text-[13px] text-white/45">
+          {response.semanticQueryTooShort ? "" : t("noResults")}
+        </p>
       ) : (
         <ul className="space-y-3">
           {response.hits.map((hit, idx) => {
@@ -310,25 +325,19 @@ function FilterCheckboxes({
         {sortedOptions.map((opt) => {
           const checked = selected.includes(opt.value);
           const count = counts ? (counts[opt.value] ?? 0) : null;
-          // Trois états visuels :
-          // - checked : option active (filtre sélectionné par l'utilisateur)
-          // - highlighted : présente dans les résultats courants → surbrillance dorée
-          //   discrète pour signaler "tu peux affiner par là" (cliquable normalement)
-          // - empty : aucun résultat → grisée et désactivée
-          // - default : pas de signal particulier
+          // Deux états seulement : coché (doré) ou non-coché (neutre).
+          // Si la facette indique 0 résultat ET que l'option n'est pas cochée,
+          // on désactive le clic — cocher ne ramènerait rien.
           const isEmpty = count === 0 && !checked;
-          const isHighlighted = !checked && count !== null && count > 0;
           return (
             <label
               key={opt.value}
-              className={`inline-flex cursor-pointer items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] transition ${
+              className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] transition ${
                 checked
-                  ? "border-lg-gold/60 bg-lg-gold/15 text-lg-gold-light"
-                  : isHighlighted
-                  ? "border-lg-gold/40 bg-lg-gold/[0.08] text-lg-gold-light/90 hover:border-lg-gold/60 hover:bg-lg-gold/15"
+                  ? "cursor-pointer border-lg-gold/60 bg-lg-gold/15 text-lg-gold-light"
                   : isEmpty
-                  ? "border-white/5 bg-white/[0.02] text-white/25 cursor-not-allowed"
-                  : "border-white/10 bg-white/[0.03] text-white/65 hover:border-lg-gold/30 hover:text-white"
+                  ? "cursor-not-allowed border-white/5 bg-white/[0.02] text-white/25"
+                  : "cursor-pointer border-white/10 bg-white/[0.03] text-white/70 hover:border-white/25 hover:text-white"
               }`}
             >
               <input
@@ -340,8 +349,8 @@ function FilterCheckboxes({
                 className="sr-only"
               />
               <span>{opt.label}</span>
-              {count !== null && count > 0 ? (
-                <span className="text-[10px] opacity-60">({count})</span>
+              {count !== null ? (
+                <span className="text-[10px] opacity-55">({count})</span>
               ) : null}
             </label>
           );

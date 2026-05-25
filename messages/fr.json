@@ -35,6 +35,8 @@
     "next": "Suivant",
     "degradedNotice": "Index indisponible : résultats de démonstration affichés.",
     "clearFilters": "Réinitialiser les filtres",
+    "applyFilters": "Appliquer les filtres",
+    "semanticTooShort": "Tapez au moins 3 caractères pour lancer une recherche par sens.",
     "matchedArticle": "Article {article}",
     "typeOption": {
       "loi": "Loi",
