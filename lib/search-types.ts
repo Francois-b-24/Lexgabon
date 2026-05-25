@@ -24,6 +24,8 @@ export type SearchHit = {
   titre: string;
   resume: string | null;
   type: string | null;
+  /** Slug du domaine (ex. `travail`, `hydrocarbures`). */
+  domaine?: string | null;
   reference: string | null;
   datePublication: string | null;
   estEnVigueur: boolean;

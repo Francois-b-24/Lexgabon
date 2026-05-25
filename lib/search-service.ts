@@ -183,6 +183,7 @@ async function searchFulltext(filters: SearchFilters): Promise<SearchResponse> {
         titre: String(doc.titre ?? ""),
         resume,
         type: typeof doc.type === "string" ? doc.type : null,
+        domaine: typeof doc.domaine === "string" ? doc.domaine : null,
         reference: typeof doc.reference === "string" ? doc.reference : null,
         datePublication: typeof doc.datePublication === "string" ? doc.datePublication : null,
         estEnVigueur: doc.estEnVigueur !== false,
@@ -247,6 +248,7 @@ async function searchSemantic(filters: SearchFilters): Promise<SearchResponse> {
         titre: String(h.titre ?? ""),
         resume: typeof h.resume === "string" ? h.resume : null,
         type: typeof h.type === "string" ? h.type : null,
+        domaine: typeof h.domaine === "string" ? h.domaine : null,
         reference: typeof h.reference === "string" ? h.reference : null,
         datePublication: typeof h.datePublication === "string" ? h.datePublication : null,
         estEnVigueur: h.estEnVigueur !== false,
@@ -254,6 +256,19 @@ async function searchSemantic(filters: SearchFilters): Promise<SearchResponse> {
         score: typeof h.score === "number" ? h.score : undefined,
       };
     });
+    // Calcul des facettes côté Next à partir des hits — le backend Python ne fournit
+    // pas de facetting. Limité aux hits affichés (~ pageSize) ; suffisant pour
+    // surligner les domaines/types/sources pertinents dans le panneau de filtres.
+    const facets: FacetDistribution = {
+      source: {},
+      type: {},
+      domaine: {},
+    };
+    for (const h of hits) {
+      if (h.source) facets.source[h.source] = (facets.source[h.source] ?? 0) + 1;
+      if (h.type) facets.type[h.type] = (facets.type[h.type] ?? 0) + 1;
+      if (h.domaine) facets.domaine[h.domaine] = (facets.domaine[h.domaine] ?? 0) + 1;
+    }
     return {
       hits,
       total: typeof data.total === "number" ? data.total : hits.length,
@@ -261,7 +276,7 @@ async function searchSemantic(filters: SearchFilters): Promise<SearchResponse> {
       pageSize: filters.pageSize,
       mode: "semantic",
       degraded: false,
-      facets: null,
+      facets,
     };
   } catch (e) {
     console.error("[search-service] semantic search failed", e);

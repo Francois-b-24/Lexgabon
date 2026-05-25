@@ -310,16 +310,22 @@ function FilterCheckboxes({
         {sortedOptions.map((opt) => {
           const checked = selected.includes(opt.value);
           const count = counts ? (counts[opt.value] ?? 0) : null;
-          // Quand on a des facettes : on désactive les options qui ne renverraient
-          // aucun résultat avec la requête courante (sauf si déjà cochée — on doit
-          // laisser l'utilisateur la décocher).
+          // Trois états visuels :
+          // - checked : option active (filtre sélectionné par l'utilisateur)
+          // - highlighted : présente dans les résultats courants → surbrillance dorée
+          //   discrète pour signaler "tu peux affiner par là" (cliquable normalement)
+          // - empty : aucun résultat → grisée et désactivée
+          // - default : pas de signal particulier
           const isEmpty = count === 0 && !checked;
+          const isHighlighted = !checked && count !== null && count > 0;
           return (
             <label
               key={opt.value}
               className={`inline-flex cursor-pointer items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] transition ${
                 checked
                   ? "border-lg-gold/60 bg-lg-gold/15 text-lg-gold-light"
+                  : isHighlighted
+                  ? "border-lg-gold/40 bg-lg-gold/[0.08] text-lg-gold-light/90 hover:border-lg-gold/60 hover:bg-lg-gold/15"
                   : isEmpty
                   ? "border-white/5 bg-white/[0.02] text-white/25 cursor-not-allowed"
                   : "border-white/10 bg-white/[0.03] text-white/65 hover:border-lg-gold/30 hover:text-white"

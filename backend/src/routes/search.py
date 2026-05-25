@@ -41,6 +41,7 @@ class SemanticSearchHit(BaseModel):
     titre: str
     resume: str | None = None
     type: str | None = None
+    domaine: str | None = None
     reference: str | None = None
     datePublication: str | None = None
     estEnVigueur: bool = True
@@ -140,6 +141,7 @@ async def api_search_semantic(request: Request, body: SemanticSearchRequest):
                 titre=titre,
                 resume=(str(r.get("text", ""))[:300] or None),
                 type=str(meta.get("type") or "") or None,
+                domaine=str(meta.get("domaine") or "") or None,
                 reference=str(meta.get("reference") or "") or None,
                 datePublication=str(meta.get("date") or "") or None,
                 estEnVigueur=True,
