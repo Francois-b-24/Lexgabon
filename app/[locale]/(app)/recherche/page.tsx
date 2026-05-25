@@ -291,11 +291,23 @@ function FilterCheckboxes({
   selected: string[];
   counts: Record<string, number> | null;
 }) {
+  // Tri par pertinence quand on a les compteurs : les options avec le plus de
+  // résultats apparaissent en premier, les ex aequo restent dans l'ordre du tableau
+  // source (qui est l'ordre d'écriture dans `SUPPORTED_DOMAINES` / `SUPPORTED_TYPES`).
+  // Cocher une option la fait remonter en tête pour qu'elle reste visible.
+  const sortedOptions = counts
+    ? [...options].sort((a, b) => {
+        const aSel = selected.includes(a.value) ? 1 : 0;
+        const bSel = selected.includes(b.value) ? 1 : 0;
+        if (aSel !== bSel) return bSel - aSel;
+        return (counts[b.value] ?? 0) - (counts[a.value] ?? 0);
+      })
+    : options;
   return (
     <fieldset className="flex flex-col gap-1">
       <legend className="text-[10px] uppercase tracking-wider text-white/35">{label}</legend>
       <div className="flex flex-wrap gap-1.5">
-        {options.map((opt) => {
+        {sortedOptions.map((opt) => {
           const checked = selected.includes(opt.value);
           const count = counts ? (counts[opt.value] ?? 0) : null;
           // Quand on a des facettes : on désactive les options qui ne renverraient
