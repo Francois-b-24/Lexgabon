@@ -87,7 +87,7 @@ export async function LandingPage() {
               </MagneticButton>
               <Link
                 href="/a-propos"
-                className="inline-flex border border-lg-gold/40 bg-transparent px-6 py-3.5 font-landing-sans text-xs font-semibold uppercase tracking-[0.12em] text-lg-gold-light transition-colors hover:border-lg-gold/70 hover:bg-lg-gold/10"
+                className="inline-flex border border-lg-gold/40 bg-transparent px-6 py-3.5 font-landing-sans text-xs font-semibold italic uppercase tracking-[0.12em] text-lg-gold-light transition-colors hover:border-lg-gold/70 hover:bg-lg-gold/10"
               >
                 {t("ctaSecondary")}
               </Link>
