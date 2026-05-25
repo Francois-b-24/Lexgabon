@@ -52,7 +52,13 @@
       "administratif": "Administrative law",
       "fiscal": "Tax law",
       "famille": "Family law",
-      "social": "Social law"
+      "social": "Social law",
+      "impots": "Tax law",
+      "douane": "Customs law",
+      "communication": "Communication law",
+      "hydrocarbures": "Hydrocarbons law",
+      "marche-public": "Public procurement law",
+      "sante": "Health law"
     },
     "sourceOption": {
       "jo-ga": "Official Gazette of Gabon",

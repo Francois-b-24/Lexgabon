@@ -283,6 +283,12 @@ export const SUPPORTED_DOMAINES = [
   "fiscal",
   "famille",
   "social",
+  "impots",
+  "douane",
+  "communication",
+  "hydrocarbures",
+  "marche-public",
+  "sante",
 ] as const;
 export type SupportedDomaine = (typeof SUPPORTED_DOMAINES)[number];
 

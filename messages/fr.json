@@ -52,7 +52,13 @@
       "administratif": "Droit administratif",
       "fiscal": "Droit fiscal",
       "famille": "Droit de la famille",
-      "social": "Droit social"
+      "social": "Droit social",
+      "impots": "Droit des impôts",
+      "douane": "Droit douanier",
+      "communication": "Droit de la communication",
+      "hydrocarbures": "Droit des hydrocarbures",
+      "marche-public": "Droit des marchés publics",
+      "sante": "Droit de la santé"
     },
     "sourceOption": {
       "jo-ga": "Journal officiel du Gabon",

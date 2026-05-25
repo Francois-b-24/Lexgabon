@@ -32,27 +32,77 @@ files:
     reference: "Loi n° 022/2021 du 19 novembre 2021"
     source: "https://journal-officiel.ga/"
 
-  # Doublons connus du Code du travail — même contenu, métadonnées partagées.
-  travail.pdf:
-    slug: "code-travail-2021"
+  # Code Général des Impôts de 2009
+  code-general-impots-2009.pdf:
+    slug: "code-general-impots-2009"
     source_code: "JOG"
     type: "loi"
-    domaine: "travail"
-    titre: "Code du travail de la République gabonaise (doublon)"
-    code: "Code du travail"
+    domaine: "impots"
+    titre: "Code général des impôts de la République gabonaise"
+    code: "Code général des impôts"
     autorite: "République gabonaise"
-    date: "2021-11-19"
-    reference: "Loi n° 022/2021 du 19 novembre 2021"
-    duplicate_of: "code-travail-2021.pdf"
+    date: "2009-01-22"
+    reference: "Loi n°027/2008 du 22 janvier 2009"
+    #duplicate_of: "code-travail-2021.pdf"
 
-  travail_1.pdf:
-    slug: "code-travail-2021"
+  code-douane.pdf:
+    slug: "code-douane"
     source_code: "JOG"
     type: "loi"
-    domaine: "travail"
-    titre: "Code du travail de la République gabonaise (doublon)"
-    code: "Code du travail"
+    domaine: "douane"
+    titre: "Code des douanes CEMAC"
+    code: "Code général des impôts"
+    autorite: "CEMAC"
+    date: ""
+    reference: ""
+    #duplicate_of: "code-travail-2021.pdf"
+
+  code-hydrocarbures-2019.pdf:
+    slug: "code-hydrocarbures-2019"
+    source_code: "JOG"
+    type: "loi"
+    domaine: "hydrocarbures"
+    titre: "Code des hydrocarbures de la République gabonaise"
+    code: "Code des hydrocarbures"
     autorite: "République gabonaise"
-    date: "2021-11-19"
-    reference: "Loi n° 022/2021 du 19 novembre 2021"
-    duplicate_of: "code-travail-2021.pdf"
+    date: "2019-07-16"
+    reference: "Loi n° 002/2019 du 16 juillet 2019 portant réglementation du secteur des hydrocarbures en République Gabonaise"
+    source: "https://journal-officiel.ga/"
+
+
+  code-marche-public-2018.pdf:
+    slug: "code-marche-public-2018"
+    source_code: "JOG"
+    type: "décret"
+    domaine: "marche-public"
+    titre: "Code du marché public de la République gabonaise"
+    code: "Code du marché public"
+    autorite: "République gabonaise"
+    date: "2018-02-15"
+    reference: "Décret n°00027/PR/MEPPDD du 17 janvier 2018"
+    source: "https://journal-officiel.ga/"
+
+   
+  code-sante-2026.pdf:
+    slug: "code-sante-2026"
+    source_code: "JOG"
+    type: "loi"
+    domaine: "sante"
+    titre: "Code de la santé de la République gabonaise"
+    code: "Code de la santé publique"
+    autorite: "République gabonaise"
+    date: "2026-04-15"
+    reference: "Loi n°030/2025 du 05 janvier 2026 portant Code de la Santé en République Gabonaise"
+    source: "https://journal-officiel.ga/"
+
+  code-communication-2026.pdf:
+    slug: "code-communication-2026"
+    source_code: "JOG"
+    type: "ordonnance"
+    domaine: "communication"
+    titre: "Code de la communication de la République gabonaise"
+    code: "Code de la communication"
+    autorite: "République gabonaise"
+    date: "2026-04-15"
+    reference: "Ordonnance n°0012/PR/2026 du 15 avril 2026 portant Code de la Communication en République Gabonaise"
+    source: "https://journal-officiel.ga/"
