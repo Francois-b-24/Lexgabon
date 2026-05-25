@@ -20,10 +20,11 @@ export function SiteHeader() {
   const [open, setOpen] = useState(false);
 
   const items = [
-    { href: "/a-propos", label: n("apropos") },
+    { href: "/", label: n("home") },
     { href: "/veille", label: n("veille") },
     { href: "/recherche", label: n("recherche") },
     { href: "/chatbot", label: n("chatbot") },
+    { href: "/a-propos", label: n("apropos") },
   ] as const;
 
   useEffect(() => {
