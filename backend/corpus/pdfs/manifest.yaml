@@ -47,14 +47,14 @@ files:
 
   code-douane.pdf:
     slug: "code-douane"
-    source_code: "JOG"
+    source_code: "CEMAC"
     type: "loi"
     domaine: "douane"
     titre: "Code des douanes CEMAC"
-    code: "Code général des impôts"
+    code: "Code des douanes"
     autorite: "CEMAC"
-    date: ""
-    reference: ""
+    date: null
+    reference: null
     #duplicate_of: "code-travail-2021.pdf"
 
   code-hydrocarbures-2019.pdf:
