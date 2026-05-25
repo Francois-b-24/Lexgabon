@@ -20,6 +20,7 @@ import {
 import {
   SEARCH_PAGE_SIZE,
   SEARCH_PAGE_SIZE_MAX,
+  type FacetDistribution,
   type SearchFilters,
   type SearchHit,
   type SearchResponse,
@@ -112,6 +113,7 @@ function fallbackFromMock(filters: SearchFilters): SearchResponse {
     pageSize: filters.pageSize,
     mode: filters.mode,
     degraded: true,
+    facets: null,
   };
 }
 
@@ -163,6 +165,7 @@ async function searchFulltext(filters: SearchFilters): Promise<SearchResponse> {
       limit: filters.pageSize,
       offset: (filters.page - 1) * filters.pageSize,
       filter: filter.length ? filter : undefined,
+      facets: ["source", "type", "domaine"],
     });
     const hits: SearchHit[] = res.hits.map((h) => {
       const doc = h as Record<string, unknown>;
@@ -186,6 +189,13 @@ async function searchFulltext(filters: SearchFilters): Promise<SearchResponse> {
         articleNumero,
       };
     });
+    const fd = (res as { facetDistribution?: Record<string, Record<string, number>> })
+      .facetDistribution;
+    const facets: FacetDistribution = {
+      source: fd?.source ?? {},
+      type: fd?.type ?? {},
+      domaine: fd?.domaine ?? {},
+    };
     return {
       hits,
       total: res.estimatedTotalHits ?? hits.length,
@@ -193,6 +203,7 @@ async function searchFulltext(filters: SearchFilters): Promise<SearchResponse> {
       pageSize: filters.pageSize,
       mode: "fulltext",
       degraded: false,
+      facets,
     };
   } catch (e) {
     console.error("[search-service] meili search failed", e);
@@ -250,6 +261,7 @@ async function searchSemantic(filters: SearchFilters): Promise<SearchResponse> {
       pageSize: filters.pageSize,
       mode: "semantic",
       degraded: false,
+      facets: null,
     };
   } catch (e) {
     console.error("[search-service] semantic search failed", e);
@@ -264,12 +276,18 @@ export async function runSearch(filters: SearchFilters): Promise<SearchResponse>
   return searchFulltext(filters);
 }
 
+/**
+ * Valeurs de `type` telles qu'elles sont effectivement stockées dans Meili / Postgres.
+ * Conservées avec accents pour rester alignées sur le manifest YAML (`type: "décret"`).
+ * Les clés de traduction associées (`messages/*.json` → `Recherche.typeOption`) suivent
+ * le même libellé (avec accent).
+ */
 export const SUPPORTED_TYPES = [
   "loi",
   "ordonnance",
-  "decret",
+  "décret",
   "acte uniforme",
-  "reglement",
+  "règlement",
   "circulaire",
 ] as const;
 export type SupportedType = (typeof SUPPORTED_TYPES)[number];

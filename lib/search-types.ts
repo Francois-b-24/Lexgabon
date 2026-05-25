@@ -33,6 +33,12 @@ export type SearchHit = {
   score?: number;
 };
 
+export type FacetDistribution = {
+  source: Record<string, number>;
+  type: Record<string, number>;
+  domaine: Record<string, number>;
+};
+
 export type SearchResponse = {
   hits: SearchHit[];
   total: number;
@@ -41,6 +47,11 @@ export type SearchResponse = {
   mode: SearchMode;
   /** `true` si on a renvoyé un fallback faute de Meili/Chroma joignable. */
   degraded: boolean;
+  /**
+   * Compte par facette (source/type/domaine) calculé par Meilisearch sur la requête courante.
+   * `null` quand non disponible (mode sémantique, fallback mock, ou Meili indisponible).
+   */
+  facets: FacetDistribution | null;
 };
 
 export const SEARCH_PAGE_SIZE = 20;

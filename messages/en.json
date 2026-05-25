@@ -39,9 +39,9 @@
     "typeOption": {
       "loi": "Law",
       "ordonnance": "Ordinance",
-      "decret": "Decree",
+      "décret": "Decree",
       "acte uniforme": "Uniform Act",
-      "reglement": "Regulation",
+      "règlement": "Regulation",
       "circulaire": "Circular"
     },
     "domaineOption": {

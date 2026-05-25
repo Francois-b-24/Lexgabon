@@ -10,6 +10,7 @@ import {
 } from "@/lib/search-service";
 import type { SearchFilters } from "@/lib/search-types";
 import { ClearFiltersButton } from "@/components/recherche/clear-filters-button";
+import { FiltersForm } from "@/components/recherche/filters-form";
 
 export const dynamic = "force-dynamic";
 
@@ -66,11 +67,7 @@ export default async function RechercheSSRPage({
     <div className="mx-auto flex max-w-5xl flex-col gap-6 px-4 py-6 sm:px-6">
       <h1 className="font-app-serif text-xl font-semibold text-white">{t("title")}</h1>
 
-      <form
-        method="get"
-        action="/recherche"
-        className="grid gap-4 rounded-lg border border-white/10 bg-white/[0.03] p-4 sm:p-5"
-      >
+      <FiltersForm>
         <div className="flex flex-col gap-2 sm:flex-row">
           <div className="flex flex-1 items-center gap-2 rounded-md border border-white/10 bg-white/5 px-3 py-2 focus-within:border-lg-gold/40">
             <input
@@ -119,7 +116,7 @@ export default async function RechercheSSRPage({
           ) : null}
         </fieldset>
 
-        <details className="rounded-md border border-white/10" open={hasActiveFilters(filters)}>
+        <details className="rounded-md border border-white/10" open>
           <summary className="cursor-pointer px-3 py-2 text-[11px] uppercase tracking-wider text-lg-gold/80">
             {t("filters")}
           </summary>
@@ -129,18 +126,21 @@ export default async function RechercheSSRPage({
               name="source"
               options={SOURCE_FILTER_OPTIONS.map((s) => ({ value: s, label: t(`sourceOption.${s}`) }))}
               selected={filters.sources}
+              counts={response.facets?.source ?? null}
             />
             <FilterCheckboxes
               label={t("filterType")}
               name="type"
               options={SUPPORTED_TYPES.map((s) => ({ value: s, label: t(`typeOption.${s}`) }))}
               selected={filters.types}
+              counts={response.facets?.type ?? null}
             />
             <FilterCheckboxes
               label={t("filterDomaine")}
               name="domaine"
               options={SUPPORTED_DOMAINES.map((s) => ({ value: s, label: t(`domaineOption.${s}`) }))}
               selected={filters.domaines}
+              counts={response.facets?.domaine ?? null}
             />
             <div className="flex flex-col gap-1">
               <label className="text-[10px] uppercase tracking-wider text-white/35" htmlFor="date_from">
@@ -174,7 +174,7 @@ export default async function RechercheSSRPage({
             <ClearFiltersButton />
           </div>
         ) : null}
-      </form>
+      </FiltersForm>
 
       <div className="flex items-baseline justify-between text-[11px] text-white/45">
         <p>{t("totalResults", { total: response.total })}</p>
@@ -283,11 +283,13 @@ function FilterCheckboxes({
   name,
   options,
   selected,
+  counts,
 }: {
   label: string;
   name: string;
   options: { value: string; label: string }[];
   selected: string[];
+  counts: Record<string, number> | null;
 }) {
   return (
     <fieldset className="flex flex-col gap-1">
@@ -295,12 +297,19 @@ function FilterCheckboxes({
       <div className="flex flex-wrap gap-1.5">
         {options.map((opt) => {
           const checked = selected.includes(opt.value);
+          const count = counts ? (counts[opt.value] ?? 0) : null;
+          // Quand on a des facettes : on désactive les options qui ne renverraient
+          // aucun résultat avec la requête courante (sauf si déjà cochée — on doit
+          // laisser l'utilisateur la décocher).
+          const isEmpty = count === 0 && !checked;
           return (
             <label
               key={opt.value}
               className={`inline-flex cursor-pointer items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] transition ${
                 checked
                   ? "border-lg-gold/60 bg-lg-gold/15 text-lg-gold-light"
+                  : isEmpty
+                  ? "border-white/5 bg-white/[0.02] text-white/25 cursor-not-allowed"
                   : "border-white/10 bg-white/[0.03] text-white/65 hover:border-lg-gold/30 hover:text-white"
               }`}
             >
@@ -309,9 +318,13 @@ function FilterCheckboxes({
                 name={name}
                 value={opt.value}
                 defaultChecked={checked}
+                disabled={isEmpty}
                 className="sr-only"
               />
-              {opt.label}
+              <span>{opt.label}</span>
+              {count !== null && count > 0 ? (
+                <span className="text-[10px] opacity-60">({count})</span>
+              ) : null}
             </label>
           );
         })}
