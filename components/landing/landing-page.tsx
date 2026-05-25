@@ -74,7 +74,7 @@ export async function LandingPage() {
                 {t("heroSub")}
               </p>
             </Reveal>
-            <Reveal delay={320} className="mt-10 flex flex-wrap gap-3.5">
+            <Reveal delay={320} className="mt-10 flex flex-wrap items-center gap-3.5">
               <MagneticButton>
                 <a
                   href="https://alin-africa.com"
@@ -85,6 +85,12 @@ export async function LandingPage() {
                   {t("ctaPrimary")} →
                 </a>
               </MagneticButton>
+              <Link
+                href="/a-propos"
+                className="inline-flex border border-lg-gold/40 bg-transparent px-6 py-3.5 font-landing-sans text-xs font-semibold uppercase tracking-[0.12em] text-lg-gold-light transition-colors hover:border-lg-gold/70 hover:bg-lg-gold/10"
+              >
+                {t("ctaSecondary")}
+              </Link>
             </Reveal>
             <Reveal delay={400}>
               <div className="mt-14 grid gap-6 border-t border-[rgba(196,154,42,0.22)] pt-7 sm:grid-cols-3">
