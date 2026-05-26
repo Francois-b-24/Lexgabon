@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { setRequestLocale, getTranslations } from "next-intl/server";
 import {
   IconScale,
   IconLibrary,
   IconBriefcase,
   IconEye,
-  IconUserCircle,
 } from "@tabler/icons-react";
 import { Eyebrow } from "@/components/brand/eyebrow";
 import { SectionTitle } from "@/components/brand/section-title";
@@ -46,8 +46,18 @@ export default async function AproposPage({
   const t = await getTranslations("Apropos");
 
   const teamMembers = [
-    { nameKey: "member1Name", roleKey: "member1Role", bioKey: "member1Bio" },
-    { nameKey: "member2Name", roleKey: "member2Role", bioKey: "member2Bio" },
+    {
+      nameKey: "member1Name",
+      roleKey: "member1Role",
+      bioKey: "member1Bio",
+      photo: "/team/felicia-ombanda-indoumou.png",
+    },
+    {
+      nameKey: "member2Name",
+      roleKey: "member2Role",
+      bioKey: "member2Bio",
+      photo: "/team/francois-boussengui.jpg",
+    },
   ] as const;
 
   const missions = [
@@ -113,8 +123,14 @@ export default async function AproposPage({
             {teamMembers.map((member, i) => (
               <Reveal key={member.nameKey} delay={i * 80}>
                 <article className="flex h-full flex-col bg-lg-paper p-8 text-left transition-colors hover:bg-lg-paper-warm md:p-10">
-                  <div className="mb-5 grid h-24 w-24 place-items-center rounded-full border border-lg-gold/40 bg-lg-navy/5 text-lg-steel">
-                    <IconUserCircle size={56} stroke={1.2} aria-hidden />
+                  <div className="mb-5 h-24 w-24 overflow-hidden rounded-full border border-lg-gold/40 bg-lg-navy/5 ring-1 ring-inset ring-white/40">
+                    <Image
+                      src={member.photo}
+                      alt={t(member.nameKey)}
+                      width={384}
+                      height={384}
+                      className="h-full w-full object-cover"
+                    />
                   </div>
                   <h3 className="font-landing-serif text-[20px] font-medium text-lg-ink">
                     {t(member.nameKey)}
