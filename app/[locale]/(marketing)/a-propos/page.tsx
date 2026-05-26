@@ -46,10 +46,9 @@ export default async function AproposPage({
   const t = await getTranslations("Apropos");
 
   const teamMembers = [
-    { nameKey: "memberName1" as const },
-    { nameKey: "memberName2" as const },
-    { nameKey: "memberName3" as const },
-  ];
+    { nameKey: "member1Name", roleKey: "member1Role", bioKey: "member1Bio" },
+    { nameKey: "member2Name", roleKey: "member2Role", bioKey: "member2Bio" },
+  ] as const;
 
   const missions = [
     { Icon: IconScale, titleKey: "mission1Title", bodyKey: "mission1Body" },
@@ -110,10 +109,10 @@ export default async function AproposPage({
               {t("equipeIntro")}
             </p>
           </Reveal>
-          <div className="grid gap-px border border-[var(--lg-rule)] bg-[var(--lg-rule)] sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-px border border-[var(--lg-rule)] bg-[var(--lg-rule)] sm:grid-cols-2">
             {teamMembers.map((member, i) => (
               <Reveal key={member.nameKey} delay={i * 80}>
-                <article className="flex h-full flex-col items-center bg-lg-paper p-8 text-center transition-colors hover:bg-lg-paper-warm md:p-10">
+                <article className="flex h-full flex-col bg-lg-paper p-8 text-left transition-colors hover:bg-lg-paper-warm md:p-10">
                   <div className="mb-5 grid h-24 w-24 place-items-center rounded-full border border-lg-gold/40 bg-lg-navy/5 text-lg-steel">
                     <IconUserCircle size={56} stroke={1.2} aria-hidden />
                   </div>
@@ -121,10 +120,10 @@ export default async function AproposPage({
                     {t(member.nameKey)}
                   </h3>
                   <p className="mt-1 text-[10px] uppercase tracking-[0.14em] text-lg-gold">
-                    {t("memberRole")}
+                    {t(member.roleKey)}
                   </p>
                   <p className="mt-4 text-[13px] font-light leading-relaxed text-lg-ink-mute">
-                    {t("memberBio")}
+                    {t(member.bioKey)}
                   </p>
                 </article>
               </Reveal>
