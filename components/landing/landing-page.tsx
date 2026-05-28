@@ -12,8 +12,6 @@ import { CustomCursor } from "@/components/animations/custom-cursor";
 import { Marquee } from "@/components/animations/marquee";
 import { GabonMap } from "@/components/landing/gabon-map";
 
-/** Affichage marketing : volume indexé annoncé sur la landing (hors agrégation temps réel). */
-const LANDING_INDEXED_DISPLAY = "2500+";
 
 export async function LandingPage() {
   const t = await getTranslations("Landing");
@@ -27,6 +25,7 @@ export async function LandingPage() {
     console.error("[landing] stats", e);
     stats = {
       officialSourcesCount: OFFICIAL_LANDING_SOURCES.length,
+      indexedArticlesCount: 0,
       lastUpdatePrimary: "—",
       lastUpdateSecondary: "curated",
     };
@@ -94,14 +93,14 @@ export async function LandingPage() {
             </Reveal>
             <Reveal delay={400}>
               <div className="mt-14 grid gap-6 border-t border-[rgba(196,154,42,0.22)] pt-7 sm:grid-cols-3">
-                <div>
+                <Link href="/recherche" className="group block">
                   <span className="mb-1.5 block text-[10px] uppercase tracking-[0.2em] text-lg-gold">
                     {t("metaIndexed")}
                   </span>
-                  <span className="font-landing-serif text-[26px] text-lg-paper">
-                    {LANDING_INDEXED_DISPLAY}
+                  <span className="font-landing-serif text-[26px] text-lg-paper transition group-hover:text-lg-gold">
+                    {stats.indexedArticlesCount > 0 ? stats.indexedArticlesCount.toLocaleString(locale) : "—"}
                   </span>
-                </div>
+                </Link>
                 <div>
                   <span className="mb-1.5 block text-[10px] uppercase tracking-[0.2em] text-lg-gold">
                     {t("metaSources")}
@@ -202,7 +201,7 @@ export async function LandingPage() {
           </Reveal>
           <div className="mt-12 grid border-y border-[var(--lg-gold-faint)] sm:grid-cols-2 lg:grid-cols-4">
             {[
-              [LANDING_INDEXED_DISPLAY, t("metaIndexed")],
+              [stats.indexedArticlesCount > 0 ? stats.indexedArticlesCount.toLocaleString(locale) : "—", t("metaIndexed")],
               [String(stats.officialSourcesCount), t("metaSources")],
               [
                 stats.lastUpdatePrimary === "—" && stats.lastUpdateSecondary === "curated"
@@ -215,14 +214,25 @@ export async function LandingPage() {
               [t("metaAccessFree"), t("metaAccess")],
             ].map(([num, label], i) => (
               <Reveal key={String(label)} delay={i * 80}>
-                <div className="border-b border-[var(--lg-gold-faint)] p-6 sm:border-r sm:border-b-0 sm:last:border-r-0 lg:border-r">
-                  <span className="font-landing-serif text-[clamp(40px,4.5vw,64px)] text-lg-gold">
-                    {num}
-                  </span>
-                  <p className="mt-3 text-[11px] uppercase tracking-[0.16em] text-white/60">
-                    {label}
-                  </p>
-                </div>
+                {i === 0 ? (
+                  <Link href="/recherche" className="group block border-b border-[var(--lg-gold-faint)] p-6 sm:border-r sm:border-b-0 sm:last:border-r-0 lg:border-r">
+                    <span className="font-landing-serif text-[clamp(40px,4.5vw,64px)] text-lg-gold transition group-hover:text-lg-gold-light">
+                      {num}
+                    </span>
+                    <p className="mt-3 text-[11px] uppercase tracking-[0.16em] text-white/60">
+                      {label}
+                    </p>
+                  </Link>
+                ) : (
+                  <div className="border-b border-[var(--lg-gold-faint)] p-6 sm:border-r sm:border-b-0 sm:last:border-r-0 lg:border-r">
+                    <span className="font-landing-serif text-[clamp(40px,4.5vw,64px)] text-lg-gold">
+                      {num}
+                    </span>
+                    <p className="mt-3 text-[11px] uppercase tracking-[0.16em] text-white/60">
+                      {label}
+                    </p>
+                  </div>
+                )}
               </Reveal>
             ))}
           </div>

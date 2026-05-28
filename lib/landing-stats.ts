@@ -3,9 +3,11 @@ import { getDb } from "@/lib/db";
 import { textes } from "@/lib/db/schema";
 import { mockVeille } from "@/lib/mock/veille";
 import { OFFICIAL_LANDING_SOURCES } from "@/lib/official-sources";
+import { getIndexedArticlesCount } from "@/lib/search-service";
 
 export type LandingStats = {
   officialSourcesCount: number;
+  indexedArticlesCount: number;
   /** Grande ligne du 4e bloc stats (date courte ou libellé démo) */
   lastUpdatePrimary: string;
   /** Sous-titre du 4e bloc : index temps réel vs sélection institutionnelle sans index. */
@@ -53,13 +55,17 @@ function lastIsoFromOfficialVeille(): string | null {
  * Date : DB puis dernière publication datée citée dans la veille institutionnelle.
  */
 export async function getLandingStats(locale: string): Promise<LandingStats> {
-  const dbIso = await lastPublicationFromDb();
+  const [dbIso, indexedArticlesCount] = await Promise.all([
+    lastPublicationFromDb(),
+    getIndexedArticlesCount(),
+  ]);
   const lastIso = dbIso ?? lastIsoFromOfficialVeille();
   const lastUpdatePrimary = lastIso ? formatDateShort(lastIso, locale) : "—";
   const lastUpdateSecondary = dbIso != null ? "live" : "curated";
 
   return {
     officialSourcesCount: OFFICIAL_LANDING_SOURCES.length,
+    indexedArticlesCount,
     lastUpdatePrimary,
     lastUpdateSecondary,
   };

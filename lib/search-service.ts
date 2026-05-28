@@ -284,6 +284,17 @@ async function searchSemantic(filters: SearchFilters): Promise<SearchResponse> {
   }
 }
 
+export async function getIndexedArticlesCount(): Promise<number> {
+  const client = getMeili();
+  if (!client) return 0;
+  try {
+    const stats = await client.index(MEILI_INDEX).getStats();
+    return stats.numberOfDocuments;
+  } catch {
+    return 0;
+  }
+}
+
 export async function runSearch(filters: SearchFilters): Promise<SearchResponse> {
   if (filters.mode === "semantic") {
     if (filters.q.trim().length < 3) {
