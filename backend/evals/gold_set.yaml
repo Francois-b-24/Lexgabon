@@ -1,0 +1,287 @@
+# Gold set — évaluation retrieval RAG LexGabon
+# 40 questions couvrant les domaines indexés + questions hors-périmètre.
+#
+# Champs :
+#   id               : identifiant unique kebab-case
+#   question         : question telle que posée par un utilisateur
+#   expected_articles: liste de numéros d'articles attendus dans le top-k
+#                      (liste vide = question hors-périmètre, attendre 0 résultat)
+#   expected_domain  : domaine déclaré à retriever.search()
+#   difficulty       : easy | medium | trap
+#
+# Domaines indexés : travail, impots, hydrocarbures, douane, marche-public, sante, communication
+# Domaines non indexés (hors-périmètre corpus) : civil, penal, commercial, administratif, famille, fonction_publique
+#
+# Sections :
+#   A. Droit du travail      (8 questions)
+#   B. Droit fiscal          (5 questions)
+#   C. Hydrocarbures         (4 questions)
+#   D. Douane                (3 questions)
+#   E. Marchés publics       (4 questions)
+#   F. Santé                 (4 questions)
+#   G. Communication         (4 questions)
+#   H. Hors-périmètre corpus (5 questions — expected_articles vide)
+#   I. Questions pièges      (3 questions — articles abrogés / hors Gabon)
+
+questions:
+
+  # ── A. Droit du travail ──────────────────────────────────────────────────
+
+  - id: travail-duree-hebdo
+    question: Quelle est la durée légale hebdomadaire du travail au Gabon ?
+    expected_articles: ["24", "25"]
+    expected_domain: travail
+    difficulty: easy
+
+  - id: travail-conges-payes
+    question: Combien de jours de congé payé un salarié acquiert-il par mois de service ?
+    expected_articles: ["149", "150"]
+    expected_domain: travail
+    difficulty: easy
+
+  - id: travail-preavis-rupture
+    question: Quelle est la durée du préavis en cas de rupture du contrat de travail ?
+    expected_articles: ["54", "55"]
+    expected_domain: travail
+    difficulty: easy
+
+  - id: travail-conge-maternite
+    question: Quels sont les droits d'une salariée en congé de maternité ?
+    expected_articles: ["207", "210"]
+    expected_domain: travail
+    difficulty: medium
+
+  - id: travail-licenciement-faute
+    question: Quelles sont les conditions du licenciement pour faute grave au Gabon ?
+    expected_articles: ["50", "51", "52"]
+    expected_domain: travail
+    difficulty: medium
+
+  - id: travail-greve-conditions
+    question: Quelles sont les conditions légales d'exercice du droit de grève au Gabon ?
+    expected_articles: ["378", "379", "380"]
+    expected_domain: travail
+    difficulty: medium
+
+  - id: travail-delegates-personnel
+    question: Quel est le rôle des délégués du personnel dans l'entreprise gabonaise ?
+    expected_articles: ["64", "66", "68"]
+    expected_domain: travail
+    difficulty: easy
+
+  - id: travail-salaire-minimum
+    question: Comment est fixé le salaire minimum interprofessionnel garanti (SMIG) au Gabon ?
+    expected_articles: ["178", "179", "180"]
+    expected_domain: travail
+    difficulty: medium
+
+  # ── B. Droit fiscal ──────────────────────────────────────────────────────
+
+  - id: fiscal-is-benefice
+    question: Comment est déterminé le bénéfice net imposable à l'impôt sur les sociétés au Gabon ?
+    expected_articles: ["3", "4", "11"]
+    expected_domain: impots
+    difficulty: medium
+
+  - id: fiscal-tva-regime
+    question: Quel est le régime de la taxe sur la valeur ajoutée applicable au Gabon ?
+    expected_articles: ["223", "224", "225"]
+    expected_domain: impots
+    difficulty: medium
+
+  - id: fiscal-retenue-salaires
+    question: Comment sont imposés les traitements et salaires au titre de l'IRPP au Gabon ?
+    expected_articles: ["71", "72", "73"]
+    expected_domain: impots
+    difficulty: medium
+
+  - id: fiscal-amortissements
+    question: Quelles sont les règles d'amortissement des immobilisations pour les entreprises gabonaises ?
+    expected_articles: ["13", "14"]
+    expected_domain: impots
+    difficulty: medium
+
+  - id: fiscal-prescription
+    question: Quel est le délai de prescription de l'action en recouvrement de l'administration fiscale gabonaise ?
+    expected_articles: ["620", "621"]
+    expected_domain: impots
+    difficulty: hard
+
+  # ── C. Hydrocarbures ─────────────────────────────────────────────────────
+
+  - id: hydro-partage-production
+    question: Qu'est-ce qu'un contrat de partage de production en matière d'hydrocarbures au Gabon ?
+    expected_articles: ["53", "54", "55"]
+    expected_domain: hydrocarbures
+    difficulty: easy
+
+  - id: hydro-redevance-miniere
+    question: Comment est calculée la redevance minière proportionnelle sur les hydrocarbures au Gabon ?
+    expected_articles: ["104", "105"]
+    expected_domain: hydrocarbures
+    difficulty: medium
+
+  - id: hydro-torchage-gaz
+    question: Le torchage du gaz est-il réglementé par le code des hydrocarbures gabonais ?
+    expected_articles: ["124", "125", "126"]
+    expected_domain: hydrocarbures
+    difficulty: easy
+
+  - id: hydro-abandon-puits
+    question: Quelles obligations s'imposent à un opérateur lors de l'abandon d'un puits d'hydrocarbures ?
+    expected_articles: ["115", "116"]
+    expected_domain: hydrocarbures
+    difficulty: medium
+
+  # ── D. Douane ────────────────────────────────────────────────────────────
+
+  - id: douane-valeur-en-douane
+    question: Comment est déterminée la valeur en douane des marchandises importées au Gabon ?
+    expected_articles: ["28", "29", "30"]
+    expected_domain: douane
+    difficulty: medium
+
+  - id: douane-franchise
+    question: Quelles marchandises bénéficient d'une franchise de droits de douane en zone CEMAC ?
+    expected_articles: ["85", "86"]
+    expected_domain: douane
+    difficulty: medium
+
+  - id: douane-entrepot
+    question: Quelles sont les règles applicables au régime de l'entrepôt en douane ?
+    expected_articles: ["150", "151", "152"]
+    expected_domain: douane
+    difficulty: medium
+
+  # ── E. Marchés publics ───────────────────────────────────────────────────
+
+  - id: marche-appel-offres-ouvert
+    question: Comment se déroule un appel d'offres ouvert pour la passation d'un marché public gabonais ?
+    expected_articles: ["57", "58", "59"]
+    expected_domain: marche-public
+    difficulty: easy
+
+  - id: marche-gre-a-gre
+    question: Dans quels cas peut-on recourir à un marché de gré à gré au Gabon ?
+    expected_articles: ["56", "68"]
+    expected_domain: marche-public
+    difficulty: medium
+
+  - id: marche-avance-demarrage
+    question: Quelles sont les conditions d'octroi d'une avance de démarrage dans un marché public gabonais ?
+    expected_articles: ["117", "118"]
+    expected_domain: marche-public
+    difficulty: medium
+
+  - id: marche-resiliation
+    question: Dans quels cas un marché public gabonais peut-il être résilié par l'autorité contractante ?
+    expected_articles: ["137", "138", "139"]
+    expected_domain: marche-public
+    difficulty: medium
+
+  # ── F. Santé ─────────────────────────────────────────────────────────────
+
+  - id: sante-pharmacie-ouverture
+    question: Quelles sont les conditions d'ouverture d'une pharmacie au Gabon ?
+    expected_articles: ["138", "139", "184"]
+    expected_domain: sante
+    difficulty: easy
+
+  - id: sante-vaccination-obligations
+    question: Quelles obligations existent en matière de vaccination au Gabon ?
+    expected_articles: ["271", "272"]
+    expected_domain: sante
+    difficulty: easy
+
+  - id: sante-secret-medical
+    question: Comment le secret médical est-il protégé par le code de la santé gabonais ?
+    expected_articles: ["26", "27", "42"]
+    expected_domain: sante
+    difficulty: medium
+
+  - id: sante-don-organes
+    question: Quelles sont les règles encadrant le don d'organes au Gabon ?
+    expected_articles: ["50", "51", "52"]
+    expected_domain: sante
+    difficulty: medium
+
+  # ── G. Communication ─────────────────────────────────────────────────────
+
+  - id: comm-reseaux-sociaux
+    question: Quelles règles encadrent l'usage des réseaux sociaux numériques au Gabon ?
+    expected_articles: ["1", "2", "3"]
+    expected_domain: communication
+    difficulty: easy
+
+  - id: comm-presse-ligne
+    question: Quelles obligations s'imposent aux éditeurs de presse en ligne au Gabon ?
+    expected_articles: ["10", "11", "12"]
+    expected_domain: communication
+    difficulty: medium
+
+  - id: comm-droit-rectification
+    question: Comment s'exerce le droit de rectification dans la presse gabonaise ?
+    expected_articles: ["60", "61", "62"]
+    expected_domain: communication
+    difficulty: medium
+
+  - id: comm-publicite-commerciale
+    question: Quelles sont les règles encadrant la publicité commerciale dans les médias gabonais ?
+    expected_articles: ["80", "81"]
+    expected_domain: communication
+    difficulty: medium
+
+  # ── H. Hors-périmètre corpus (5 questions — expected_articles vide) ──────
+  # Ces questions relèvent de domaines non encore indexés.
+  # Le retriever ne doit retourner aucun chunk après seuil.
+
+  - id: hors-perimetre-civil-contrat
+    question: Quelles sont les conditions de validité d'un contrat selon le droit civil gabonais ?
+    expected_articles: []
+    expected_domain: civil
+    difficulty: easy
+
+  - id: hors-perimetre-penal-homicide
+    question: Quelle est la peine prévue pour homicide volontaire en droit pénal gabonais ?
+    expected_articles: []
+    expected_domain: penal
+    difficulty: easy
+
+  - id: hors-perimetre-famille-divorce
+    question: Quelles sont les causes de divorce admises par le droit gabonais de la famille ?
+    expected_articles: []
+    expected_domain: famille
+    difficulty: easy
+
+  - id: hors-perimetre-fonction-publique
+    question: Quelles sont les conditions de titularisation d'un fonctionnaire gabonais ?
+    expected_articles: []
+    expected_domain: fonction_publique
+    difficulty: easy
+
+  - id: hors-perimetre-hors-gabon
+    question: Quelle est la durée légale du travail en France selon le code du travail français ?
+    expected_articles: []
+    expected_domain: general
+    difficulty: easy
+
+  # ── I. Questions pièges (3 questions) ────────────────────────────────────
+  # Articles potentiellement abrogés ou modifiés, ou terminologie trompeuse.
+
+  - id: piege-article-abroge-smic
+    question: Quel est le montant du SMIC au Gabon fixé par le code du travail de 1994 ?
+    expected_articles: []
+    expected_domain: travail
+    difficulty: trap
+
+  - id: piege-hors-gabon-ohada-bilan
+    question: Quelles sont les règles de présentation du bilan selon le droit comptable OHADA ?
+    expected_articles: []
+    expected_domain: commercial
+    difficulty: trap
+
+  - id: piege-terminologie-trompeuse
+    question: Comment licencier un salarié en CDI selon le code civil gabonais ?
+    expected_articles: []
+    expected_domain: civil
+    difficulty: trap

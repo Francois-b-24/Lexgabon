@@ -1,0 +1,1076 @@
+{
+  "global": {
+    "recall@5": 0.09895833333333333,
+    "recall@10": 0.14583333333333331,
+    "mrr": 0.171875,
+    "ndcg@10": 0.12086225893267898,
+    "top1_hit_rate": 0.125
+  },
+  "cross_domain_empty_rate": 0.0,
+  "n_in_domain": 32,
+  "n_cross": 8,
+  "details": [
+    {
+      "id": "travail-duree-hebdo",
+      "domaine": "travail",
+      "difficulty": "easy",
+      "type": "in_domain",
+      "recalls": {
+        "5": 0.0,
+        "10": 0.0
+      },
+      "mrr": 0.0,
+      "ndcg10": 0.0,
+      "top1": false,
+      "got": [
+        "305",
+        "140",
+        "21",
+        "198",
+        "1",
+        "31",
+        "90",
+        "413",
+        "278",
+        "223"
+      ],
+      "expected": [
+        "24",
+        "25"
+      ]
+    },
+    {
+      "id": "travail-conges-payes",
+      "domaine": "travail",
+      "difficulty": "easy",
+      "type": "in_domain",
+      "recalls": {
+        "5": 0.0,
+        "10": 0.0
+      },
+      "mrr": 0.0,
+      "ndcg10": 0.0,
+      "top1": false,
+      "got": [
+        "90",
+        "223",
+        "305",
+        "140",
+        "31",
+        "21",
+        "222",
+        "330",
+        "82",
+        "231"
+      ],
+      "expected": [
+        "149",
+        "150"
+      ]
+    },
+    {
+      "id": "travail-preavis-rupture",
+      "domaine": "travail",
+      "difficulty": "easy",
+      "type": "in_domain",
+      "recalls": {
+        "5": 0.0,
+        "10": 0.0
+      },
+      "mrr": 0.0,
+      "ndcg10": 0.0,
+      "top1": false,
+      "got": [
+        "82",
+        "81",
+        "76",
+        "86",
+        "58",
+        "305",
+        "95",
+        "61",
+        "140",
+        "21"
+      ],
+      "expected": [
+        "55",
+        "54"
+      ]
+    },
+    {
+      "id": "travail-conge-maternite",
+      "domaine": "travail",
+      "difficulty": "medium",
+      "type": "in_domain",
+      "recalls": {
+        "5": 0.5,
+        "10": 1.0
+      },
+      "mrr": 1.0,
+      "ndcg10": 0.8175295903539445,
+      "top1": true,
+      "got": [
+        "210",
+        "305",
+        "223",
+        "227",
+        "81",
+        "263",
+        "207",
+        "413",
+        "31",
+        "95"
+      ],
+      "expected": [
+        "210",
+        "207"
+      ]
+    },
+    {
+      "id": "travail-licenciement-faute",
+      "domaine": "travail",
+      "difficulty": "medium",
+      "type": "in_domain",
+      "recalls": {
+        "5": 0.0,
+        "10": 0.0
+      },
+      "mrr": 0.0,
+      "ndcg10": 0.0,
+      "top1": false,
+      "got": [
+        "305",
+        "95",
+        "31",
+        "21",
+        "132",
+        "140",
+        "144",
+        "64",
+        "81",
+        "1"
+      ],
+      "expected": [
+        "50",
+        "51",
+        "52"
+      ]
+    },
+    {
+      "id": "travail-greve-conditions",
+      "domaine": "travail",
+      "difficulty": "medium",
+      "type": "in_domain",
+      "recalls": {
+        "5": 0.0,
+        "10": 0.0
+      },
+      "mrr": 0.0,
+      "ndcg10": 0.0,
+      "top1": false,
+      "got": [
+        "305",
+        "31",
+        "1",
+        "132",
+        "21",
+        "95",
+        "140",
+        "263",
+        "144",
+        "385"
+      ],
+      "expected": [
+        "379",
+        "378",
+        "380"
+      ]
+    },
+    {
+      "id": "travail-delegates-personnel",
+      "domaine": "travail",
+      "difficulty": "easy",
+      "type": "in_domain",
+      "recalls": {
+        "5": 0.0,
+        "10": 0.0
+      },
+      "mrr": 0.0,
+      "ndcg10": 0.0,
+      "top1": false,
+      "got": [
+        "305",
+        "97",
+        "145",
+        "331",
+        "95",
+        "336",
+        "337",
+        "330",
+        "255",
+        "278"
+      ],
+      "expected": [
+        "68",
+        "66",
+        "64"
+      ]
+    },
+    {
+      "id": "travail-salaire-minimum",
+      "domaine": "travail",
+      "difficulty": "medium",
+      "type": "in_domain",
+      "recalls": {
+        "5": 0.3333333333333333,
+        "10": 0.6666666666666666
+      },
+      "mrr": 1.0,
+      "ndcg10": 0.6257049680303419,
+      "top1": true,
+      "got": [
+        "179",
+        "293",
+        "305",
+        "31",
+        "144",
+        "140",
+        "178",
+        "278",
+        "21",
+        "145"
+      ],
+      "expected": [
+        "179",
+        "178",
+        "180"
+      ]
+    },
+    {
+      "id": "fiscal-is-benefice",
+      "domaine": "impots",
+      "difficulty": "medium",
+      "type": "in_domain",
+      "recalls": {
+        "5": 0.3333333333333333,
+        "10": 0.3333333333333333
+      },
+      "mrr": 0.5,
+      "ndcg10": 0.2960819109658652,
+      "top1": false,
+      "got": [
+        "12",
+        "11",
+        "9",
+        "13",
+        "10",
+        "14",
+        "116 bis",
+        "215",
+        "583",
+        "26"
+      ],
+      "expected": [
+        "3",
+        "4",
+        "11"
+      ]
+    },
+    {
+      "id": "fiscal-tva-regime",
+      "domaine": "impots",
+      "difficulty": "medium",
+      "type": "in_domain",
+      "recalls": {
+        "5": 0.0,
+        "10": 0.0
+      },
+      "mrr": 0.0,
+      "ndcg10": 0.0,
+      "top1": false,
+      "got": [
+        "368",
+        "248",
+        "206",
+        "11",
+        "160",
+        "9",
+        "210",
+        "90",
+        "12",
+        "13"
+      ],
+      "expected": [
+        "223",
+        "224",
+        "225"
+      ]
+    },
+    {
+      "id": "fiscal-retenue-salaires",
+      "domaine": "impots",
+      "difficulty": "medium",
+      "type": "in_domain",
+      "recalls": {
+        "5": 0.0,
+        "10": 0.0
+      },
+      "mrr": 0.0,
+      "ndcg10": 0.0,
+      "top1": false,
+      "got": [
+        "109",
+        "74",
+        "161",
+        "206",
+        "11",
+        "95",
+        "90",
+        "119",
+        "82",
+        "211 ter"
+      ],
+      "expected": [
+        "71",
+        "72",
+        "73"
+      ]
+    },
+    {
+      "id": "fiscal-amortissements",
+      "domaine": "impots",
+      "difficulty": "medium",
+      "type": "in_domain",
+      "recalls": {
+        "5": 0.0,
+        "10": 0.0
+      },
+      "mrr": 0.0,
+      "ndcg10": 0.0,
+      "top1": false,
+      "got": [
+        "16",
+        "196",
+        "3 bis",
+        "216",
+        "9",
+        "476",
+        "26",
+        "647",
+        "102",
+        "451"
+      ],
+      "expected": [
+        "13",
+        "14"
+      ]
+    },
+    {
+      "id": "fiscal-prescription",
+      "domaine": "impots",
+      "difficulty": "hard",
+      "type": "in_domain",
+      "recalls": {
+        "5": 0.0,
+        "10": 0.0
+      },
+      "mrr": 0.0,
+      "ndcg10": 0.0,
+      "top1": false,
+      "got": [
+        "3 bis",
+        "656",
+        "26",
+        "462",
+        "166",
+        "484",
+        "374",
+        "476",
+        "815",
+        "630"
+      ],
+      "expected": [
+        "620",
+        "621"
+      ]
+    },
+    {
+      "id": "hydro-partage-production",
+      "domaine": "hydrocarbures",
+      "difficulty": "easy",
+      "type": "in_domain",
+      "recalls": {
+        "5": 0.3333333333333333,
+        "10": 0.3333333333333333
+      },
+      "mrr": 0.3333333333333333,
+      "ndcg10": 0.23463936301137822,
+      "top1": false,
+      "got": [
+        "228",
+        "39",
+        "53",
+        "7",
+        "222",
+        "1",
+        "298",
+        "61",
+        "196",
+        "165"
+      ],
+      "expected": [
+        "54",
+        "55",
+        "53"
+      ]
+    },
+    {
+      "id": "hydro-redevance-miniere",
+      "domaine": "hydrocarbures",
+      "difficulty": "medium",
+      "type": "in_domain",
+      "recalls": {
+        "5": 0.0,
+        "10": 0.0
+      },
+      "mrr": 0.0,
+      "ndcg10": 0.0,
+      "top1": false,
+      "got": [
+        "207",
+        "222",
+        "163",
+        "2",
+        "280",
+        "7",
+        "298",
+        "15",
+        "196",
+        "292"
+      ],
+      "expected": [
+        "105",
+        "104"
+      ]
+    },
+    {
+      "id": "hydro-torchage-gaz",
+      "domaine": "hydrocarbures",
+      "difficulty": "easy",
+      "type": "in_domain",
+      "recalls": {
+        "5": 0.3333333333333333,
+        "10": 0.3333333333333333
+      },
+      "mrr": 1.0,
+      "ndcg10": 0.46927872602275644,
+      "top1": true,
+      "got": [
+        "125",
+        "1",
+        "15",
+        "2",
+        "264",
+        "163",
+        "29",
+        "237",
+        "165",
+        "222"
+      ],
+      "expected": [
+        "124",
+        "125",
+        "126"
+      ]
+    },
+    {
+      "id": "hydro-abandon-puits",
+      "domaine": "hydrocarbures",
+      "difficulty": "medium",
+      "type": "in_domain",
+      "recalls": {
+        "5": 0.0,
+        "10": 0.0
+      },
+      "mrr": 0.0,
+      "ndcg10": 0.0,
+      "top1": false,
+      "got": [
+        "108",
+        "187",
+        "173",
+        "97",
+        "126",
+        "87",
+        "63",
+        "120",
+        "170",
+        "106"
+      ],
+      "expected": [
+        "116",
+        "115"
+      ]
+    },
+    {
+      "id": "douane-valeur-en-douane",
+      "domaine": "douane",
+      "difficulty": "medium",
+      "type": "in_domain",
+      "recalls": {
+        "5": 0.3333333333333333,
+        "10": 0.6666666666666666
+      },
+      "mrr": 0.25,
+      "ndcg10": 0.33775931993299535,
+      "top1": false,
+      "got": [
+        "34",
+        "23",
+        "33",
+        "28",
+        "26",
+        "32",
+        "44",
+        "25",
+        "48",
+        "30"
+      ],
+      "expected": [
+        "29",
+        "28",
+        "30"
+      ]
+    },
+    {
+      "id": "douane-franchise",
+      "domaine": "douane",
+      "difficulty": "medium",
+      "type": "in_domain",
+      "recalls": {
+        "5": 0.0,
+        "10": 0.0
+      },
+      "mrr": 0.0,
+      "ndcg10": 0.0,
+      "top1": false,
+      "got": [
+        "34",
+        "328",
+        "287",
+        "21",
+        "12",
+        "281",
+        "117",
+        "26",
+        "123",
+        "283"
+      ],
+      "expected": [
+        "86",
+        "85"
+      ]
+    },
+    {
+      "id": "douane-entrepot",
+      "domaine": "douane",
+      "difficulty": "medium",
+      "type": "in_domain",
+      "recalls": {
+        "5": 0.0,
+        "10": 0.0
+      },
+      "mrr": 0.0,
+      "ndcg10": 0.0,
+      "top1": false,
+      "got": [
+        "176",
+        "177",
+        "198",
+        "261",
+        "94",
+        "260",
+        "193",
+        "181",
+        "206",
+        "17"
+      ],
+      "expected": [
+        "152",
+        "151",
+        "150"
+      ]
+    },
+    {
+      "id": "marche-appel-offres-ouvert",
+      "domaine": "marche-public",
+      "difficulty": "easy",
+      "type": "in_domain",
+      "recalls": {
+        "5": 0.0,
+        "10": 0.0
+      },
+      "mrr": 0.0,
+      "ndcg10": 0.0,
+      "top1": false,
+      "got": [
+        "81",
+        "2",
+        "123",
+        "60",
+        "130",
+        "52",
+        "117",
+        "246",
+        "235",
+        "95"
+      ],
+      "expected": [
+        "59",
+        "58",
+        "57"
+      ]
+    },
+    {
+      "id": "marche-gre-a-gre",
+      "domaine": "marche-public",
+      "difficulty": "medium",
+      "type": "in_domain",
+      "recalls": {
+        "5": 0.0,
+        "10": 0.0
+      },
+      "mrr": 0.08333333333333333,
+      "ndcg10": 0.0,
+      "top1": false,
+      "got": [
+        "225",
+        "119",
+        "123",
+        "189",
+        "235",
+        "52",
+        "173",
+        "227",
+        "153",
+        "44"
+      ],
+      "expected": [
+        "68",
+        "56"
+      ]
+    },
+    {
+      "id": "marche-avance-demarrage",
+      "domaine": "marche-public",
+      "difficulty": "medium",
+      "type": "in_domain",
+      "recalls": {
+        "5": 0.0,
+        "10": 0.0
+      },
+      "mrr": 0.0,
+      "ndcg10": 0.0,
+      "top1": false,
+      "got": [
+        "123",
+        "119",
+        "52",
+        "81",
+        "2",
+        "173",
+        "225",
+        "11",
+        "162",
+        "227"
+      ],
+      "expected": [
+        "117",
+        "118"
+      ]
+    },
+    {
+      "id": "marche-resiliation",
+      "domaine": "marche-public",
+      "difficulty": "medium",
+      "type": "in_domain",
+      "recalls": {
+        "5": 0.0,
+        "10": 0.0
+      },
+      "mrr": 0.0,
+      "ndcg10": 0.0,
+      "top1": false,
+      "got": [
+        "227",
+        "228",
+        "225",
+        "229",
+        "185",
+        "44",
+        "123",
+        "231",
+        "130",
+        "246"
+      ],
+      "expected": [
+        "137",
+        "139",
+        "138"
+      ]
+    },
+    {
+      "id": "sante-pharmacie-ouverture",
+      "domaine": "sante",
+      "difficulty": "easy",
+      "type": "in_domain",
+      "recalls": {
+        "5": 0.3333333333333333,
+        "10": 0.3333333333333333
+      },
+      "mrr": 0.3333333333333333,
+      "ndcg10": 0.23463936301137822,
+      "top1": false,
+      "got": [
+        "3",
+        "339",
+        "184",
+        "238",
+        "779",
+        "303",
+        "304",
+        "195",
+        "344",
+        "471"
+      ],
+      "expected": [
+        "139",
+        "184",
+        "138"
+      ]
+    },
+    {
+      "id": "sante-vaccination-obligations",
+      "domaine": "sante",
+      "difficulty": "easy",
+      "type": "in_domain",
+      "recalls": {
+        "5": 0.0,
+        "10": 0.0
+      },
+      "mrr": 0.0,
+      "ndcg10": 0.0,
+      "top1": false,
+      "got": [
+        "516",
+        "20",
+        "184",
+        "3",
+        "436",
+        "852",
+        "17",
+        "517",
+        "146",
+        "107"
+      ],
+      "expected": [
+        "272",
+        "271"
+      ]
+    },
+    {
+      "id": "sante-secret-medical",
+      "domaine": "sante",
+      "difficulty": "medium",
+      "type": "in_domain",
+      "recalls": {
+        "5": 0.0,
+        "10": 0.0
+      },
+      "mrr": 0.0,
+      "ndcg10": 0.0,
+      "top1": false,
+      "got": [
+        "3",
+        "436",
+        "281",
+        "6",
+        "779",
+        "469",
+        "344",
+        "438",
+        "338",
+        "73"
+      ],
+      "expected": [
+        "42",
+        "26",
+        "27"
+      ]
+    },
+    {
+      "id": "sante-don-organes",
+      "domaine": "sante",
+      "difficulty": "medium",
+      "type": "in_domain",
+      "recalls": {
+        "5": 0.0,
+        "10": 0.0
+      },
+      "mrr": 0.0,
+      "ndcg10": 0.0,
+      "top1": false,
+      "got": [
+        "3",
+        "436",
+        "479",
+        "73",
+        "238",
+        "185",
+        "191",
+        "167",
+        "17",
+        "164"
+      ],
+      "expected": [
+        "50",
+        "51",
+        "52"
+      ]
+    },
+    {
+      "id": "comm-reseaux-sociaux",
+      "domaine": "communication",
+      "difficulty": "easy",
+      "type": "in_domain",
+      "recalls": {
+        "5": 0.6666666666666666,
+        "10": 1.0
+      },
+      "mrr": 1.0,
+      "ndcg10": 0.8519590445170673,
+      "top1": true,
+      "got": [
+        "1",
+        "37",
+        "2",
+        "4",
+        "17",
+        "27",
+        "55",
+        "3",
+        "47",
+        "52"
+      ],
+      "expected": [
+        "1",
+        "3",
+        "2"
+      ]
+    },
+    {
+      "id": "comm-presse-ligne",
+      "domaine": "communication",
+      "difficulty": "medium",
+      "type": "in_domain",
+      "recalls": {
+        "5": 0.0,
+        "10": 0.0
+      },
+      "mrr": 0.0,
+      "ndcg10": 0.0,
+      "top1": false,
+      "got": [
+        "2bis",
+        "2",
+        "1",
+        "37",
+        "55",
+        "4",
+        "17",
+        "3"
+      ],
+      "expected": [
+        "10",
+        "12",
+        "11"
+      ]
+    },
+    {
+      "id": "comm-droit-rectification",
+      "domaine": "communication",
+      "difficulty": "medium",
+      "type": "in_domain",
+      "recalls": {
+        "5": 0.0,
+        "10": 0.0
+      },
+      "mrr": 0.0,
+      "ndcg10": 0.0,
+      "top1": false,
+      "got": [
+        "2bis",
+        "2",
+        "37",
+        "27",
+        "1",
+        "55",
+        "17",
+        "4",
+        "12"
+      ],
+      "expected": [
+        "61",
+        "62",
+        "60"
+      ]
+    },
+    {
+      "id": "comm-publicite-commerciale",
+      "domaine": "communication",
+      "difficulty": "medium",
+      "type": "in_domain",
+      "recalls": {
+        "5": 0.0,
+        "10": 0.0
+      },
+      "mrr": 0.0,
+      "ndcg10": 0.0,
+      "top1": false,
+      "got": [
+        "2bis",
+        "2",
+        "4",
+        "55",
+        "1",
+        "37",
+        "3",
+        "32"
+      ],
+      "expected": [
+        "81",
+        "80"
+      ]
+    },
+    {
+      "id": "hors-perimetre-civil-contrat",
+      "domaine": "civil",
+      "difficulty": "easy",
+      "type": "cross",
+      "empty": false,
+      "n_returned": 12,
+      "got": [
+        "162",
+        "3",
+        "809",
+        "16",
+        "132"
+      ]
+    },
+    {
+      "id": "hors-perimetre-penal-homicide",
+      "domaine": "penal",
+      "difficulty": "easy",
+      "type": "cross",
+      "empty": false,
+      "n_returned": 12,
+      "got": [
+        "288",
+        "270",
+        "655",
+        "692",
+        "287"
+      ]
+    },
+    {
+      "id": "hors-perimetre-famille-divorce",
+      "domaine": "famille",
+      "difficulty": "easy",
+      "type": "cross",
+      "empty": false,
+      "n_returned": 12,
+      "got": [
+        "462",
+        "77",
+        "550",
+        "488",
+        "551"
+      ]
+    },
+    {
+      "id": "hors-perimetre-fonction-publique",
+      "domaine": "fonction_publique",
+      "difficulty": "easy",
+      "type": "cross",
+      "empty": false,
+      "n_returned": 12,
+      "got": [
+        "305",
+        "544",
+        "3",
+        "2",
+        "1"
+      ]
+    },
+    {
+      "id": "hors-perimetre-hors-gabon",
+      "domaine": "general",
+      "difficulty": "easy",
+      "type": "cross",
+      "empty": false,
+      "n_returned": 12,
+      "got": [
+        "1",
+        "195",
+        "3",
+        "198",
+        "305"
+      ]
+    },
+    {
+      "id": "piege-article-abroge-smic",
+      "domaine": "travail",
+      "difficulty": "trap",
+      "type": "cross",
+      "empty": false,
+      "n_returned": 12,
+      "got": [
+        "305",
+        "21",
+        "90",
+        "413",
+        "140"
+      ]
+    },
+    {
+      "id": "piege-hors-gabon-ohada-bilan",
+      "domaine": "commercial",
+      "difficulty": "trap",
+      "type": "cross",
+      "empty": false,
+      "n_returned": 12,
+      "got": [
+        "17",
+        "52",
+        "19",
+        "28",
+        "195"
+      ]
+    },
+    {
+      "id": "piege-terminologie-trompeuse",
+      "domaine": "civil",
+      "difficulty": "trap",
+      "type": "cross",
+      "empty": false,
+      "n_returned": 12,
+      "got": [
+        "305",
+        "1",
+        "550",
+        "3",
+        "809"
+      ]
+    }
+  ]
+}
