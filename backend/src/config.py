@@ -13,7 +13,7 @@ class Settings(BaseSettings):
 
     chroma_path: str = "./data/chroma"
     chroma_collection: str = "droit_gabonais"
-    chroma_embedding_model: str = "intfloat/multilingual-e5-small"
+    chroma_embedding_model: str = "intfloat/multilingual-e5-base"
 
     use_hybrid_rag: bool = True
     use_rerank: bool = True
@@ -35,9 +35,17 @@ class Settings(BaseSettings):
 
     # Seuil de pertinence : un chunk dont le score hybride (vectoriel+lexical)
     # tombe en dessous est considéré comme hors-sujet et n'est ni envoyé au LLM
-    # ni affiché à l'utilisateur dans la liste des sources citées. Évite que
-    # le LLM cite un article du Code du travail pour une question fiscale
-    # simplement parce que c'est le seul code intégralement indexé.
+    # ni affiché à l'utilisateur dans la liste des sources citées.
+    #
+    # NB (E5) : avec les embeddings multilingual-e5-* préfixés, la similarité
+    # cosinus est très compressée vers le haut (~0.92-0.95 pour TOUT extrait,
+    # pertinent ou non). Un seuil absolu ne sépare donc pas le hors-sujet du
+    # pertinent — la suppression du bruit cross-domaine repose plutôt sur :
+    #   1. le filtre par domaine (where Chroma) quand un domaine indexé est fourni ;
+    #   2. le system prompt (refus hors-sujet) + le filtrage des sources réellement
+    #      citées par le LLM côté chat_engine.
+    # Ce seuil reste un garde-fou bas ; ne pas le monter sans recalibrer sur
+    # scripts/eval_retrieval.py (sinon on coupe des résultats pertinents).
     rag_min_score: float = 0.30
 
     # Allowlist domaines pour les scripts d'ingestion (fetch_official_sources, ingest_pdfs).

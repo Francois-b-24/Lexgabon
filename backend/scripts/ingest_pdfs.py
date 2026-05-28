@@ -27,9 +27,9 @@ if str(ROOT) not in sys.path:
 
 import chromadb  # noqa: E402
 import json  # noqa: E402
-from chromadb.utils import embedding_functions  # noqa: E402
 
 from src.config import get_settings  # noqa: E402
+from src.rag.embedding import make_embedding_function  # noqa: E402
 from src.rag.pdf_parser import chunks_from_pdf, parse_pdf_articles  # noqa: E402
 
 logger = logging.getLogger(__name__)
@@ -109,6 +109,10 @@ def main() -> None:
     parser.add_argument("--max-chars", type=int, default=1500, help="Taille max d'un chunk avant subdivision")
     parser.add_argument("--skip-duplicates", action="store_true", help="Sauter les PDFs marqués duplicate_of dans le manifest")
     parser.add_argument(
+        "--reset-collection", action="store_true",
+        help="Supprime la collection Chroma avant ingestion (obligatoire lors d'un changement de dimension d'embedding).",
+    )
+    parser.add_argument(
         "--articles-jsonl",
         type=Path,
         default=ROOT / "data" / "articles_ingest.jsonl",
@@ -122,8 +126,14 @@ def main() -> None:
         sys.exit(1)
 
     s = get_settings()
-    ef = embedding_functions.SentenceTransformerEmbeddingFunction(model_name=s.chroma_embedding_model)
+    ef = make_embedding_function(s.chroma_embedding_model)
     client = chromadb.PersistentClient(path=s.chroma_path)
+    if args.reset_collection:
+        try:
+            client.delete_collection(s.chroma_collection)
+            logger.info("collection '%s' supprimée (--reset-collection)", s.chroma_collection)
+        except Exception as e:
+            logger.info("reset-collection : %s (peut-être déjà absente)", e)
     col = client.get_or_create_collection(
         name=s.chroma_collection,
         embedding_function=ef,
@@ -167,7 +177,11 @@ def main() -> None:
             # T2.1 : un Chunk = un article entier. Les articles longs ne sont plus
             # subdivisés ; le modèle d'embedding tronque éventuellement à sa
             # fenêtre mais Chroma retourne le document complet.
-            chunks = chunks_from_pdf(data, max_chars=args.max_chars, one_per_article=True)
+            # extraction_mode : "layout" pour les PDF à texte espacé (manifest), sinon "plain".
+            extraction_mode = str(file_meta.get("extraction_mode") or "plain")
+            chunks = chunks_from_pdf(
+                data, max_chars=args.max_chars, one_per_article=True, extraction_mode=extraction_mode
+            )
         except Exception as e:
             logger.warning("parsing PDF échoué %s: %s", rel, e)
             continue
@@ -220,7 +234,7 @@ def main() -> None:
         # On re-parse via parse_pdf_articles pour obtenir un ArticleSegment par article complet,
         # indépendamment du sous-chunking utilisé pour le RAG.
         try:
-            article_segments = parse_pdf_articles(data)
+            article_segments = parse_pdf_articles(data, extraction_mode=extraction_mode)
         except Exception as e:
             logger.warning("parse_pdf_articles échoué pour %s: %s", rel, e)
             article_segments = []
