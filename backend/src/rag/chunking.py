@@ -13,14 +13,26 @@ from pypdf import PdfReader
 # Capture le numéro (1, 1er, 1ère, 12, 12-1, 12 bis, 12 ter, 12 quater, etc.).
 # La regex est volontairement large ; les références internes (« l'article 12 ci-dessus »,
 # « voir article 12 », « des articles 12 et 13 », etc.) sont écartées par _is_internal_reference().
+_ARTICLE_NUM_RE = r"\d+(?:\s*(?:er|ère|ere))?(?:[-–]\d+)?(?:\s*(?:bis|ter|quater|quinquies|sexies))?"
+
 _ARTICLE_HEADER_RE = re.compile(
-    r"(?i)"
     # Pas de lookbehind sur la lettre précédente : les flux PDF aplatis collent souvent
     # un mot juste avant (« communesArticle 19: »). Les références internes
     # (« l'article 12 ci-dessus ») sont filtrées par _is_internal_reference().
-    r"(?P<kw>article|art\.)\s*"
-    r"(?P<num>\d+(?:\s*(?:er|ère|ere))?(?:[-–]\d+)?(?:\s*(?:bis|ter|quater|quinquies|sexies))?)"
-    r"\s*[\.\-–—:]+\s*"
+    #
+    # Deux formes acceptées :
+    #   (a) « Article 12 : », « Art. 12 — » : séparateur ponctuation OBLIGATOIRE
+    #       (insensible à la casse) — forme la plus courante.
+    #   (b) « ARTICLE 12 Le présent… » : mot-clé en MAJUSCULES, numéro suivi d'une
+    #       espace puis du corps (majuscule, chiffre d'énumération « 1. », ou « § »),
+    #       SANS ponctuation. C'est le format du Code des douanes CEMAC. La contrainte
+    #       « ARTICLE » majuscule évite les faux positifs : les références internes
+    #       sont en minuscules (« l'article 27 prévoit »).
+    r"(?:"
+    r"(?i:(?:article|art\.)\s*)(?P<num>" + _ARTICLE_NUM_RE + r")\s*[\.\-–—:]+\s*"
+    r"|"
+    r"ARTICLE\s*(?P<num2>" + _ARTICLE_NUM_RE + r")(?=\s+(?:[A-ZÀÂÄÉÈÊËÏÎÔÙÛÜÇ§]|\d+[\.\)°]))\s+"
+    r")"
 )
 
 # Mots/expressions qui, juste avant « Article », signalent une référence interne, pas un en-tête.
@@ -129,7 +141,7 @@ def split_articles(text: str) -> list[ArticleSegment]:
     segments: list[ArticleSegment] = []
     for i, m in enumerate(matches):
         end = matches[i + 1].start() if i + 1 < len(matches) else len(text)
-        num = _normalize_article_number(m.group("num") or "")
+        num = _normalize_article_number(m.group("num") or m.group("num2") or "")
         if not num:
             continue
         body = text[m.end(): end].strip()

@@ -17,7 +17,8 @@ class Settings(BaseSettings):
 
     use_hybrid_rag: bool = True
     use_rerank: bool = True
-    use_cross_encoder: bool = True   # reranker cross-encoder après hybride (étape 4)
+    use_cross_encoder: bool = True    # reranker cross-encoder après hybride (étape 4)
+    use_query_rewriter: bool = True   # reformulation Haiku + RRF (étape 5)
 
     redis_url: str | None = None
 

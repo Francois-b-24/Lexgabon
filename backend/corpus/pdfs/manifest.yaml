@@ -15,6 +15,10 @@
 #   date       : date de promulgation/version au format ISO (YYYY-MM-DD ou YYYY).
 #   reference  : numéro JO / loi / acte uniforme.
 #   source     : URL officielle d'origine si pertinent.
+#   extraction_mode : "plain" (défaut) ou "layout". Mettre "layout" UNIQUEMENT
+#                pour les PDF dont le texte est justifié par espacement caractère
+#                (« L a  C S S » au lieu de « La CSS »). Ne pas l'activer sur les
+#                PDF multi-colonnes : layout y mélange les colonnes.
 #
 # Le fichier physique trouvé sous corpus/pdfs/ qui n'est pas listé ici est ingéré
 # avec un libellé par défaut basé sur son nom (et un avertissement à l'ingestion).
@@ -43,6 +47,8 @@ files:
     autorite: "République gabonaise"
     date: "2009-01-22"
     reference: "Loi n°027/2008 du 22 janvier 2009"
+    # PDF à texte espacé caractère par caractère → extraction layout (cf. en-tête).
+    extraction_mode: "layout"
     #duplicate_of: "code-travail-2021.pdf"
 
   code-douane.pdf:

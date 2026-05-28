@@ -73,9 +73,10 @@ def _chroma_stats() -> tuple[int, int, str | None]:
 
     try:
         import chromadb
-        from chromadb.utils import embedding_functions
 
-        ef = embedding_functions.SentenceTransformerEmbeddingFunction(model_name=s.chroma_embedding_model)
+        from src.rag.embedding import make_embedding_function
+
+        ef = make_embedding_function(s.chroma_embedding_model)
         client = chromadb.PersistentClient(path=s.chroma_path)
         col = client.get_or_create_collection(
             name=s.chroma_collection,

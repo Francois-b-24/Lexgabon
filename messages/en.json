@@ -47,20 +47,20 @@
       "circulaire": "Circular"
     },
     "domaineOption": {
-      "civil": "Civil law",
-      "penal": "Criminal law",
-      "commercial": "Commercial law",
-      "travail": "Labour law",
+      "civil": "Civil Code",
+      "penal": "Criminal Code",
+      "commercial": "Commercial Code",
+      "travail": "Labour Code",
       "administratif": "Administrative law",
-      "fiscal": "Tax law",
-      "famille": "Family law",
+      "fiscal": "General Tax Code",
+      "famille": "Family Code",
       "social": "Social law",
-      "impots": "Tax law",
-      "douane": "Customs law",
+      "impots": "General Tax Code",
+      "douane": "Customs Code",
       "communication": "Communication law",
-      "hydrocarbures": "Hydrocarbons law",
+      "hydrocarbures": "Hydrocarbons Code",
       "marche-public": "Public procurement law",
-      "sante": "Health law"
+      "sante": "Health Code"
     },
     "sourceOption": {
       "jo-ga": "Official Gazette of Gabon",

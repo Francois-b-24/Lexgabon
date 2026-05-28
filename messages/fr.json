@@ -47,20 +47,20 @@
       "circulaire": "Circulaire"
     },
     "domaineOption": {
-      "civil": "Droit civil",
-      "penal": "Droit pénal",
-      "commercial": "Droit commercial",
-      "travail": "Droit du travail",
+      "civil": "Code Civil",
+      "penal": "Code Pénal",
+      "commercial": "Code de Commerce",
+      "travail": "Code du Travail",
       "administratif": "Droit administratif",
-      "fiscal": "Droit fiscal",
-      "famille": "Droit de la famille",
+      "fiscal": "Code Général des Impôts",
+      "famille": "Code de la Famille",
       "social": "Droit social",
-      "impots": "Droit des impôts",
-      "douane": "Droit douanier",
+      "impots": "Code Général des Impôts",
+      "douane": "Code des Douanes",
       "communication": "Droit de la communication",
-      "hydrocarbures": "Droit des hydrocarbures",
+      "hydrocarbures": "Code des Hydrocarbures",
       "marche-public": "Droit des marchés publics",
-      "sante": "Droit de la santé"
+      "sante": "Code de la Santé"
     },
     "sourceOption": {
       "jo-ga": "Journal officiel du Gabon",

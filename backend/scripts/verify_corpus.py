@@ -15,9 +15,9 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 import chromadb  # noqa: E402
-from chromadb.utils import embedding_functions  # noqa: E402
 
 from src.config import get_settings  # noqa: E402
+from src.rag.embedding import make_embedding_function  # noqa: E402
 
 
 def main() -> None:
@@ -32,7 +32,7 @@ def main() -> None:
     args = parser.parse_args()
 
     s = get_settings()
-    ef = embedding_functions.SentenceTransformerEmbeddingFunction(model_name=s.chroma_embedding_model)
+    ef = make_embedding_function(s.chroma_embedding_model)
     client = chromadb.PersistentClient(path=s.chroma_path)
     col = client.get_or_create_collection(
         name=s.chroma_collection,
@@ -107,10 +107,12 @@ def main() -> None:
     else:
         print("\nAucune alerte.")
 
-    # Requête test
+    # Requête test (préfixe « query: » E5 calculé côté retriever pour cohérence)
     print(f"\nRequête test : « {args.query} »")
     try:
-        res = col.query(query_texts=[args.query], n_results=5)
+        from src.rag.embedding import embed_query_text  # noqa: E402
+
+        res = col.query(query_embeddings=[embed_query_text(ef, args.query)], n_results=5)
         ids = (res.get("ids") or [[]])[0]
         metas_q = (res.get("metadatas") or [[]])[0]
         docs = (res.get("documents") or [[]])[0]

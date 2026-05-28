@@ -326,6 +326,33 @@ def _domaine_filter(domaine: str | None) -> dict[str, Any] | None:
     return {"domaine": d}
 
 
+def _rrf_fuse(
+    ranked_lists: list[list[dict[str, Any]]],
+    k_rrf: int = 60,
+) -> dict[str, dict[str, Any]]:
+    """Reciprocal Rank Fusion sur plusieurs listes ordonnées.
+
+    Pour chaque document d apparaissant à la position r (1-indexed) dans une
+    liste, son score RRF s'incrémente de 1 / (k_rrf + r). Les documents
+    absents d'une liste ne contribuent pas. Retourne un dict id→row avec le
+    score RRF injecté dans le champ 'score'.
+    """
+    rrf_scores: dict[str, float] = {}
+    rows_by_id: dict[str, dict[str, Any]] = {}
+    for ranked in ranked_lists:
+        for rank, row in enumerate(ranked, start=1):
+            rid = str(row.get("id") or "")
+            if not rid:
+                continue
+            rrf_scores[rid] = rrf_scores.get(rid, 0.0) + 1.0 / (k_rrf + rank)
+            if rid not in rows_by_id:
+                rows_by_id[rid] = dict(row)
+    # Injecte le score RRF comme score de tri
+    for rid, score in rrf_scores.items():
+        rows_by_id[rid]["score"] = score
+    return rows_by_id
+
+
 def search_expanded(
     query: str,
     k: int | None = None,
@@ -333,48 +360,76 @@ def search_expanded(
     domaine: str | None = None,
     citation_intent: bool = False,
 ) -> list[dict[str, Any]]:
-    """Plusieurs requêtes (question + variante domaine) fusionnées par id, score max conservé.
+    """Requêtes multiples (original + boost + variantes rewriter) fusionnées par RRF.
 
-    Si un domaine connu est indiqué, on filtre d'abord la recherche sur ce domaine
-    (where Chroma) pour écarter le bruit cross-code (ex. le Code du travail ou le
-    CGI, sur-représentés, qui polluent les questions des autres domaines). Si le
-    filtre ne ramène rien, on relance sans filtre (le domaine peut être mal couvert).
+    Pipeline :
+      1. Variantes = [original, boost_domaine] + rewriter (2 reformulations Haiku, LRU 500)
+      2. fetch top-k Chroma + hybride BM25 pour chacune → listes ordonnées
+      3. Fusion RRF(k=60) sur l'union
+      4. Cross-encoder reranker top-6 sur les meilleurs candidats
+
+    Si un domaine connu est indiqué, on filtre d'abord sur ce domaine ; si le
+    filtre renvoie 0 résultat, on relance sans filtre.
     """
     from src.agent.prompts import rag_search_query_variants
 
     s = get_settings()
     base_k = k or s.rag_top_k
     k_eff = min(20, max(base_k, int(base_k * 1.75) + 2)) if citation_intent else base_k
-    variants = rag_search_query_variants(query, domaine)
     where = _domaine_filter(domaine)
 
-    def _collect(flt: dict[str, Any] | None) -> dict[str, dict[str, Any]]:
-        acc: dict[str, dict[str, Any]] = {}
-        for v in variants:
-            for r in search_main(v, k_eff, where=flt):
-                rid = str(r.get("id") or "")
-                if not rid:
-                    continue
-                sc = float(r.get("score", 0))
-                prev = acc.get(rid)
-                if prev is None or sc > float(prev.get("score", 0)):
-                    acc[rid] = dict(r)
-        return acc
+    # Construit la liste de toutes les variantes de requête
+    variants = rag_search_query_variants(query, domaine)
+    if s.use_query_rewriter:
+        try:
+            from src.rag.query_rewriter import rewrite
+            rewrites = rewrite(query)
+            for rv in rewrites:
+                if rv and rv not in variants:
+                    variants.append(rv)
+        except Exception as e:
+            logger.warning("query_rewriter import/call failed: %s", e)
 
-    by_id = _collect(where)
-    if where and not by_id:
+    def _collect_lists(flt: dict[str, Any] | None) -> list[list[dict[str, Any]]]:
+        """Retourne une liste de listes ordonnées (une par variante).
+
+        Le domain filter s'applique à toutes les variantes (y compris rewriter)
+        pour éviter que les variantes Haiku ramènent des chunks cross-domaine.
+        """
+        lists: list[list[dict[str, Any]]] = []
+        for v in variants:
+            rows = search_main(v, k_eff, where=flt)
+            if rows:
+                lists.append(rows)
+        return lists
+
+    ranked_lists = _collect_lists(where)
+    if where and not ranked_lists:
         logger.info("rag domaine filter '%s' returned 0 rows, falling back to unfiltered", domaine)
-        by_id = _collect(None)
+        ranked_lists = _collect_lists(None)
+
+    # Fusion score-max sur toutes les variantes (original + boost + rewriter).
+    # Note : RRF testé mais produit une régression avec E5-base car les scores
+    # cosinus compressés (~0.93-0.96) rendent les rangs BM25 instables sur un
+    # pool élargi. Score-max conserve le signal hybride calibré. RRF serait
+    # préférable si les listes venaient de systèmes hétérogènes (BM25 pur +
+    # vectoriel pur), ce qui n'est pas le cas ici (toutes passent par _hybrid_rescore).
+    by_id: dict[str, dict[str, Any]] = {}
+    for ranked in ranked_lists:
+        for r in ranked:
+            rid = str(r.get("id") or "")
+            if not rid:
+                continue
+            sc = float(r.get("score", 0))
+            if rid not in by_id or sc > float(by_id[rid].get("score", 0)):
+                by_id[rid] = dict(r)
 
     merged = sorted(by_id.values(), key=lambda x: float(x.get("score", 0)), reverse=True)
     merged = merged[:k_eff]
     merged = _maybe_rerank_overlap(merged, query, k_eff)
 
-    s = get_settings()
     if s.use_cross_encoder and len(merged) > 1:
         from src.rag.reranker import rerank
-        # Top-k final LLM : 6 (moins de bruit dans le prompt).
-        # On ne reranke que si on a plus de candidats que le top-k voulu.
         top_k_llm = max(6, s.rag_top_k // 2)
         merged = rerank(query, merged, top_k=top_k_llm)
 

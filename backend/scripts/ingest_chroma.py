@@ -13,9 +13,9 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 import chromadb  # noqa: E402
-from chromadb.utils import embedding_functions  # noqa: E402
 
 from src.config import get_settings  # noqa: E402
+from src.rag.embedding import make_embedding_function  # noqa: E402
 
 
 def main() -> None:
@@ -24,7 +24,7 @@ def main() -> None:
     p.add_argument("--batch", type=int, default=64, help="Taille de lot pour collection.add")
     args = p.parse_args()
     s = get_settings()
-    ef = embedding_functions.SentenceTransformerEmbeddingFunction(model_name=s.chroma_embedding_model)
+    ef = make_embedding_function(s.chroma_embedding_model)
     client = chromadb.PersistentClient(path=s.chroma_path)
     col = client.get_or_create_collection(
         name=s.chroma_collection,

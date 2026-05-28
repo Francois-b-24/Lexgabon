@@ -1,4 +1,4 @@
-## Étape 4 — Cross-encoder bge-reranker-v2-m3 — 2026-05-28 20:51 UTC
+## Étape 5 — score-max + query rewriter + domain filter — 2026-05-28 21:47 UTC
 
 Gold set : 40 questions  |  seuil rag_min_score : appliqué
 
