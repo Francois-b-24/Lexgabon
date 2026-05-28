@@ -272,11 +272,24 @@ def search_main(
 
     `where` est un filtre de métadonnée Chroma (ex. {"domaine": "travail"}). S'il
     ne renvoie aucun extrait, l'appelant (search_expanded) relance sans filtre.
+
+    Fetch strategy :
+      - cross-encoder actif  : fetch 24 → hybride top 12 (le reranker réduit à 6)
+      - hybride seul          : fetch k*2 → hybride top k
+      - vectoriel pur         : fetch k
     """
     s = get_settings()
     k = k or s.rag_top_k
     col = _get_collection()
-    n_fetch = k * 2 if s.use_hybrid_rag else k
+    if s.use_hybrid_rag and s.use_cross_encoder:
+        n_fetch = max(24, k * 2)
+        k_hybrid = max(12, k)
+    elif s.use_hybrid_rag:
+        n_fetch = k * 2
+        k_hybrid = k
+    else:
+        n_fetch = k
+        k_hybrid = k
     query_kwargs: dict[str, Any] = {"n_results": max(1, n_fetch)}
     if where:
         query_kwargs["where"] = where
@@ -291,10 +304,10 @@ def search_main(
         return []
     rows = _rows_from_chroma_result(res, n_fetch)
     if s.use_hybrid_rag:
-        rows = _hybrid_rescore(rows, query, k)
+        rows = _hybrid_rescore(rows, query, k_hybrid)
     else:
-        rows = rows[:k]
-    return _maybe_rerank_overlap(rows, query, k)
+        rows = rows[:k_hybrid]
+    return _maybe_rerank_overlap(rows, query, k_hybrid)
 
 
 def _domaine_filter(domaine: str | None) -> dict[str, Any] | None:
@@ -355,7 +368,17 @@ def search_expanded(
 
     merged = sorted(by_id.values(), key=lambda x: float(x.get("score", 0)), reverse=True)
     merged = merged[:k_eff]
-    return _maybe_rerank_overlap(merged, query, k_eff)
+    merged = _maybe_rerank_overlap(merged, query, k_eff)
+
+    s = get_settings()
+    if s.use_cross_encoder and len(merged) > 1:
+        from src.rag.reranker import rerank
+        # Top-k final LLM : 6 (moins de bruit dans le prompt).
+        # On ne reranke que si on a plus de candidats que le top-k voulu.
+        top_k_llm = max(6, s.rag_top_k // 2)
+        merged = rerank(query, merged, top_k=top_k_llm)
+
+    return merged
 
 
 def search(
