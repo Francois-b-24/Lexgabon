@@ -23,7 +23,7 @@ npm run lint
 npm run build                     # production bundle; type-checks via Next
 npx tsc --noEmit                  # standalone TS check
 npx drizzle-kit generate          # produce migration from lib/db/schema.ts
-npx drizzle-kit push              # apply schema to DATABASE_URL
+npx drizzle-kit push              # apply schema to DATABASE_URL (requires direct Supabase connection, not pooler — see Supabase Dashboard → Settings → Database → Direct connection)
 ```
 
 ### Backend
@@ -59,6 +59,11 @@ npm run search:index           # rebuilds the Meilisearch `articles` index from 
 
 These rely on `DATABASE_URL` / `MEILISEARCH_*` env vars being set. They are idempotent.
 
+**Important**: `npm run` scripts do not load `.env.local` automatically. Pass vars explicitly:
+```bash
+DATABASE_URL="..." MEILISEARCH_HOST="..." MEILISEARCH_API_KEY="..." npm run search:index
+```
+
 There is no meaningful test coverage today. The vitest harness exists but is mostly empty — the hand-validated chunking invariants below are still the only de-facto regression suite.
 
 ## Chatbot pipeline (the most important architecture)
@@ -93,7 +98,7 @@ For PDFs, declare metadata in `backend/corpus/pdfs/manifest.yaml` (`titre`, `cod
 
 `verify_corpus.py` targets: **≥ 5000 chunks, ≥ 80 % with `numero_article`**. Below those, the audit raises explicit alerts.
 
-**Current corpus reality (as of the rewrite)**: only the Gabonese Code du travail is ingested (~450 chunks). All other codes — civil, pénal, commerce, OHADA uniform acts, Constitution, CEMAC/COBAC regulations — are missing. Any RAG result outside labour law will be weak and the chatbot will fall back to its model knowledge with the "Sources indexées : index incomplet" disclaimer. Do not interpret the small corpus as a chunking bug.
+**Current corpus reality**: 7 codes indexed (~3 277 chunks) — Code du travail, Code général des impôts, Code de la santé publique, Code des douanes (CEMAC), Code des hydrocarbures, Code du marché public, Code de la communication. Codes civil, pénal, OHADA uniform acts, Constitution, CEMAC/COBAC regulations are still missing. RAG outside these 7 codes will fall back to model knowledge with the "Sources indexées : index incomplet" disclaimer.
 
 ## Front routing and i18n
 
@@ -106,7 +111,8 @@ For PDFs, declare metadata in `backend/corpus/pdfs/manifest.yaml` (`titre`, `cod
 
 - Drizzle schema in `lib/db/schema.ts` (Postgres + pgvector for the `chunks` table). `drizzle.config.ts` reads `DATABASE_URL`.
 - Supabase used only for auth (magic link) + webhooks. Browser side: `lib/supabase/client.ts`. Server side: `lib/supabase/server.ts`.
-- Meilisearch backs `/api/search` for full-text. The index is named **`articles`** and is **1 document per article** (not per text — that changed in D1). Document IDs follow the shape `<texteId>__<numero>` with `__` as separator (Meili rejects `:`, and spaces in numbers become `-`). Rebuild from Postgres with `npm run search:index`.
+- Meilisearch backs `/api/search` and the `/recherche` page for full-text. The index is named **`articles`** and is **1 document per article** (not per text). Document IDs follow the shape `<texteId>__<numero>` with `__` as separator (Meili rejects `:`, spaces in numbers become `-`). Rebuild from Postgres with `npm run search:index`. The live article count is exposed via `getIndexedArticlesCount()` in `lib/search-service.ts` and displayed on the landing and search pages.
+- Filter checkboxes on `/recherche` auto-submit on change via `components/recherche/filter-form-client.tsx` (a `"use client"` component that holds its own `<form>` with a `formRef.current?.requestSubmit()` on each checkbox `onChange`).
 - The chatbot does **not** read from Meilisearch — it queries Chroma directly via the backend.
 
 ## Frontend gotchas (subtle, will bite you)
