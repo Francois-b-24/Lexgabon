@@ -16,11 +16,34 @@ from src.agent.prompts import (
 from src.rag import retriever
 
 
-# Capture les marqueurs [Article 12, Code …] / [Article 12 bis, …] dans la
-# réponse LLM pour savoir quels extraits ont réellement été cités.
+# Capture les marqueurs de citation article dans la réponse LLM.
+# Formes couvertes (toutes insensibles à la casse) :
+#   [Article 12, Code …]          — format imposé par le prompt
+#   [Art. 12 bis, Code …]         — variante abrégée avec ponctuation
+#   article 12 du Code …          — mention inline sans crochet
+#   « article 12 »                — guillemets français
+#   article 12-1 / 12 ter / 1er   — numéros composés et ordinaux
 _ARTICLE_CITATION_RE = re.compile(
-    r"\[\s*article\s+([0-9]+(?:\s*(?:bis|ter|quater))?)\s*[,;:]?",
-    re.IGNORECASE,
+    r"""
+    (?:
+        # Forme entre crochets : [Article 12 …] ou [Art. 12 …]
+        \[\s*art(?:icle|\.)\s+
+      |
+        # Forme guillemets français : « article 12 »
+        «\s*article\s+
+      |
+        # Mention inline hors crochet : "article 12" ou "Art. 12"
+        \bart(?:icle|\.)\s+
+    )
+    # Numéro : entier + optional ordinal (1er) + optional composé (-1) + optional suffixe latin
+    (?P<num>
+        [0-9]+
+        (?:\s*(?:er|ère|ere))?
+        (?:[-–]\d+)?
+        (?:\s*(?:bis|ter|quater|quinquies|sexies))?
+    )
+    """,
+    re.IGNORECASE | re.VERBOSE,
 )
 
 
@@ -28,11 +51,18 @@ def _cited_article_numbers(answer_text: str) -> set[str]:
     """Renvoie l'ensemble des numéros d'articles que le LLM a explicitement cités."""
     out: set[str] = set()
     for m in _ARTICLE_CITATION_RE.finditer(answer_text or ""):
-        raw = (m.group(1) or "").strip().lower()
+        raw = (m.group("num") or "").strip().lower()
         if not raw:
             continue
-        # On normalise « 12 bis » → « 12bis » pour matcher les métadonnées.
-        out.add(re.sub(r"\s+", "", raw))
+        # 1) Retire les suffixes ordinaux directement collés ou séparés d'un chiffre
+        #    (1er → 1, 2ème → 2) sans toucher aux suffixes latins (quater contient "er").
+        normalized = re.sub(r"(?<=\d)\s*(?:er|ère|ere|ème|eme)\b", "", raw)
+        # 2) Colle le suffixe latin au chiffre : « 12 bis » → « 12bis ».
+        normalized = re.sub(r"(?<=\d)\s+(?=(?:bis|ter|quater|quinquies|sexies)\b)", "", normalized)
+        # 3) Retire les espaces résiduels (ex. tiret composé mal formé).
+        normalized = re.sub(r"\s+", "", normalized)
+        if normalized:
+            out.add(normalized)
     return out
 
 

@@ -1,4 +1,4 @@
-## Étape 1 — Baseline (domaine corrigé) — 2026-05-28 19:58 UTC
+## Étape 2 — Citations robustes + logs loguru — 2026-05-28 20:02 UTC
 
 Gold set : 40 questions  |  seuil rag_min_score : appliqué
 

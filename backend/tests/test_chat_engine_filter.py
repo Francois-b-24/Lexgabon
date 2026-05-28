@@ -48,3 +48,56 @@ def test_filter_ignores_sources_without_article_number():
     kept = _filter_sources_to_cited(sources, {"82"})
     assert len(kept) == 1
     assert kept[0]["metadata"]["numero_article"] == "82"
+
+
+# ── Nouvelles variantes de citation (étape 2) ─────────────────────────────────
+
+def test_cited_art_abbreviated_form():
+    """Art. 12 entre crochets doit être capturé."""
+    text = "Voir [Art. 12, Code du travail]."
+    assert "12" in _cited_article_numbers(text)
+
+
+def test_cited_article_guillemets_francais():
+    """« article 12 » entre guillemets français doit être capturé."""
+    text = "Conformément à « article 12 » du code."
+    assert "12" in _cited_article_numbers(text)
+
+
+def test_cited_article_inline_du_code():
+    """Mention inline sans crochet : 'article 12 du Code' doit être capturée."""
+    text = "L'article 54 du Code du travail prévoit un préavis."
+    assert "54" in _cited_article_numbers(text)
+
+
+def test_cited_article_composé_tiret():
+    """Numéro composé 12-1 doit être capturé et normalisé."""
+    cited = _cited_article_numbers("[Article 12-1, Code des impôts]")
+    assert "12-1" in cited
+
+
+def test_cited_article_ordinal_1er():
+    """Article 1er doit être normalisé en '1' (sans suffixe ordinal)."""
+    cited = _cited_article_numbers("[Article 1er, Code du travail]")
+    assert "1" in cited
+
+
+def test_cited_article_quater():
+    """Variante quater doit être capturée."""
+    cited = _cited_article_numbers("[Article 8 quater, CGI]")
+    assert "8quater" in cited
+
+
+def test_cited_multiple_variants_in_one_text():
+    """Un texte mélangeant plusieurs formes retourne tous les numéros."""
+    text = (
+        "[Article 82, Code du travail]. "
+        "Voir Art. 54 bis pour le préavis. "
+        "L'article 12 du Code civil s'applique aussi. "
+        "Consulter « article 1er » en cas de doute."
+    )
+    cited = _cited_article_numbers(text)
+    assert "82" in cited
+    assert "54bis" in cited
+    assert "12" in cited
+    assert "1" in cited
