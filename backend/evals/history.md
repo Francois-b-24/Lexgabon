@@ -277,3 +277,24 @@ Gold set : 40 questions  |  seuil rag_min_score : appliqué
 | **GLOBAL** | 32 | **0.12** | **0.22** | **0.20** | **0.16** | **0.16** |
 
 Cross-domaine correctement vides : **0/8**
+
+## Étape 3 — Benchmark embeddings — 2026-05-28 20:38 UTC
+
+| modèle | dim | R@5 | R@10 | MRR | NDCG@10 | top1 | note |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| bge-m3 ◀ | 1024 | 0.141 | 0.203 | 0.191 | 0.155 | 0.156 | meilleur multilingue, fenêtre 8192 tokens (~2.3 GB) |
+
+Meilleur modèle retenu : **bge-m3** (BAAI/bge-m3)
+
+## Note étape 3 — BGE-M3 résultat final
+
+BGE-M3 benchmark terminé (collection bench locale, 3277 chunks) :
+
+| modèle | R@5 | R@10 | MRR | NDCG@10 | top1 | latence/q |
+| --- | --- | --- | --- | --- | --- | --- |
+| e5-small | 0.115 | 0.141 | 0.134 | 0.109 | 0.094 | ~29ms |
+| **e5-base** ◀ retenu | **0.120** | **0.203** | **0.146** | **0.137** | **0.094** | ~27ms |
+| bge-m3 | 0.141 | 0.203 | 0.191 | 0.155 | 0.156 | ~100ms |
+
+BGE-M3 exclu : inférieur à e5-base en Recall@10 et NDCG@10, 3x plus lent,
+~2.3 GB RAM (incompatible Render Standard 2 GB). E5-base retenu en production.
