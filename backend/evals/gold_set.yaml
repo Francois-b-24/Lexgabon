@@ -31,48 +31,57 @@ questions:
     question: Quelle est la durée légale hebdomadaire du travail au Gabon ?
     expected_articles: ["24", "25"]
     expected_domain: travail
+    expected_code: "Code du travail"
     difficulty: easy
 
   - id: travail-conges-payes
     question: Combien de jours de congé payé un salarié acquiert-il par mois de service ?
-    expected_articles: ["149", "150"]
+    expected_articles: ["222", "224"]
+    annotation_note: "corrige : art.222 : congé acquis a raison de 2 jours ouvrables par mois de service effectif"
     expected_domain: travail
+    expected_code: "Code du travail"
     difficulty: easy
 
   - id: travail-preavis-rupture
     question: Quelle est la durée du préavis en cas de rupture du contrat de travail ?
     expected_articles: ["54", "55"]
     expected_domain: travail
+    expected_code: "Code du travail"
     difficulty: easy
 
   - id: travail-conge-maternite
     question: Quels sont les droits d'une salariée en congé de maternité ?
     expected_articles: ["207", "210"]
     expected_domain: travail
+    expected_code: "Code du travail"
     difficulty: medium
 
   - id: travail-licenciement-faute
     question: Quelles sont les conditions du licenciement pour faute grave au Gabon ?
     expected_articles: ["50", "51", "52"]
     expected_domain: travail
+    expected_code: "Code du travail"
     difficulty: medium
 
   - id: travail-greve-conditions
     question: Quelles sont les conditions légales d'exercice du droit de grève au Gabon ?
     expected_articles: ["378", "379", "380"]
     expected_domain: travail
+    expected_code: "Code du travail"
     difficulty: medium
 
   - id: travail-delegates-personnel
     question: Quel est le rôle des délégués du personnel dans l'entreprise gabonaise ?
     expected_articles: ["64", "66", "68"]
     expected_domain: travail
+    expected_code: "Code du travail"
     difficulty: easy
 
   - id: travail-salaire-minimum
     question: Comment est fixé le salaire minimum interprofessionnel garanti (SMIG) au Gabon ?
     expected_articles: ["178", "179", "180"]
     expected_domain: travail
+    expected_code: "Code du travail"
     difficulty: medium
 
   # ── B. Droit fiscal ──────────────────────────────────────────────────────
@@ -81,31 +90,38 @@ questions:
     question: Comment est déterminé le bénéfice net imposable à l'impôt sur les sociétés au Gabon ?
     expected_articles: ["3", "4", "11"]
     expected_domain: impots
+    expected_code: "Code général des impôts"
     difficulty: medium
 
   - id: fiscal-tva-regime
     question: Quel est le régime de la taxe sur la valeur ajoutée applicable au Gabon ?
     expected_articles: ["223", "224", "225"]
     expected_domain: impots
+    expected_code: "Code général des impôts"
     difficulty: medium
 
   - id: fiscal-retenue-salaires
     question: Comment sont imposés les traitements et salaires au titre de l'IRPP au Gabon ?
     expected_articles: ["71", "72", "73"]
     expected_domain: impots
+    expected_code: "Code général des impôts"
     difficulty: medium
 
   - id: fiscal-amortissements
     question: Quelles sont les règles d'amortissement des immobilisations pour les entreprises gabonaises ?
-    expected_articles: ["13", "14"]
+    expected_articles: ["38"]
+    annotation_note: "corrige : art.38 amortissement par composants (OHADA)"
     expected_domain: impots
+    expected_code: "Code général des impôts"
     difficulty: medium
 
   - id: fiscal-prescription
     question: Quel est le délai de prescription de l'action en recouvrement de l'administration fiscale gabonaise ?
-    expected_articles: ["620", "621"]
+    expected_articles: ["p-872", "p-992"]
     expected_domain: impots
+    expected_code: "Code général des impôts"
     difficulty: hard
+    annotation_note: "corrige etape 10 : art.P-872 action en recouvrement se prescrit"
 
   # ── C. Hydrocarbures ─────────────────────────────────────────────────────
 
@@ -113,24 +129,29 @@ questions:
     question: Qu'est-ce qu'un contrat de partage de production en matière d'hydrocarbures au Gabon ?
     expected_articles: ["53", "54", "55"]
     expected_domain: hydrocarbures
+    expected_code: "Code des hydrocarbures"
     difficulty: easy
 
   - id: hydro-redevance-miniere
     question: Comment est calculée la redevance minière proportionnelle sur les hydrocarbures au Gabon ?
     expected_articles: ["104", "105"]
     expected_domain: hydrocarbures
+    expected_code: "Code des hydrocarbures"
     difficulty: medium
 
   - id: hydro-torchage-gaz
     question: Le torchage du gaz est-il réglementé par le code des hydrocarbures gabonais ?
     expected_articles: ["124", "125", "126"]
     expected_domain: hydrocarbures
+    expected_code: "Code des hydrocarbures"
     difficulty: easy
 
   - id: hydro-abandon-puits
     question: Quelles obligations s'imposent à un opérateur lors de l'abandon d'un puits d'hydrocarbures ?
-    expected_articles: ["115", "116"]
+    expected_articles: ["173"]
+    annotation_note: "corrige : art.173 obligations avant toute operation (abandon)"
     expected_domain: hydrocarbures
+    expected_code: "Code des hydrocarbures"
     difficulty: medium
 
   # ── D. Douane ────────────────────────────────────────────────────────────
@@ -139,18 +160,22 @@ questions:
     question: Comment est déterminée la valeur en douane des marchandises importées au Gabon ?
     expected_articles: ["28", "29", "30"]
     expected_domain: douane
+    expected_code: "Code des douanes"
     difficulty: medium
 
   - id: douane-franchise
     question: Quelles marchandises bénéficient d'une franchise de droits de douane en zone CEMAC ?
     expected_articles: ["85", "86"]
     expected_domain: douane
+    expected_code: "Code des douanes"
     difficulty: medium
 
   - id: douane-entrepot
     question: Quelles sont les règles applicables au régime de l'entrepôt en douane ?
-    expected_articles: ["150", "151", "152"]
+    expected_articles: ["176", "191"]
+    annotation_note: "corrige : art.176 regime de l'entrepot ; art.191 entrepot prive"
     expected_domain: douane
+    expected_code: "Code des douanes"
     difficulty: medium
 
   # ── E. Marchés publics ───────────────────────────────────────────────────
@@ -159,24 +184,30 @@ questions:
     question: Comment se déroule un appel d'offres ouvert pour la passation d'un marché public gabonais ?
     expected_articles: ["57", "58", "59"]
     expected_domain: marche-public
+    expected_code: "Code du marché public"
     difficulty: easy
 
   - id: marche-gre-a-gre
     question: Dans quels cas peut-on recourir à un marché de gré à gré au Gabon ?
     expected_articles: ["56", "68"]
     expected_domain: marche-public
+    expected_code: "Code du marché public"
     difficulty: medium
 
   - id: marche-avance-demarrage
     question: Quelles sont les conditions d'octroi d'une avance de démarrage dans un marché public gabonais ?
-    expected_articles: ["117", "118"]
+    expected_articles: ["211", "213"]
+    annotation_note: "corrige : art.211 garanties des avances ; art.213 demandes d'avance"
     expected_domain: marche-public
+    expected_code: "Code du marché public"
     difficulty: medium
 
   - id: marche-resiliation
     question: Dans quels cas un marché public gabonais peut-il être résilié par l'autorité contractante ?
-    expected_articles: ["137", "138", "139"]
+    expected_articles: ["229", "230"]
+    annotation_note: "corrige : art.229 resiliation a l'initiative de l'Autorite Contractante"
     expected_domain: marche-public
+    expected_code: "Code du marché public"
     difficulty: medium
 
   # ── F. Santé ─────────────────────────────────────────────────────────────
@@ -185,24 +216,30 @@ questions:
     question: Quelles sont les conditions d'ouverture d'une pharmacie au Gabon ?
     expected_articles: ["138", "139", "184"]
     expected_domain: sante
+    expected_code: "Code de la santé publique"
     difficulty: easy
 
   - id: sante-vaccination-obligations
     question: Quelles obligations existent en matière de vaccination au Gabon ?
-    expected_articles: ["271", "272"]
+    expected_articles: ["516", "521"]
+    annotation_note: "corrige : art.516 vaccinations obligatoires chez l'enfant"
     expected_domain: sante
+    expected_code: "Code de la santé publique"
     difficulty: easy
 
   - id: sante-secret-medical
     question: Comment le secret médical est-il protégé par le code de la santé gabonais ?
     expected_articles: ["26", "27", "42"]
     expected_domain: sante
+    expected_code: "Code de la santé publique"
     difficulty: medium
 
   - id: sante-don-organes
     question: Quelles sont les règles encadrant le don d'organes au Gabon ?
-    expected_articles: ["50", "51", "52"]
+    expected_articles: ["164", "167"]
+    annotation_note: "corrige : art.164/167 prelevement d'organes en vue d'un don"
     expected_domain: sante
+    expected_code: "Code de la santé publique"
     difficulty: medium
 
   # ── G. Communication ─────────────────────────────────────────────────────
@@ -211,25 +248,35 @@ questions:
     question: Quelles règles encadrent l'usage des réseaux sociaux numériques au Gabon ?
     expected_articles: ["1", "2", "3"]
     expected_domain: communication
+    expected_code: "Code de la communication"
     difficulty: easy
 
   - id: comm-presse-ligne
     question: Quelles obligations s'imposent aux éditeurs de presse en ligne au Gabon ?
     expected_articles: ["10", "11", "12"]
     expected_domain: communication
+    expected_code: "Code de la communication"
     difficulty: medium
+    known_gap: true
+    annotation_note: "corpus : le PDF indexe ne couvre pas la presse en ligne (s'arrete a l'art.55)"
 
   - id: comm-droit-rectification
     question: Comment s'exerce le droit de rectification dans la presse gabonaise ?
     expected_articles: ["60", "61", "62"]
     expected_domain: communication
+    expected_code: "Code de la communication"
     difficulty: medium
+    known_gap: true
+    annotation_note: "corpus : articles 60-62 absents du PDF indexe (s'arrete a l'art.55)"
 
   - id: comm-publicite-commerciale
     question: Quelles sont les règles encadrant la publicité commerciale dans les médias gabonais ?
     expected_articles: ["80", "81"]
     expected_domain: communication
+    expected_code: "Code de la communication"
     difficulty: medium
+    known_gap: true
+    annotation_note: "corpus : articles 80-81 absents du PDF indexe (s'arrete a l'art.55)"
 
   # ── H. Hors-périmètre corpus (5 questions — expected_articles vide) ──────
   # Ces questions relèvent de domaines non encore indexés.
@@ -240,30 +287,35 @@ questions:
     expected_articles: []
     expected_domain: civil
     difficulty: easy
+    expected_reason: ["domain_not_indexed", "code_not_indexed"]
 
   - id: hors-perimetre-penal-homicide
     question: Quelle est la peine prévue pour homicide volontaire en droit pénal gabonais ?
     expected_articles: []
     expected_domain: penal
     difficulty: easy
+    expected_reason: ["domain_not_indexed", "code_not_indexed"]
 
   - id: hors-perimetre-famille-divorce
     question: Quelles sont les causes de divorce admises par le droit gabonais de la famille ?
     expected_articles: []
     expected_domain: famille
     difficulty: easy
+    expected_reason: ["domain_not_indexed"]
 
   - id: hors-perimetre-fonction-publique
     question: Quelles sont les conditions de titularisation d'un fonctionnaire gabonais ?
     expected_articles: []
     expected_domain: fonction_publique
     difficulty: easy
+    expected_reason: ["domain_not_indexed"]
 
   - id: hors-perimetre-hors-gabon
     question: Quelle est la durée légale du travail en France selon le code du travail français ?
     expected_articles: []
     expected_domain: general
     difficulty: easy
+    expected_reason: ["out_of_jurisdiction"]
 
   # ── I. Questions pièges (3 questions) ────────────────────────────────────
   # Articles potentiellement abrogés ou modifiés, ou terminologie trompeuse.
@@ -272,16 +324,161 @@ questions:
     question: Quel est le montant du SMIC au Gabon fixé par le code du travail de 1994 ?
     expected_articles: []
     expected_domain: travail
+    expected_code: "Code du travail"
     difficulty: trap
+    expected_reason: ["outdated_reference"]
 
   - id: piege-hors-gabon-ohada-bilan
     question: Quelles sont les règles de présentation du bilan selon le droit comptable OHADA ?
     expected_articles: []
     expected_domain: commercial
     difficulty: trap
+    expected_reason: ["code_not_indexed", "regional_not_indexed"]
 
   - id: piege-terminologie-trompeuse
     question: Comment licencier un salarié en CDI selon le code civil gabonais ?
     expected_articles: []
     expected_domain: civil
     difficulty: trap
+    expected_reason: ["code_not_indexed"]
+
+  - id: hp-civil-bail
+    question: "Quelles obligations pèsent sur le bailleur d'un logement au Gabon ?"
+    expected_articles: []
+    expected_domain: civil
+    difficulty: medium
+    expected_reason: ['domain_not_indexed', 'code_not_indexed']
+
+  - id: hp-civil-responsabilite
+    question: "Qui doit réparer le dommage causé par la chute d'un mur au Gabon ?"
+    expected_articles: []
+    expected_domain: civil
+    difficulty: medium
+    expected_reason: ['no_term_recognized']
+    note: "Aucun marqueur univoque — non bloquant par conception. Forcer un refus ici exigerait des termes trop généraux."
+
+  - id: hp-penal-vol
+    question: "Quelles sanctions encourt l'auteur d'une escroquerie au Gabon ?"
+    expected_articles: []
+    expected_domain: penal
+    difficulty: medium
+    expected_reason: ['domain_not_indexed', 'code_not_indexed']
+
+  - id: hp-penal-recidive
+    question: "Comment la récidive aggrave-t-elle la peine au Gabon ?"
+    expected_articles: []
+    expected_domain: penal
+    difficulty: medium
+    expected_reason: ['domain_not_indexed', 'code_not_indexed']
+
+  - id: hp-famille-adoption
+    question: "Quelles conditions pour adopter un enfant au Gabon ?"
+    expected_articles: []
+    expected_domain: famille
+    difficulty: medium
+    expected_reason: ['domain_not_indexed', 'code_not_indexed']
+
+  - id: hp-famille-pension
+    question: "Comment est fixée la pension alimentaire après séparation au Gabon ?"
+    expected_articles: []
+    expected_domain: famille
+    difficulty: medium
+    expected_reason: ['domain_not_indexed', 'code_not_indexed']
+
+  - id: hp-fp-avancement
+    question: "Comment se déroule l'avancement d'échelon d'un agent public gabonais ?"
+    expected_articles: []
+    expected_domain: fonction_publique
+    difficulty: medium
+    expected_reason: ['domain_not_indexed', 'code_not_indexed']
+
+  - id: hp-admin-recours
+    question: "Comment contester un acte administratif unilatéral au Gabon ?"
+    expected_articles: []
+    expected_domain: administratif
+    difficulty: medium
+    expected_reason: ['domain_not_indexed', 'code_not_indexed']
+
+  - id: hp-commercial-rcs
+    question: "Comment immatriculer une société au registre du commerce au Gabon ?"
+    expected_articles: []
+    expected_domain: commercial
+    difficulty: medium
+    expected_reason: ['domain_not_indexed', 'code_not_indexed', 'regional_not_indexed']
+
+  - id: hp-jur-senegal
+    question: "Quelle est la durée du préavis de licenciement au Sénégal ?"
+    expected_articles: []
+    expected_domain: general
+    difficulty: medium
+    expected_reason: ['out_of_jurisdiction']
+
+  - id: hp-jur-cameroun
+    question: "Quel est le taux de TVA applicable au Cameroun ?"
+    expected_articles: []
+    expected_domain: general
+    difficulty: medium
+    expected_reason: ['out_of_jurisdiction']
+
+  - id: hp-jur-belge
+    question: "Que prévoit le droit belge en matière de congés payés ?"
+    expected_articles: []
+    expected_domain: general
+    difficulty: medium
+    expected_reason: ['out_of_jurisdiction']
+
+  - id: hp-jur-europe
+    question: "Que prévoit la réglementation européenne sur la protection des données ?"
+    expected_articles: []
+    expected_domain: general
+    difficulty: medium
+    expected_reason: ['out_of_jurisdiction']
+
+  - id: hp-ohada-suretes
+    question: "Que prévoit l'acte uniforme OHADA sur les sûretés ?"
+    expected_articles: []
+    expected_domain: commercial
+    difficulty: medium
+    expected_reason: ['regional_not_indexed', 'code_not_indexed']
+
+  - id: hp-cima-assurance
+    question: "Que prévoit le code CIMA en matière d'assurance automobile ?"
+    expected_articles: []
+    expected_domain: commercial
+    difficulty: medium
+    expected_reason: ['regional_not_indexed', 'code_not_indexed']
+
+  - id: hp-cobac-banque
+    question: "Quelles exigences la COBAC impose-t-elle aux banques ?"
+    expected_articles: []
+    expected_domain: commercial
+    difficulty: medium
+    expected_reason: ['regional_not_indexed', 'code_not_indexed']
+
+  - id: hp-millesime-impots
+    question: "Que prévoyait le code général des impôts de 1995 sur l'IRPP ?"
+    expected_articles: []
+    expected_domain: impots
+    difficulty: medium
+    expected_reason: ['outdated_reference']
+
+  - id: hp-millesime-hydro
+    question: "Que disait le code des hydrocarbures de 2014 sur les redevances ?"
+    expected_articles: []
+    expected_domain: hydrocarbures
+    difficulty: medium
+    expected_reason: ['outdated_reference']
+
+  - id: hp-code-penal-nomme
+    question: "Que dit le code pénal gabonais sur la légitime défense ?"
+    expected_articles: []
+    expected_domain: penal
+    difficulty: medium
+    expected_reason: ['code_not_indexed', 'domain_not_indexed']
+
+  - id: hp-code-famille-nomme
+    question: "Que dit le code de la famille gabonais sur le mariage ?"
+    expected_articles: []
+    expected_domain: famille
+    difficulty: medium
+    expected_reason: ['code_not_indexed', 'domain_not_indexed']

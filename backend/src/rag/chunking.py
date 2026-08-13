@@ -28,8 +28,16 @@ _ARTICLE_HEADER_RE = re.compile(
     #       SANS ponctuation. C'est le format du Code des douanes CEMAC. La contrainte
     #       « ARTICLE » majuscule évite les faux positifs : les références internes
     #       sont en minuscules (« l'article 27 prévoit »).
+    #   (c) « Art.P‐816.‐ » : préfixe de livre (Livre 5 « Procédures fiscales » du
+    #       CGI). Sans cette forme, les 336 articles du livre restaient soudés
+    #       dans un unique chunk de 185 666 caractères — invisible pour
+    #       l'embedding, dont le vecteur devient une moyenne diluée. Le préfixe
+    #       est conservé dans le numéro (« P-816 ») pour ne pas collisionner avec
+    #       l'article 816 d'un autre livre.
     r"(?:"
     r"(?i:(?:article|art\.)\s*)(?P<num>" + _ARTICLE_NUM_RE + r")\s*[\.\-–—:]+\s*"
+    r"|"
+    r"(?i:(?:article|art\.)\s*)(?P<numprefix>[A-Z]\s*[‐\-–]\s*" + _ARTICLE_NUM_RE + r")\s*[\.\-–—‐:]+\s*"
     r"|"
     r"ARTICLE\s*(?P<num2>" + _ARTICLE_NUM_RE + r")(?=\s+(?:[A-ZÀÂÄÉÈÊËÏÎÔÙÛÜÇ§]|\d+[\.\)°]))\s+"
     r")"
@@ -141,7 +149,9 @@ def split_articles(text: str) -> list[ArticleSegment]:
     segments: list[ArticleSegment] = []
     for i, m in enumerate(matches):
         end = matches[i + 1].start() if i + 1 < len(matches) else len(text)
-        num = _normalize_article_number(m.group("num") or m.group("num2") or "")
+        num = _normalize_article_number(
+            m.group("num") or m.group("numprefix") or m.group("num2") or ""
+        )
         if not num:
             continue
         body = text[m.end(): end].strip()
@@ -157,6 +167,10 @@ def _normalize_article_number(raw: str) -> str:
     s = re.sub(r"\s+", " ", raw).strip().lower()
     # Ordinaux collés ou séparés : « 1er », « 1 er », « 2ème », « 2 ème »
     s = re.sub(r"(\d)\s*(?:er|ère|ere|ème|eme)\b", r"\1", s)
+    # Préfixe de livre : « P ‐ 816 » (tiret Unicode du PDF) → « p-816 ». On garde
+    # le préfixe, sinon l'article P-816 des Procédures fiscales collisionnerait
+    # avec l'article 816 d'un autre livre du même code.
+    s = re.sub(r"^([a-z])\s*[‐\-–]\s*(\d)", r"\1-\2", s)
     s = re.sub(r"\s+", " ", s).strip()
     return s
 

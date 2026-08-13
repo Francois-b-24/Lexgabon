@@ -114,3 +114,33 @@ def test_default_mode_still_splits_long_articles():
     assert len(chunks) > 2
     nums = {c.numero_article for c in chunks}
     assert nums == {"1", "2"}
+
+
+def test_book_prefixed_article_is_detected():
+    """« Art.P‐816.‐ » : format du Livre 5 « Procédures fiscales » du CGI.
+
+    Sans cette forme, les 336 articles du livre restaient soudés dans un unique
+    chunk de 185 666 caractères — invisible pour l'embedding, dont le vecteur
+    devient une moyenne diluée sur tout un livre. C'est ce qui rendait la
+    question sur la prescription fiscale impossible à satisfaire.
+    """
+    text = (
+        "Art.P‐816.‐ Les dispositions du présent Livre régissent les procédures. "
+        "Art.P‐817.‐ Le contribuable est tenu de souscrire une déclaration."
+    )
+    segs = split_articles(text)
+    nums = [s.numero for s in segs]
+    assert nums == ["p-816", "p-817"], nums
+
+
+def test_book_prefix_kept_to_avoid_collision():
+    """Le préfixe fait partie du numéro : P-816 ≠ 816 d'un autre livre."""
+    segs = split_articles("Art.P-816.- Procédures. Article 816 : autre livre.")
+    nums = [s.numero for s in segs]
+    assert "p-816" in nums and "816" in nums, nums
+
+
+def test_plain_articles_still_detected_after_prefix_support():
+    """Non-régression : les formes usuelles restent reconnues."""
+    segs = split_articles("Article 12 : Premier. Art. 13 — Second.")
+    assert [s.numero for s in segs] == ["12", "13"]

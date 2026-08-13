@@ -33,6 +33,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from src.rag import retriever  # noqa: E402
+from src.rag.gate import evaluate as gate_evaluate  # noqa: E402
 
 
 # ── helpers métriques ────────────────────────────────────────────────────────
@@ -41,7 +42,58 @@ def _norm(num: str) -> str:
     return " ".join(str(num).strip().lower().split())
 
 
+def _norm_code(code: str | None) -> str:
+    """Normalise un nom de code pour comparaison (accents conservés, casse/espaces non)."""
+    return " ".join(str(code or "").strip().lower().split())
+
+
+def _key(code: str | None, num: str) -> str:
+    """Clé de matching `code|article`.
+
+    Sans le code, le matching est quasi non informatif : 809 des 909 numéros
+    d'article du corpus apparaissent dans plusieurs codes (les articles 1 à 8
+    existent dans les 7 codes indexés). Un chunk « Article 12 » du CGI comptait
+    donc comme succès pour une question attendant l'article 12 du Code du
+    travail. Quand le gold set ne précise pas de code, on retombe sur le
+    matching par numéro nu (rétro-compatibilité).
+    """
+    c = _norm_code(code)
+    return f"{c}|{_norm(num)}" if c else _norm(num)
+
+
+def _expected_keys(expected_raw: list, default_code: str | None) -> set[str]:
+    """Accepte deux formes de gold set.
+
+    - chaîne nue : "149"                       → code repris de `expected_code`
+    - mapping    : {code: "…", article: "149"} → code explicite par entrée
+    """
+    out: set[str] = set()
+    for x in expected_raw:
+        if isinstance(x, dict):
+            out.add(_key(x.get("code") or default_code, x.get("article") or x.get("numero") or ""))
+        else:
+            out.add(_key(default_code, x))
+    return out
+
+
 def _returned_articles(rows: list[dict[str, Any]]) -> list[str]:
+    """Clés `code|article` des chunks renvoyés, dédupliquées, ordre conservé."""
+    out: list[str] = []
+    seen: set[str] = set()
+    for r in rows:
+        meta = r.get("metadata") if isinstance(r.get("metadata"), dict) else {}
+        num = meta.get("numero_article")
+        if not num:
+            continue
+        n = _key(meta.get("code"), num)
+        if n not in seen:
+            seen.add(n)
+            out.append(n)
+    return out
+
+
+def _returned_articles_bare(rows: list[dict[str, Any]]) -> list[str]:
+    """Variante sans code — sert à mesurer l'écart avec l'ancien matching."""
     out: list[str] = []
     seen: set[str] = set()
     for r in rows:
@@ -101,6 +153,22 @@ def _top1_hit(expected: set[str], got: list[str]) -> bool:
     return bool(got) and got[0] in expected
 
 
+def _reason_matches(row: dict[str, Any]) -> bool:
+    """Le motif obtenu figure-t-il parmi les motifs acceptables ?
+
+    Plusieurs motifs peuvent être également justes selon la formulation : une
+    question sur « le droit civil » peut légitimement sortir en
+    `domain_not_indexed` (la matière) ou `code_not_indexed` (le texte nommé).
+    D'où une liste attendue plutôt qu'une valeur unique.
+    """
+    expected = row.get("expected_reason")
+    if not expected:
+        return False
+    if isinstance(expected, str):
+        expected = [expected]
+    return row.get("gate_reason") in set(expected)
+
+
 # ── chargement gold set ──────────────────────────────────────────────────────
 
 def _load_gold(path: Path) -> list[dict[str, Any]]:
@@ -129,6 +197,30 @@ def _render_md(
     in_domain = [r for r in results if r["type"] == "in_domain"]
     cross = [r for r in results if r["type"] == "cross"]
 
+    # ── Métriques de tête ────────────────────────────────────────────────────
+    # Le recall in-domain mesure la qualité du ranking ; il ne dit rien de la
+    # capacité à PROUVER une absence. C'est cross_domain_empty_rate qui la
+    # mesure, d'où sa place en tête. in_domain_blocked_rate est la contrainte
+    # dure associée : refuser du hors-périmètre ne vaut que si l'on ne refuse
+    # jamais une question légitime.
+    if cross or in_domain:
+        n_ok = sum(1 for r in cross if r["empty"])
+        n_blocked = sum(1 for r in in_domain if r.get("blocked"))
+        rate = n_ok / len(cross) if cross else 0.0
+        blocked_rate = n_blocked / len(in_domain) if in_domain else 0.0
+        lines.append("### Métriques de tête\n")
+        lines.append("| métrique | valeur | cible |")
+        lines.append("| --- | --- | --- |")
+        lines.append(f"| **cross_domain_empty_rate** | **{n_ok}/{len(cross)} ({rate:.2f})** | ≥ 0.95 |")
+        lines.append(f"| **in_domain_blocked_rate** | **{n_blocked}/{len(in_domain)} ({blocked_rate:.2f})** | 0.00 (dur) |")
+        # Ventilation par raison : un refus juste pour un mauvais motif est un
+        # faux positif déguisé.
+        reasons = [r for r in cross if r.get("expected_reason")]
+        if reasons and any(r.get("gate_reason") for r in reasons):
+            n_right = sum(1 for r in reasons if _reason_matches(r))
+            lines.append(f"| cross_domain_right_reason | {n_right}/{len(reasons)} ({n_right/len(reasons):.2f}) | ≥ 0.875 |")
+        lines.append("")
+
     # Tableau par question
     header_cols = ["id", "domaine", "diff"] + [f"R@{k}" for k in ks] + ["MRR", "NDCG@10", "top1", "got[:5]"]
     lines.append("### Détail par question\n")
@@ -149,12 +241,19 @@ def _render_md(
 
     # Récap cross-domaine
     if cross:
-        lines.append("\n### Cross-domaine (attendu : vide après seuil)\n")
-        lines.append("| id | domaine | diff | renvoyés | ok |")
-        lines.append("| --- | --- | --- | --- | --- |")
+        lines.append("\n### Hors-périmètre (attendu : aucun extrait)\n")
+        lines.append("| id | domaine | raison attendue | raison obtenue | renvoyés | ok |")
+        lines.append("| --- | --- | --- | --- | --- | --- |")
         for r in cross:
             mark = "✓" if r["empty"] else "✗"
-            lines.append(f"| {r['id']} | {r['domaine']} | {r['difficulty']} | {r['n_returned']} | {mark} |")
+            exp = r.get("expected_reason") or []
+            exp_r = " / ".join(exp) if isinstance(exp, list) else str(exp)
+            got_r = r.get("gate_reason") or "—"
+            if r.get("gate_reason") and not _reason_matches(r):
+                got_r = f"**{got_r}**"
+            lines.append(
+                f"| {r['id']} | {r['domaine']} | {exp_r} | {got_r} | {r['n_returned']} | {mark} |"
+            )
 
     # Récap global par domaine
     dom_stats: dict[str, dict] = defaultdict(lambda: {k: [] for k in ["mrr", "ndcg10", "top1"] + [f"R@{k}" for k in ks]})
@@ -220,9 +319,38 @@ def _build_json(results: list[dict], ks: list[int]) -> dict:
     global_metrics["ndcg@10"] = sum(ndcg_vals) / len(ndcg_vals) if ndcg_vals else 0.0
     global_metrics["top1_hit_rate"] = sum(top1_vals) / len(top1_vals) if top1_vals else 0.0
     cross_ok = sum(1 for r in cross if r["empty"])
+    # Recall mesuré à l'ancienne (numéro d'article nu, sans le code) — conservé
+    # pour objectiver l'écart avec l'historique, PAS pour piloter les décisions.
+    bare_metrics: dict = {}
+    for k in ks:
+        vals = [r["recalls_bare"][k] for r in in_domain if "recalls_bare" in r]
+        if vals:
+            bare_metrics[f"recall@{k}"] = sum(vals) / len(vals)
+
+    # in_domain_blocked_rate : proportion de questions in-domain que le gate a
+    # bloquées. Contrainte dure du projet : doit rester à 0.00. Tant que le gate
+    # n'est pas branché, aucune question n'est bloquée.
+    blocked = sum(1 for r in in_domain if r.get("blocked"))
+    with_reason = [r for r in cross if r.get("expected_reason") and r.get("gate_reason")]
+    right_reason = sum(1 for r in with_reason if _reason_matches(r))
     return {
-        "global": global_metrics,
+        # ── métriques de tête ────────────────────────────────────────────────
         "cross_domain_empty_rate": cross_ok / len(cross) if cross else None,
+        "in_domain_blocked_rate": blocked / len(in_domain) if in_domain else 0.0,
+        "cross_domain_right_reason": (right_reason / len(with_reason)) if with_reason else None,
+        # ── métriques de retrieval ───────────────────────────────────────────
+        "global": global_metrics,
+        # Recall sur les seules questions dont la réponse est réellement dans le
+        # corpus : c'est la mesure qui reflète la qualité du moteur.
+        "global_reachable": {
+            f"recall@{k}": (
+                sum(r["recalls"][k] for r in in_domain if not r.get("known_gap"))
+                / max(1, len([r for r in in_domain if not r.get("known_gap")]))
+            )
+            for k in ks
+        },
+        "n_known_gap": len([r for r in in_domain if r.get("known_gap")]),
+        "global_bare_article_match": bare_metrics,
         "n_in_domain": len(in_domain),
         "n_cross": len(cross),
         "details": results,
@@ -241,6 +369,12 @@ def main() -> None:
         help="Ignore rag_min_score (mesure le recall brut du ranking).",
     )
     ap.add_argument("--label", default="Baseline", help="Titre de la section dans history.md.")
+    ap.add_argument(
+        "--no-gate",
+        dest="gate",
+        action="store_false",
+        help="Désactive le gate lexical (mesure le retrieval seul).",
+    )
     args = ap.parse_args()
 
     if not args.gold.exists():
@@ -264,12 +398,21 @@ def main() -> None:
         difficulty = c.get("difficulty", "?")
         is_cross = len(expected_raw) == 0
 
-        if args.no_threshold:
+        # Le gate est évalué SANS le domaine du gold set : en production le
+        # sélecteur front est le plus souvent vide, et c'est précisément là que
+        # le refus doit fonctionner. L'évaluer avec le domaine déclaré
+        # surestimerait ses performances.
+        decision = gate_evaluate(question) if args.gate else None
+
+        if decision is not None and decision.blocking:
+            rows = []
+        elif args.no_threshold:
             rows = retriever.search_expanded(question, domaine=domaine)
         else:
             rows = retriever.search(question, domaine=domaine)
 
         got = _returned_articles(rows)
+        got_bare = _returned_articles_bare(rows)
 
         if is_cross:
             ok = len(rows) == 0
@@ -283,13 +426,21 @@ def main() -> None:
                 "empty": ok,
                 "n_returned": len(rows),
                 "got": got[:5],
+                "expected_reason": c.get("expected_reason"),
+                "gate_reason": decision.reason.value if decision else None,
+                "gate_terms": list(decision.matched_terms) if decision else [],
             })
         else:
-            expected = {_norm(x) for x in expected_raw}
+            expected = _expected_keys(expected_raw, c.get("expected_code"))
             recalls = {k: _recall_at_k(expected, got, k) for k in ks}
             mrr = _mrr(expected, got)
             ndcg10 = _ndcg_at_k(expected, got, 10)
             top1 = _top1_hit(expected, got)
+            # Même mesure sans le code : l'écart quantifie les faux positifs
+            # que l'ancien matching par numéro nu comptait comme succès.
+            expected_bare = {_norm(x.get("article") or x.get("numero") or "") if isinstance(x, dict) else _norm(x)
+                             for x in expected_raw}
+            recalls_bare = {k: _recall_at_k(expected_bare, got_bare, k) for k in ks}
             mark = "✓" if top1 else "✗"
             recall_str = "  ".join(f"R@{k}={recalls[k]:.2f}" for k in ks)
             print(f"  [{mark}] {qid:<30} ({domaine or '?':<18} {difficulty:<6}) {recall_str}  MRR={mrr:.2f}  NDCG@10={ndcg10:.2f}")
@@ -298,22 +449,60 @@ def main() -> None:
                 "domaine": domaine or "?",
                 "difficulty": difficulty,
                 "type": "in_domain",
+                # `known_gap` : l'article attendu est absent du corpus, ou noyé
+                # dans un chunk géant. L'échec ne vient pas du ranking, donc la
+                # question est comptée à part — sinon on optimiserait le moteur
+                # contre un plafond qu'il ne peut pas franchir.
+                "known_gap": bool(c.get("known_gap")),
+                "annotation_note": c.get("annotation_note"),
+                # Contrainte dure : doit rester False partout. Une question
+                # légitime bloquée est le pire échec possible du dispositif.
+                "blocked": bool(decision and decision.blocking),
+                "gate_reason": decision.reason.value if decision else None,
                 "recalls": recalls,
+                "recalls_bare": recalls_bare,
                 "mrr": mrr,
                 "ndcg10": ndcg10,
                 "top1": top1,
                 "got": got[:max_k],
-                "expected": list(expected),
+                "expected": sorted(expected),
             })
 
     # Métriques globales résumées
     in_domain = [r for r in results if r["type"] == "in_domain"]
     cross = [r for r in results if r["type"] == "cross"]
+    print("\n== Métriques de tête ==")
+    if cross:
+        n_ok = sum(1 for r in cross if r["empty"])
+        print(f"   cross_domain_empty_rate : {n_ok}/{len(cross)} ({n_ok/len(cross):.2f})   cible ≥ 0.95")
     if in_domain:
-        print("\n== Métriques globales ==")
+        n_blocked = sum(1 for r in in_domain if r.get("blocked"))
+        print(f"   in_domain_blocked_rate  : {n_blocked}/{len(in_domain)} ({n_blocked/len(in_domain):.2f})   cible 0.00 (dur)")
+
+    reachable = [r for r in in_domain if not r.get("known_gap")]
+    gaps = [r for r in in_domain if r.get("known_gap")]
+    if gaps:
+        print(f"\n== Hors portée du moteur : {len(gaps)} question(s) ==")
+        for r in gaps:
+            print(f"   {r['id']:<30} {r.get('annotation_note') or ''}")
+
+    if reachable:
+        print(f"\n== Métriques sur corpus atteignable ({len(reachable)} q) ==")
+        for k in ks:
+            avg = sum(r["recalls"][k] for r in reachable) / len(reachable)
+            print(f"   Recall@{k}    : {avg:.3f}")
+        print(f"   MRR          : {sum(r['mrr'] for r in reachable)/len(reachable):.3f}")
+
+    if in_domain:
+        print("\n== Métriques globales, toutes questions (matching code|article) ==")
         for k in ks:
             avg = sum(r["recalls"][k] for r in in_domain) / len(in_domain)
-            print(f"   Recall@{k}    : {avg:.3f}")
+            bare_vals = [r["recalls_bare"][k] for r in in_domain if "recalls_bare" in r]
+            if bare_vals:
+                bare = sum(bare_vals) / len(bare_vals)
+                print(f"   Recall@{k}    : {avg:.3f}   (ancien matching n° nu : {bare:.3f})")
+            else:
+                print(f"   Recall@{k}    : {avg:.3f}")
         mrr_avg = sum(r["mrr"] for r in in_domain) / len(in_domain)
         ndcg_avg = sum(r["ndcg10"] for r in in_domain) / len(in_domain)
         top1_avg = sum(float(r["top1"]) for r in in_domain) / len(in_domain)

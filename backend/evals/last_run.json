@@ -1,21 +1,40 @@
 {
+  "cross_domain_empty_rate": 0.9642857142857143,
+  "in_domain_blocked_rate": 0.0,
+  "cross_domain_right_reason": 1.0,
   "global": {
-    "recall@5": 0.203125,
-    "recall@10": 0.22916666666666666,
-    "mrr": 0.225,
-    "ndcg@10": 0.18712627952033264,
-    "top1_hit_rate": 0.15625
+    "recall@5": 0.40625,
+    "recall@10": 0.4322916666666667,
+    "mrr": 0.38229166666666664,
+    "ndcg@10": 0.33792696678691436,
+    "top1_hit_rate": 0.25
   },
-  "cross_domain_empty_rate": 0.0,
+  "global_reachable": {
+    "recall@5": 0.4482758620689655,
+    "recall@10": 0.4770114942528736
+  },
+  "n_known_gap": 3,
+  "global_bare_article_match": {
+    "recall@5": 0.40625,
+    "recall@10": 0.4322916666666667
+  },
   "n_in_domain": 32,
-  "n_cross": 8,
+  "n_cross": 28,
   "details": [
     {
       "id": "travail-duree-hebdo",
       "domaine": "travail",
       "difficulty": "easy",
       "type": "in_domain",
+      "known_gap": false,
+      "annotation_note": null,
+      "blocked": false,
+      "gate_reason": "covered",
       "recalls": {
+        "5": 0.5,
+        "10": 0.5
+      },
+      "recalls_bare": {
         "5": 0.5,
         "10": 0.5
       },
@@ -23,16 +42,16 @@
       "ndcg10": 0.38685280723454163,
       "top1": false,
       "got": [
-        "21",
-        "25",
-        "206",
-        "140",
-        "1",
-        "128"
+        "code du travail|21",
+        "code du travail|25",
+        "code du travail|206",
+        "code du travail|140",
+        "code du travail|1",
+        "code du travail|128"
       ],
       "expected": [
-        "25",
-        "24"
+        "code du travail|24",
+        "code du travail|25"
       ]
     },
     {
@@ -40,57 +59,15 @@
       "domaine": "travail",
       "difficulty": "easy",
       "type": "in_domain",
+      "known_gap": false,
+      "annotation_note": "corrige : art.222 : congé acquis a raison de 2 jours ouvrables par mois de service effectif",
+      "blocked": false,
+      "gate_reason": "covered",
       "recalls": {
-        "5": 0.0,
-        "10": 0.0
+        "5": 1.0,
+        "10": 1.0
       },
-      "mrr": 0.0,
-      "ndcg10": 0.0,
-      "top1": false,
-      "got": [
-        "222",
-        "224",
-        "223",
-        "182",
-        "227",
-        "178"
-      ],
-      "expected": [
-        "150",
-        "149"
-      ]
-    },
-    {
-      "id": "travail-preavis-rupture",
-      "domaine": "travail",
-      "difficulty": "easy",
-      "type": "in_domain",
-      "recalls": {
-        "5": 0.0,
-        "10": 0.5
-      },
-      "mrr": 0.16666666666666666,
-      "ndcg10": 0.21840743681816419,
-      "top1": false,
-      "got": [
-        "86",
-        "82",
-        "81",
-        "61",
-        "60",
-        "55"
-      ],
-      "expected": [
-        "54",
-        "55"
-      ]
-    },
-    {
-      "id": "travail-conge-maternite",
-      "domaine": "travail",
-      "difficulty": "medium",
-      "type": "in_domain",
-      "recalls": {
+      "recalls_bare": {
         "5": 1.0,
         "10": 1.0
       },
@@ -98,16 +75,82 @@
       "ndcg10": 1.0,
       "top1": true,
       "got": [
-        "210",
-        "207",
-        "208",
-        "223",
-        "211",
-        "224"
+        "code du travail|222",
+        "code du travail|224",
+        "code du travail|223",
+        "code du travail|182",
+        "code du travail|227",
+        "code du travail|178"
       ],
       "expected": [
-        "210",
-        "207"
+        "code du travail|222",
+        "code du travail|224"
+      ]
+    },
+    {
+      "id": "travail-preavis-rupture",
+      "domaine": "travail",
+      "difficulty": "easy",
+      "type": "in_domain",
+      "known_gap": false,
+      "annotation_note": null,
+      "blocked": false,
+      "gate_reason": "covered",
+      "recalls": {
+        "5": 0.0,
+        "10": 0.5
+      },
+      "recalls_bare": {
+        "5": 0.0,
+        "10": 0.5
+      },
+      "mrr": 0.16666666666666666,
+      "ndcg10": 0.21840743681816419,
+      "top1": false,
+      "got": [
+        "code du travail|86",
+        "code du travail|82",
+        "code du travail|81",
+        "code du travail|61",
+        "code du travail|60",
+        "code du travail|55"
+      ],
+      "expected": [
+        "code du travail|54",
+        "code du travail|55"
+      ]
+    },
+    {
+      "id": "travail-conge-maternite",
+      "domaine": "travail",
+      "difficulty": "medium",
+      "type": "in_domain",
+      "known_gap": false,
+      "annotation_note": null,
+      "blocked": false,
+      "gate_reason": "covered",
+      "recalls": {
+        "5": 1.0,
+        "10": 1.0
+      },
+      "recalls_bare": {
+        "5": 1.0,
+        "10": 1.0
+      },
+      "mrr": 1.0,
+      "ndcg10": 1.0,
+      "top1": true,
+      "got": [
+        "code du travail|210",
+        "code du travail|207",
+        "code du travail|208",
+        "code du travail|223",
+        "code du travail|211",
+        "code du travail|224"
+      ],
+      "expected": [
+        "code du travail|207",
+        "code du travail|210"
       ]
     },
     {
@@ -115,7 +158,15 @@
       "domaine": "travail",
       "difficulty": "medium",
       "type": "in_domain",
+      "known_gap": false,
+      "annotation_note": null,
+      "blocked": false,
+      "gate_reason": "covered",
       "recalls": {
+        "5": 0.0,
+        "10": 0.0
+      },
+      "recalls_bare": {
         "5": 0.0,
         "10": 0.0
       },
@@ -123,17 +174,17 @@
       "ndcg10": 0.0,
       "top1": false,
       "got": [
-        "330",
-        "81",
-        "90",
-        "64",
-        "95",
-        "20"
+        "code du travail|330",
+        "code du travail|81",
+        "code du travail|90",
+        "code du travail|64",
+        "code du travail|95",
+        "code du travail|20"
       ],
       "expected": [
-        "52",
-        "50",
-        "51"
+        "code du travail|50",
+        "code du travail|51",
+        "code du travail|52"
       ]
     },
     {
@@ -141,7 +192,15 @@
       "domaine": "travail",
       "difficulty": "medium",
       "type": "in_domain",
+      "known_gap": false,
+      "annotation_note": null,
+      "blocked": false,
+      "gate_reason": "covered",
       "recalls": {
+        "5": 0.0,
+        "10": 0.0
+      },
+      "recalls_bare": {
         "5": 0.0,
         "10": 0.0
       },
@@ -149,17 +208,17 @@
       "ndcg10": 0.0,
       "top1": false,
       "got": [
-        "393",
-        "156",
-        "128",
-        "305",
-        "21",
-        "95"
+        "code du travail|393",
+        "code du travail|156",
+        "code du travail|128",
+        "code du travail|305",
+        "code du travail|21",
+        "code du travail|95"
       ],
       "expected": [
-        "379",
-        "378",
-        "380"
+        "code du travail|378",
+        "code du travail|379",
+        "code du travail|380"
       ]
     },
     {
@@ -167,7 +226,15 @@
       "domaine": "travail",
       "difficulty": "easy",
       "type": "in_domain",
+      "known_gap": false,
+      "annotation_note": null,
+      "blocked": false,
+      "gate_reason": "covered",
       "recalls": {
+        "5": 0.3333333333333333,
+        "10": 0.3333333333333333
+      },
+      "recalls_bare": {
         "5": 0.3333333333333333,
         "10": 0.3333333333333333
       },
@@ -175,17 +242,17 @@
       "ndcg10": 0.2960819109658652,
       "top1": false,
       "got": [
-        "95",
-        "64",
-        "336",
-        "331",
-        "330",
-        "145"
+        "code du travail|95",
+        "code du travail|64",
+        "code du travail|336",
+        "code du travail|331",
+        "code du travail|330",
+        "code du travail|145"
       ],
       "expected": [
-        "64",
-        "66",
-        "68"
+        "code du travail|64",
+        "code du travail|66",
+        "code du travail|68"
       ]
     },
     {
@@ -193,7 +260,15 @@
       "domaine": "travail",
       "difficulty": "medium",
       "type": "in_domain",
+      "known_gap": false,
+      "annotation_note": null,
+      "blocked": false,
+      "gate_reason": "covered",
       "recalls": {
+        "5": 0.6666666666666666,
+        "10": 0.6666666666666666
+      },
+      "recalls_bare": {
         "5": 0.6666666666666666,
         "10": 0.6666666666666666
       },
@@ -201,17 +276,17 @@
       "ndcg10": 0.6713860725233041,
       "top1": true,
       "got": [
-        "179",
-        "293",
-        "110",
-        "178",
-        "90",
-        "156"
+        "code du travail|179",
+        "code du travail|293",
+        "code du travail|110",
+        "code du travail|178",
+        "code du travail|90",
+        "code du travail|156"
       ],
       "expected": [
-        "178",
-        "179",
-        "180"
+        "code du travail|178",
+        "code du travail|179",
+        "code du travail|180"
       ]
     },
     {
@@ -219,7 +294,15 @@
       "domaine": "impots",
       "difficulty": "medium",
       "type": "in_domain",
+      "known_gap": false,
+      "annotation_note": null,
+      "blocked": false,
+      "gate_reason": "covered",
       "recalls": {
+        "5": 0.3333333333333333,
+        "10": 0.3333333333333333
+      },
+      "recalls_bare": {
         "5": 0.3333333333333333,
         "10": 0.3333333333333333
       },
@@ -227,17 +310,17 @@
       "ndcg10": 0.20210734650054757,
       "top1": false,
       "got": [
-        "164",
-        "161",
-        "40",
-        "11",
-        "14",
-        "12"
+        "code général des impôts|164",
+        "code général des impôts|161",
+        "code général des impôts|40",
+        "code général des impôts|11",
+        "code général des impôts|14",
+        "code général des impôts|12"
       ],
       "expected": [
-        "4",
-        "3",
-        "11"
+        "code général des impôts|11",
+        "code général des impôts|3",
+        "code général des impôts|4"
       ]
     },
     {
@@ -245,7 +328,15 @@
       "domaine": "impots",
       "difficulty": "medium",
       "type": "in_domain",
+      "known_gap": false,
+      "annotation_note": null,
+      "blocked": false,
+      "gate_reason": "covered",
       "recalls": {
+        "5": 0.0,
+        "10": 0.0
+      },
+      "recalls_bare": {
         "5": 0.0,
         "10": 0.0
       },
@@ -253,17 +344,17 @@
       "ndcg10": 0.0,
       "top1": false,
       "got": [
-        "221",
-        "248",
-        "165",
-        "90",
-        "206",
-        "116 bis"
+        "code général des impôts|221",
+        "code général des impôts|248",
+        "code général des impôts|165",
+        "code général des impôts|p-896",
+        "code général des impôts|90",
+        "code général des impôts|206"
       ],
       "expected": [
-        "224",
-        "225",
-        "223"
+        "code général des impôts|223",
+        "code général des impôts|224",
+        "code général des impôts|225"
       ]
     },
     {
@@ -271,7 +362,15 @@
       "domaine": "impots",
       "difficulty": "medium",
       "type": "in_domain",
+      "known_gap": false,
+      "annotation_note": null,
+      "blocked": false,
+      "gate_reason": "covered",
       "recalls": {
+        "5": 0.0,
+        "10": 0.0
+      },
+      "recalls_bare": {
         "5": 0.0,
         "10": 0.0
       },
@@ -279,17 +378,17 @@
       "ndcg10": 0.0,
       "top1": false,
       "got": [
-        "74",
-        "90",
-        "161",
-        "95",
-        "119",
-        "82"
+        "code général des impôts|74",
+        "code général des impôts|90",
+        "code général des impôts|161",
+        "code général des impôts|95",
+        "code général des impôts|119",
+        "code général des impôts|82"
       ],
       "expected": [
-        "72",
-        "73",
-        "71"
+        "code général des impôts|71",
+        "code général des impôts|72",
+        "code général des impôts|73"
       ]
     },
     {
@@ -297,24 +396,31 @@
       "domaine": "impots",
       "difficulty": "medium",
       "type": "in_domain",
+      "known_gap": false,
+      "annotation_note": "corrige : art.38 amortissement par composants (OHADA)",
+      "blocked": false,
+      "gate_reason": "covered",
       "recalls": {
-        "5": 0.0,
-        "10": 0.0
+        "5": 1.0,
+        "10": 1.0
       },
-      "mrr": 0.0,
-      "ndcg10": 0.0,
+      "recalls_bare": {
+        "5": 1.0,
+        "10": 1.0
+      },
+      "mrr": 0.2,
+      "ndcg10": 0.38685280723454163,
       "top1": false,
       "got": [
-        "196",
-        "42",
-        "16",
-        "9",
-        "38",
-        "209"
+        "code général des impôts|196",
+        "code général des impôts|42",
+        "code général des impôts|16",
+        "code général des impôts|9",
+        "code général des impôts|38",
+        "code général des impôts|209"
       ],
       "expected": [
-        "13",
-        "14"
+        "code général des impôts|38"
       ]
     },
     {
@@ -322,24 +428,32 @@
       "domaine": "impots",
       "difficulty": "hard",
       "type": "in_domain",
+      "known_gap": false,
+      "annotation_note": "corrige etape 10 : art.P-872 action en recouvrement se prescrit",
+      "blocked": false,
+      "gate_reason": "covered",
       "recalls": {
-        "5": 0.0,
-        "10": 0.0
+        "5": 1.0,
+        "10": 1.0
       },
-      "mrr": 0.0,
-      "ndcg10": 0.0,
+      "recalls_bare": {
+        "5": 1.0,
+        "10": 1.0
+      },
+      "mrr": 0.5,
+      "ndcg10": 0.6509209298071326,
       "top1": false,
       "got": [
-        "656",
-        "166",
-        "462",
-        "551",
-        "374",
-        "206"
+        "code général des impôts|p-1036",
+        "code général des impôts|p-872",
+        "code général des impôts|656",
+        "code général des impôts|p-992",
+        "code général des impôts|166",
+        "code général des impôts|p-831 bis"
       ],
       "expected": [
-        "621",
-        "620"
+        "code général des impôts|p-872",
+        "code général des impôts|p-992"
       ]
     },
     {
@@ -347,7 +461,15 @@
       "domaine": "hydrocarbures",
       "difficulty": "easy",
       "type": "in_domain",
+      "known_gap": false,
+      "annotation_note": null,
+      "blocked": false,
+      "gate_reason": "covered",
       "recalls": {
+        "5": 0.0,
+        "10": 0.0
+      },
+      "recalls_bare": {
         "5": 0.0,
         "10": 0.0
       },
@@ -355,17 +477,17 @@
       "ndcg10": 0.0,
       "top1": false,
       "got": [
-        "61",
-        "66",
-        "222",
-        "34",
-        "197",
-        "39"
+        "code des hydrocarbures|61",
+        "code des hydrocarbures|66",
+        "code des hydrocarbures|222",
+        "code des hydrocarbures|34",
+        "code des hydrocarbures|197",
+        "code des hydrocarbures|39"
       ],
       "expected": [
-        "53",
-        "54",
-        "55"
+        "code des hydrocarbures|53",
+        "code des hydrocarbures|54",
+        "code des hydrocarbures|55"
       ]
     },
     {
@@ -373,7 +495,15 @@
       "domaine": "hydrocarbures",
       "difficulty": "medium",
       "type": "in_domain",
+      "known_gap": false,
+      "annotation_note": null,
+      "blocked": false,
+      "gate_reason": "covered",
       "recalls": {
+        "5": 0.5,
+        "10": 0.5
+      },
+      "recalls_bare": {
         "5": 0.5,
         "10": 0.5
       },
@@ -381,16 +511,16 @@
       "ndcg10": 0.23719771276929622,
       "top1": false,
       "got": [
-        "207",
-        "217",
-        "280",
-        "222",
-        "104",
-        "7"
+        "code des hydrocarbures|207",
+        "code des hydrocarbures|217",
+        "code des hydrocarbures|280",
+        "code des hydrocarbures|222",
+        "code des hydrocarbures|104",
+        "code des hydrocarbures|7"
       ],
       "expected": [
-        "105",
-        "104"
+        "code des hydrocarbures|104",
+        "code des hydrocarbures|105"
       ]
     },
     {
@@ -398,7 +528,15 @@
       "domaine": "hydrocarbures",
       "difficulty": "easy",
       "type": "in_domain",
+      "known_gap": false,
+      "annotation_note": null,
+      "blocked": false,
+      "gate_reason": "covered",
       "recalls": {
+        "5": 0.6666666666666666,
+        "10": 0.6666666666666666
+      },
+      "recalls_bare": {
         "5": 0.6666666666666666,
         "10": 0.6666666666666666
       },
@@ -406,17 +544,17 @@
       "ndcg10": 0.6713860725233041,
       "top1": true,
       "got": [
-        "125",
-        "264",
-        "127",
-        "126",
-        "1",
-        "163"
+        "code des hydrocarbures|125",
+        "code des hydrocarbures|264",
+        "code des hydrocarbures|127",
+        "code des hydrocarbures|126",
+        "code des hydrocarbures|1",
+        "code des hydrocarbures|163"
       ],
       "expected": [
-        "124",
-        "125",
-        "126"
+        "code des hydrocarbures|124",
+        "code des hydrocarbures|125",
+        "code des hydrocarbures|126"
       ]
     },
     {
@@ -424,24 +562,31 @@
       "domaine": "hydrocarbures",
       "difficulty": "medium",
       "type": "in_domain",
+      "known_gap": false,
+      "annotation_note": "corrige : art.173 obligations avant toute operation (abandon)",
+      "blocked": false,
+      "gate_reason": "covered",
       "recalls": {
-        "5": 0.0,
-        "10": 0.0
+        "5": 1.0,
+        "10": 1.0
       },
-      "mrr": 0.0,
-      "ndcg10": 0.0,
+      "recalls_bare": {
+        "5": 1.0,
+        "10": 1.0
+      },
+      "mrr": 0.5,
+      "ndcg10": 0.6309297535714575,
       "top1": false,
       "got": [
-        "170",
-        "173",
-        "87",
-        "97",
-        "120",
-        "63"
+        "code des hydrocarbures|170",
+        "code des hydrocarbures|173",
+        "code des hydrocarbures|87",
+        "code des hydrocarbures|97",
+        "code des hydrocarbures|120",
+        "code des hydrocarbures|63"
       ],
       "expected": [
-        "115",
-        "116"
+        "code des hydrocarbures|173"
       ]
     },
     {
@@ -449,7 +594,15 @@
       "domaine": "douane",
       "difficulty": "medium",
       "type": "in_domain",
+      "known_gap": false,
+      "annotation_note": null,
+      "blocked": false,
+      "gate_reason": "covered",
       "recalls": {
+        "5": 0.6666666666666666,
+        "10": 1.0
+      },
+      "recalls_bare": {
         "5": 0.6666666666666666,
         "10": 1.0
       },
@@ -457,17 +610,17 @@
       "ndcg10": 0.5833416105149332,
       "top1": false,
       "got": [
-        "34",
-        "32",
-        "30",
-        "33",
-        "29",
-        "28"
+        "code des douanes|34",
+        "code des douanes|32",
+        "code des douanes|30",
+        "code des douanes|33",
+        "code des douanes|29",
+        "code des douanes|28"
       ],
       "expected": [
-        "29",
-        "28",
-        "30"
+        "code des douanes|28",
+        "code des douanes|29",
+        "code des douanes|30"
       ]
     },
     {
@@ -475,7 +628,15 @@
       "domaine": "douane",
       "difficulty": "medium",
       "type": "in_domain",
+      "known_gap": false,
+      "annotation_note": null,
+      "blocked": false,
+      "gate_reason": "covered",
       "recalls": {
+        "5": 0.0,
+        "10": 0.0
+      },
+      "recalls_bare": {
         "5": 0.0,
         "10": 0.0
       },
@@ -483,16 +644,16 @@
       "ndcg10": 0.0,
       "top1": false,
       "got": [
-        "12",
-        "34",
-        "276",
-        "287",
-        "21",
-        "165"
+        "code des douanes|12",
+        "code des douanes|34",
+        "code des douanes|276",
+        "code des douanes|287",
+        "code des douanes|21",
+        "code des douanes|165"
       ],
       "expected": [
-        "86",
-        "85"
+        "code des douanes|85",
+        "code des douanes|86"
       ]
     },
     {
@@ -500,59 +661,15 @@
       "domaine": "douane",
       "difficulty": "medium",
       "type": "in_domain",
+      "known_gap": false,
+      "annotation_note": "corrige : art.176 regime de l'entrepot ; art.191 entrepot prive",
+      "blocked": false,
+      "gate_reason": "covered",
       "recalls": {
-        "5": 0.0,
-        "10": 0.0
+        "5": 0.5,
+        "10": 0.5
       },
-      "mrr": 0.0,
-      "ndcg10": 0.0,
-      "top1": false,
-      "got": [
-        "176",
-        "196",
-        "177",
-        "185",
-        "198",
-        "190"
-      ],
-      "expected": [
-        "151",
-        "150",
-        "152"
-      ]
-    },
-    {
-      "id": "marche-appel-offres-ouvert",
-      "domaine": "marche-public",
-      "difficulty": "easy",
-      "type": "in_domain",
-      "recalls": {
-        "5": 0.0,
-        "10": 0.0
-      },
-      "mrr": 0.0,
-      "ndcg10": 0.0,
-      "top1": false,
-      "got": [
-        "81",
-        "119",
-        "60",
-        "2",
-        "117",
-        "69"
-      ],
-      "expected": [
-        "59",
-        "58",
-        "57"
-      ]
-    },
-    {
-      "id": "marche-gre-a-gre",
-      "domaine": "marche-public",
-      "difficulty": "medium",
-      "type": "in_domain",
-      "recalls": {
+      "recalls_bare": {
         "5": 0.5,
         "10": 0.5
       },
@@ -560,16 +677,83 @@
       "ndcg10": 0.6131471927654584,
       "top1": true,
       "got": [
-        "68",
-        "189",
-        "227",
-        "52",
-        "119",
-        "123"
+        "code des douanes|176",
+        "code des douanes|196",
+        "code des douanes|177",
+        "code des douanes|185",
+        "code des douanes|198",
+        "code des douanes|190"
       ],
       "expected": [
-        "56",
-        "68"
+        "code des douanes|176",
+        "code des douanes|191"
+      ]
+    },
+    {
+      "id": "marche-appel-offres-ouvert",
+      "domaine": "marche-public",
+      "difficulty": "easy",
+      "type": "in_domain",
+      "known_gap": false,
+      "annotation_note": null,
+      "blocked": false,
+      "gate_reason": "covered",
+      "recalls": {
+        "5": 0.0,
+        "10": 0.0
+      },
+      "recalls_bare": {
+        "5": 0.0,
+        "10": 0.0
+      },
+      "mrr": 0.0,
+      "ndcg10": 0.0,
+      "top1": false,
+      "got": [
+        "code du marché public|81",
+        "code du marché public|119",
+        "code du marché public|60",
+        "code du marché public|2",
+        "code du marché public|117",
+        "code du marché public|69"
+      ],
+      "expected": [
+        "code du marché public|57",
+        "code du marché public|58",
+        "code du marché public|59"
+      ]
+    },
+    {
+      "id": "marche-gre-a-gre",
+      "domaine": "marche-public",
+      "difficulty": "medium",
+      "type": "in_domain",
+      "known_gap": false,
+      "annotation_note": null,
+      "blocked": false,
+      "gate_reason": "covered",
+      "recalls": {
+        "5": 0.5,
+        "10": 0.5
+      },
+      "recalls_bare": {
+        "5": 0.5,
+        "10": 0.5
+      },
+      "mrr": 1.0,
+      "ndcg10": 0.6131471927654584,
+      "top1": true,
+      "got": [
+        "code du marché public|68",
+        "code du marché public|189",
+        "code du marché public|227",
+        "code du marché public|52",
+        "code du marché public|119",
+        "code du marché public|123"
+      ],
+      "expected": [
+        "code du marché public|56",
+        "code du marché public|68"
       ]
     },
     {
@@ -577,7 +761,15 @@
       "domaine": "marche-public",
       "difficulty": "medium",
       "type": "in_domain",
+      "known_gap": false,
+      "annotation_note": "corrige : art.211 garanties des avances ; art.213 demandes d'avance",
+      "blocked": false,
+      "gate_reason": "covered",
       "recalls": {
+        "5": 0.0,
+        "10": 0.0
+      },
+      "recalls_bare": {
         "5": 0.0,
         "10": 0.0
       },
@@ -585,16 +777,16 @@
       "ndcg10": 0.0,
       "top1": false,
       "got": [
-        "162",
-        "2",
-        "81",
-        "235",
-        "52",
-        "137"
+        "code du marché public|162",
+        "code du marché public|2",
+        "code du marché public|81",
+        "code du marché public|235",
+        "code du marché public|52",
+        "code du marché public|137"
       ],
       "expected": [
-        "118",
-        "117"
+        "code du marché public|211",
+        "code du marché public|213"
       ]
     },
     {
@@ -602,25 +794,32 @@
       "domaine": "marche-public",
       "difficulty": "medium",
       "type": "in_domain",
+      "known_gap": false,
+      "annotation_note": "corrige : art.229 resiliation a l'initiative de l'Autorite Contractante",
+      "blocked": false,
+      "gate_reason": "covered",
       "recalls": {
-        "5": 0.0,
-        "10": 0.0
+        "5": 0.5,
+        "10": 0.5
       },
-      "mrr": 0.0,
-      "ndcg10": 0.0,
+      "recalls_bare": {
+        "5": 0.5,
+        "10": 0.5
+      },
+      "mrr": 0.5,
+      "ndcg10": 0.38685280723454163,
       "top1": false,
       "got": [
-        "227",
-        "229",
-        "228",
-        "185",
-        "225",
-        "233"
+        "code du marché public|227",
+        "code du marché public|229",
+        "code du marché public|228",
+        "code du marché public|185",
+        "code du marché public|225",
+        "code du marché public|233"
       ],
       "expected": [
-        "139",
-        "138",
-        "137"
+        "code du marché public|229",
+        "code du marché public|230"
       ]
     },
     {
@@ -628,7 +827,15 @@
       "domaine": "sante",
       "difficulty": "easy",
       "type": "in_domain",
+      "known_gap": false,
+      "annotation_note": null,
+      "blocked": false,
+      "gate_reason": "covered",
       "recalls": {
+        "5": 0.0,
+        "10": 0.0
+      },
+      "recalls_bare": {
         "5": 0.0,
         "10": 0.0
       },
@@ -636,17 +843,17 @@
       "ndcg10": 0.0,
       "top1": false,
       "got": [
-        "339",
-        "332",
-        "3",
-        "338",
-        "304",
-        "238"
+        "code de la santé publique|339",
+        "code de la santé publique|332",
+        "code de la santé publique|3",
+        "code de la santé publique|338",
+        "code de la santé publique|304",
+        "code de la santé publique|238"
       ],
       "expected": [
-        "139",
-        "138",
-        "184"
+        "code de la santé publique|138",
+        "code de la santé publique|139",
+        "code de la santé publique|184"
       ]
     },
     {
@@ -654,24 +861,32 @@
       "domaine": "sante",
       "difficulty": "easy",
       "type": "in_domain",
+      "known_gap": false,
+      "annotation_note": "corrige : art.516 vaccinations obligatoires chez l'enfant",
+      "blocked": false,
+      "gate_reason": "covered",
       "recalls": {
-        "5": 0.0,
-        "10": 0.0
+        "5": 0.5,
+        "10": 0.5
       },
-      "mrr": 0.0,
-      "ndcg10": 0.0,
-      "top1": false,
+      "recalls_bare": {
+        "5": 0.5,
+        "10": 0.5
+      },
+      "mrr": 1.0,
+      "ndcg10": 0.6131471927654584,
+      "top1": true,
       "got": [
-        "516",
-        "20",
-        "613",
-        "517",
-        "17",
-        "525"
+        "code de la santé publique|516",
+        "code de la santé publique|20",
+        "code de la santé publique|613",
+        "code de la santé publique|517",
+        "code de la santé publique|17",
+        "code de la santé publique|525"
       ],
       "expected": [
-        "272",
-        "271"
+        "code de la santé publique|516",
+        "code de la santé publique|521"
       ]
     },
     {
@@ -679,7 +894,15 @@
       "domaine": "sante",
       "difficulty": "medium",
       "type": "in_domain",
+      "known_gap": false,
+      "annotation_note": null,
+      "blocked": false,
+      "gate_reason": "covered",
       "recalls": {
+        "5": 0.3333333333333333,
+        "10": 0.3333333333333333
+      },
+      "recalls_bare": {
         "5": 0.3333333333333333,
         "10": 0.3333333333333333
       },
@@ -687,17 +910,17 @@
       "ndcg10": 0.20210734650054757,
       "top1": false,
       "got": [
-        "3",
-        "436",
-        "281",
-        "26",
-        "304",
-        "338"
+        "code de la santé publique|3",
+        "code de la santé publique|436",
+        "code de la santé publique|281",
+        "code de la santé publique|26",
+        "code de la santé publique|304",
+        "code de la santé publique|338"
       ],
       "expected": [
-        "26",
-        "42",
-        "27"
+        "code de la santé publique|26",
+        "code de la santé publique|27",
+        "code de la santé publique|42"
       ]
     },
     {
@@ -705,25 +928,32 @@
       "domaine": "sante",
       "difficulty": "medium",
       "type": "in_domain",
+      "known_gap": false,
+      "annotation_note": "corrige : art.164/167 prelevement d'organes en vue d'un don",
+      "blocked": false,
+      "gate_reason": "covered",
       "recalls": {
-        "5": 0.0,
-        "10": 0.0
+        "5": 1.0,
+        "10": 1.0
       },
-      "mrr": 0.0,
-      "ndcg10": 0.0,
+      "recalls_bare": {
+        "5": 1.0,
+        "10": 1.0
+      },
+      "mrr": 0.3333333333333333,
+      "ndcg10": 0.5437713091520254,
       "top1": false,
       "got": [
-        "191",
-        "195",
-        "167",
-        "637",
-        "164",
-        "436"
+        "code de la santé publique|191",
+        "code de la santé publique|195",
+        "code de la santé publique|167",
+        "code de la santé publique|637",
+        "code de la santé publique|164",
+        "code de la santé publique|436"
       ],
       "expected": [
-        "52",
-        "50",
-        "51"
+        "code de la santé publique|164",
+        "code de la santé publique|167"
       ]
     },
     {
@@ -731,7 +961,15 @@
       "domaine": "communication",
       "difficulty": "easy",
       "type": "in_domain",
+      "known_gap": false,
+      "annotation_note": null,
+      "blocked": false,
+      "gate_reason": "covered",
       "recalls": {
+        "5": 1.0,
+        "10": 1.0
+      },
+      "recalls_bare": {
         "5": 1.0,
         "10": 1.0
       },
@@ -739,17 +977,17 @@
       "ndcg10": 0.9060254355346823,
       "top1": true,
       "got": [
-        "1",
-        "4",
-        "2",
-        "3",
-        "37",
-        "17"
+        "code de la communication|1",
+        "code de la communication|4",
+        "code de la communication|2",
+        "code de la communication|3",
+        "code de la communication|37",
+        "code de la communication|17"
       ],
       "expected": [
-        "1",
-        "2",
-        "3"
+        "code de la communication|1",
+        "code de la communication|2",
+        "code de la communication|3"
       ]
     },
     {
@@ -757,7 +995,15 @@
       "domaine": "communication",
       "difficulty": "medium",
       "type": "in_domain",
+      "known_gap": true,
+      "annotation_note": "corpus : le PDF indexe ne couvre pas la presse en ligne (s'arrete a l'art.55)",
+      "blocked": false,
+      "gate_reason": "covered",
       "recalls": {
+        "5": 0.0,
+        "10": 0.0
+      },
+      "recalls_bare": {
         "5": 0.0,
         "10": 0.0
       },
@@ -765,16 +1011,16 @@
       "ndcg10": 0.0,
       "top1": false,
       "got": [
-        "2",
-        "27",
-        "25",
-        "2bis",
-        "22"
+        "code de la communication|2",
+        "code de la communication|27",
+        "code de la communication|25",
+        "code de la communication|2bis",
+        "code de la communication|22"
       ],
       "expected": [
-        "10",
-        "11",
-        "12"
+        "code de la communication|10",
+        "code de la communication|11",
+        "code de la communication|12"
       ]
     },
     {
@@ -782,7 +1028,15 @@
       "domaine": "communication",
       "difficulty": "medium",
       "type": "in_domain",
+      "known_gap": true,
+      "annotation_note": "corpus : articles 60-62 absents du PDF indexe (s'arrete a l'art.55)",
+      "blocked": false,
+      "gate_reason": "covered",
       "recalls": {
+        "5": 0.0,
+        "10": 0.0
+      },
+      "recalls_bare": {
         "5": 0.0,
         "10": 0.0
       },
@@ -790,15 +1044,15 @@
       "ndcg10": 0.0,
       "top1": false,
       "got": [
-        "27",
-        "2bis",
-        "2",
-        "15"
+        "code de la communication|27",
+        "code de la communication|2bis",
+        "code de la communication|2",
+        "code de la communication|15"
       ],
       "expected": [
-        "61",
-        "60",
-        "62"
+        "code de la communication|60",
+        "code de la communication|61",
+        "code de la communication|62"
       ]
     },
     {
@@ -806,7 +1060,15 @@
       "domaine": "communication",
       "difficulty": "medium",
       "type": "in_domain",
+      "known_gap": true,
+      "annotation_note": "corpus : articles 80-81 absents du PDF indexe (s'arrete a l'art.55)",
+      "blocked": false,
+      "gate_reason": "covered",
       "recalls": {
+        "5": 0.0,
+        "10": 0.0
+      },
+      "recalls_bare": {
         "5": 0.0,
         "10": 0.0
       },
@@ -814,14 +1076,14 @@
       "ndcg10": 0.0,
       "top1": false,
       "got": [
-        "2",
-        "2bis",
-        "3",
-        "32"
+        "code de la communication|2",
+        "code de la communication|2bis",
+        "code de la communication|3",
+        "code de la communication|32"
       ],
       "expected": [
-        "80",
-        "81"
+        "code de la communication|80",
+        "code de la communication|81"
       ]
     },
     {
@@ -829,14 +1091,16 @@
       "domaine": "civil",
       "difficulty": "easy",
       "type": "cross",
-      "empty": false,
-      "n_returned": 6,
-      "got": [
-        "140",
-        "20",
-        "21",
-        "132",
-        "162"
+      "empty": true,
+      "n_returned": 0,
+      "got": [],
+      "expected_reason": [
+        "domain_not_indexed",
+        "code_not_indexed"
+      ],
+      "gate_reason": "code_not_indexed",
+      "gate_terms": [
+        "droit civil"
       ]
     },
     {
@@ -844,14 +1108,16 @@
       "domaine": "penal",
       "difficulty": "easy",
       "type": "cross",
-      "empty": false,
-      "n_returned": 6,
-      "got": [
-        "52",
-        "288",
-        "270",
-        "205",
-        "202"
+      "empty": true,
+      "n_returned": 0,
+      "got": [],
+      "expected_reason": [
+        "domain_not_indexed",
+        "code_not_indexed"
+      ],
+      "gate_reason": "code_not_indexed",
+      "gate_terms": [
+        "droit penal"
       ]
     },
     {
@@ -859,14 +1125,15 @@
       "domaine": "famille",
       "difficulty": "easy",
       "type": "cross",
-      "empty": false,
-      "n_returned": 6,
-      "got": [
-        "77",
-        "462",
-        "450",
-        "491",
-        "451"
+      "empty": true,
+      "n_returned": 0,
+      "got": [],
+      "expected_reason": [
+        "domain_not_indexed"
+      ],
+      "gate_reason": "domain_not_indexed",
+      "gate_terms": [
+        "divorce"
       ]
     },
     {
@@ -874,14 +1141,16 @@
       "domaine": "fonction_publique",
       "difficulty": "easy",
       "type": "cross",
-      "empty": false,
-      "n_returned": 6,
-      "got": [
-        "74",
-        "2",
-        "142",
-        "164",
-        "365"
+      "empty": true,
+      "n_returned": 0,
+      "got": [],
+      "expected_reason": [
+        "domain_not_indexed"
+      ],
+      "gate_reason": "domain_not_indexed",
+      "gate_terms": [
+        "fonctionnaire",
+        "titularisation"
       ]
     },
     {
@@ -889,14 +1158,16 @@
       "domaine": "general",
       "difficulty": "easy",
       "type": "cross",
-      "empty": false,
-      "n_returned": 6,
-      "got": [
-        "195",
-        "196",
-        "200",
-        "199",
-        "197"
+      "empty": true,
+      "n_returned": 0,
+      "got": [],
+      "expected_reason": [
+        "out_of_jurisdiction"
+      ],
+      "gate_reason": "out_of_jurisdiction",
+      "gate_terms": [
+        "francais",
+        "france"
       ]
     },
     {
@@ -904,14 +1175,15 @@
       "domaine": "travail",
       "difficulty": "trap",
       "type": "cross",
-      "empty": false,
-      "n_returned": 6,
-      "got": [
-        "90",
-        "178",
-        "156",
-        "144",
-        "21"
+      "empty": true,
+      "n_returned": 0,
+      "got": [],
+      "expected_reason": [
+        "outdated_reference"
+      ],
+      "gate_reason": "outdated_reference",
+      "gate_terms": [
+        "1994"
       ]
     },
     {
@@ -919,14 +1191,16 @@
       "domaine": "commercial",
       "difficulty": "trap",
       "type": "cross",
-      "empty": false,
-      "n_returned": 6,
-      "got": [
-        "17",
-        "195",
-        "28",
-        "52",
-        "38"
+      "empty": true,
+      "n_returned": 0,
+      "got": [],
+      "expected_reason": [
+        "code_not_indexed",
+        "regional_not_indexed"
+      ],
+      "gate_reason": "regional_not_indexed",
+      "gate_terms": [
+        "ohada"
       ]
     },
     {
@@ -934,14 +1208,355 @@
       "domaine": "civil",
       "difficulty": "trap",
       "type": "cross",
+      "empty": true,
+      "n_returned": 0,
+      "got": [],
+      "expected_reason": [
+        "code_not_indexed"
+      ],
+      "gate_reason": "code_not_indexed",
+      "gate_terms": [
+        "code civil"
+      ]
+    },
+    {
+      "id": "hp-civil-bail",
+      "domaine": "civil",
+      "difficulty": "medium",
+      "type": "cross",
+      "empty": true,
+      "n_returned": 0,
+      "got": [],
+      "expected_reason": [
+        "domain_not_indexed",
+        "code_not_indexed"
+      ],
+      "gate_reason": "domain_not_indexed",
+      "gate_terms": [
+        "bailleur"
+      ]
+    },
+    {
+      "id": "hp-civil-responsabilite",
+      "domaine": "civil",
+      "difficulty": "medium",
+      "type": "cross",
       "empty": false,
       "n_returned": 6,
       "got": [
-        "64",
-        "330",
-        "95",
-        "90",
-        "140"
+        "code général des impôts|29",
+        "code de la communication|10",
+        "code général des impôts|550",
+        "code des hydrocarbures|174",
+        "code des hydrocarbures|176"
+      ],
+      "expected_reason": [
+        "no_term_recognized"
+      ],
+      "gate_reason": "no_term_recognized",
+      "gate_terms": []
+    },
+    {
+      "id": "hp-penal-vol",
+      "domaine": "penal",
+      "difficulty": "medium",
+      "type": "cross",
+      "empty": true,
+      "n_returned": 0,
+      "got": [],
+      "expected_reason": [
+        "domain_not_indexed",
+        "code_not_indexed"
+      ],
+      "gate_reason": "domain_not_indexed",
+      "gate_terms": [
+        "escroquerie"
+      ]
+    },
+    {
+      "id": "hp-penal-recidive",
+      "domaine": "penal",
+      "difficulty": "medium",
+      "type": "cross",
+      "empty": true,
+      "n_returned": 0,
+      "got": [],
+      "expected_reason": [
+        "domain_not_indexed",
+        "code_not_indexed"
+      ],
+      "gate_reason": "domain_not_indexed",
+      "gate_terms": [
+        "recidive"
+      ]
+    },
+    {
+      "id": "hp-famille-adoption",
+      "domaine": "famille",
+      "difficulty": "medium",
+      "type": "cross",
+      "empty": true,
+      "n_returned": 0,
+      "got": [],
+      "expected_reason": [
+        "domain_not_indexed",
+        "code_not_indexed"
+      ],
+      "gate_reason": "domain_not_indexed",
+      "gate_terms": [
+        "adopter"
+      ]
+    },
+    {
+      "id": "hp-famille-pension",
+      "domaine": "famille",
+      "difficulty": "medium",
+      "type": "cross",
+      "empty": true,
+      "n_returned": 0,
+      "got": [],
+      "expected_reason": [
+        "domain_not_indexed",
+        "code_not_indexed"
+      ],
+      "gate_reason": "domain_not_indexed",
+      "gate_terms": [
+        "pension alimentaire"
+      ]
+    },
+    {
+      "id": "hp-fp-avancement",
+      "domaine": "fonction_publique",
+      "difficulty": "medium",
+      "type": "cross",
+      "empty": true,
+      "n_returned": 0,
+      "got": [],
+      "expected_reason": [
+        "domain_not_indexed",
+        "code_not_indexed"
+      ],
+      "gate_reason": "domain_not_indexed",
+      "gate_terms": [
+        "agent public",
+        "avancement d'echelon"
+      ]
+    },
+    {
+      "id": "hp-admin-recours",
+      "domaine": "administratif",
+      "difficulty": "medium",
+      "type": "cross",
+      "empty": true,
+      "n_returned": 0,
+      "got": [],
+      "expected_reason": [
+        "domain_not_indexed",
+        "code_not_indexed"
+      ],
+      "gate_reason": "domain_not_indexed",
+      "gate_terms": [
+        "acte administratif unilateral"
+      ]
+    },
+    {
+      "id": "hp-commercial-rcs",
+      "domaine": "commercial",
+      "difficulty": "medium",
+      "type": "cross",
+      "empty": true,
+      "n_returned": 0,
+      "got": [],
+      "expected_reason": [
+        "domain_not_indexed",
+        "code_not_indexed",
+        "regional_not_indexed"
+      ],
+      "gate_reason": "domain_not_indexed",
+      "gate_terms": [
+        "registre du commerce"
+      ]
+    },
+    {
+      "id": "hp-jur-senegal",
+      "domaine": "general",
+      "difficulty": "medium",
+      "type": "cross",
+      "empty": true,
+      "n_returned": 0,
+      "got": [],
+      "expected_reason": [
+        "out_of_jurisdiction"
+      ],
+      "gate_reason": "out_of_jurisdiction",
+      "gate_terms": [
+        "senegal"
+      ]
+    },
+    {
+      "id": "hp-jur-cameroun",
+      "domaine": "general",
+      "difficulty": "medium",
+      "type": "cross",
+      "empty": true,
+      "n_returned": 0,
+      "got": [],
+      "expected_reason": [
+        "out_of_jurisdiction"
+      ],
+      "gate_reason": "out_of_jurisdiction",
+      "gate_terms": [
+        "cameroun"
+      ]
+    },
+    {
+      "id": "hp-jur-belge",
+      "domaine": "general",
+      "difficulty": "medium",
+      "type": "cross",
+      "empty": true,
+      "n_returned": 0,
+      "got": [],
+      "expected_reason": [
+        "out_of_jurisdiction"
+      ],
+      "gate_reason": "out_of_jurisdiction",
+      "gate_terms": [
+        "belge"
+      ]
+    },
+    {
+      "id": "hp-jur-europe",
+      "domaine": "general",
+      "difficulty": "medium",
+      "type": "cross",
+      "empty": true,
+      "n_returned": 0,
+      "got": [],
+      "expected_reason": [
+        "out_of_jurisdiction"
+      ],
+      "gate_reason": "out_of_jurisdiction",
+      "gate_terms": [
+        "europeenne"
+      ]
+    },
+    {
+      "id": "hp-ohada-suretes",
+      "domaine": "commercial",
+      "difficulty": "medium",
+      "type": "cross",
+      "empty": true,
+      "n_returned": 0,
+      "got": [],
+      "expected_reason": [
+        "regional_not_indexed",
+        "code_not_indexed"
+      ],
+      "gate_reason": "regional_not_indexed",
+      "gate_terms": [
+        "acte uniforme",
+        "ohada"
+      ]
+    },
+    {
+      "id": "hp-cima-assurance",
+      "domaine": "commercial",
+      "difficulty": "medium",
+      "type": "cross",
+      "empty": true,
+      "n_returned": 0,
+      "got": [],
+      "expected_reason": [
+        "regional_not_indexed",
+        "code_not_indexed"
+      ],
+      "gate_reason": "regional_not_indexed",
+      "gate_terms": [
+        "cima"
+      ]
+    },
+    {
+      "id": "hp-cobac-banque",
+      "domaine": "commercial",
+      "difficulty": "medium",
+      "type": "cross",
+      "empty": true,
+      "n_returned": 0,
+      "got": [],
+      "expected_reason": [
+        "regional_not_indexed",
+        "code_not_indexed"
+      ],
+      "gate_reason": "regional_not_indexed",
+      "gate_terms": [
+        "cobac"
+      ]
+    },
+    {
+      "id": "hp-millesime-impots",
+      "domaine": "impots",
+      "difficulty": "medium",
+      "type": "cross",
+      "empty": true,
+      "n_returned": 0,
+      "got": [],
+      "expected_reason": [
+        "outdated_reference"
+      ],
+      "gate_reason": "outdated_reference",
+      "gate_terms": [
+        "1995"
+      ]
+    },
+    {
+      "id": "hp-millesime-hydro",
+      "domaine": "hydrocarbures",
+      "difficulty": "medium",
+      "type": "cross",
+      "empty": true,
+      "n_returned": 0,
+      "got": [],
+      "expected_reason": [
+        "outdated_reference"
+      ],
+      "gate_reason": "outdated_reference",
+      "gate_terms": [
+        "2014"
+      ]
+    },
+    {
+      "id": "hp-code-penal-nomme",
+      "domaine": "penal",
+      "difficulty": "medium",
+      "type": "cross",
+      "empty": true,
+      "n_returned": 0,
+      "got": [],
+      "expected_reason": [
+        "code_not_indexed",
+        "domain_not_indexed"
+      ],
+      "gate_reason": "code_not_indexed",
+      "gate_terms": [
+        "code penal"
+      ]
+    },
+    {
+      "id": "hp-code-famille-nomme",
+      "domaine": "famille",
+      "difficulty": "medium",
+      "type": "cross",
+      "empty": true,
+      "n_returned": 0,
+      "got": [],
+      "expected_reason": [
+        "code_not_indexed",
+        "domain_not_indexed"
+      ],
+      "gate_reason": "code_not_indexed",
+      "gate_terms": [
+        "code de la famille"
       ]
     }
   ]
