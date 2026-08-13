@@ -179,6 +179,15 @@ def main() -> None:
             # fenêtre mais Chroma retourne le document complet.
             # extraction_mode : "layout" pour les PDF à texte espacé (manifest), sinon "plain".
             extraction_mode = str(file_meta.get("extraction_mode") or "plain")
+            # `one_per_article=True` : un chunk = un article entier, même long.
+            #
+            # MESURÉ (étape 11 de evals/history.md) : scinder les 8 articles de
+            # définitions (jusqu'à 21 196 car.) ramène bien le plus gros chunk à
+            # 1 528 car., mais DÉGRADE le Recall@5 de 0.448 à 0.362 (-19 %). Les
+            # 341 sous-chunks créés sont denses en vocabulaire juridique et
+            # saturent le top-5, évinçant les articles courts et précis qui
+            # étaient les bonnes réponses. On échangerait de la précision contre
+            # du volume. Ne pas repasser à False sans re-mesurer.
             chunks = chunks_from_pdf(
                 data, max_chars=args.max_chars, one_per_article=True, extraction_mode=extraction_mode
             )

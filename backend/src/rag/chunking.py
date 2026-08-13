@@ -205,14 +205,34 @@ def chunk_long_article(body: str, numero: str, max_chars: int = 1500, overlap: i
         if end < len(body):
             # Cherche la frontière de phrase la plus proche avant end (dans les 200 derniers chars)
             window = body[max(start, end - 200): end]
-            sep_pos = max(window.rfind(". "), window.rfind("; "), window.rfind(" — "))
+            # Les articles de définitions (« Au sens de la présente loi, on entend
+            # par : -terme : … ») sont des listes à puces sans point final : sans
+            # les puces comme frontière, la coupure tombe en plein mot
+            # (« torise le contracteur… »). On cherche donc aussi « -x » et « ; ».
+            sep_pos = max(
+                window.rfind(". "),
+                window.rfind("; "),
+                window.rfind(" — "),
+                window.rfind(" -"),
+                window.rfind(" §"),
+            )
             if sep_pos > 0:
                 end = max(start, end - 200) + sep_pos + 1
         prefix = f"Article {numero} (suite) — " if out else f"Article {numero} — "
         out.append((prefix + body[start:end].strip()).strip())
         if end >= len(body):
             break
-        start = max(start + 1, end - overlap)
+        # Le recouvrement repart `overlap` caractères en arrière pour ne pas
+        # perdre le contexte à la jointure — mais il tombait en plein mot
+        # (« …autorise » → « orise le contracteur… »), ce qui produit un chunk
+        # commençant par un fragment illisible, néfaste à l'embedding. On recale
+        # la reprise sur la frontière de mot suivante.
+        nxt = max(start + 1, end - overlap)
+        if 0 < nxt < len(body) and not body[nxt - 1].isspace():
+            space = body.find(" ", nxt)
+            if space != -1 and space - nxt < overlap:
+                nxt = space + 1
+        start = nxt
     return [c for c in out if c]
 
 

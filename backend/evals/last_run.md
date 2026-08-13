@@ -1,4 +1,4 @@
-## Étape 10b — prescription fiscale réintégrée — 2026-08-13 19:12 UTC
+## Étape 11b — retour à one_per_article (contrôle) — 2026-08-13 19:46 UTC
 
 Gold set : 60 questions  |  seuil rag_min_score : appliqué
 

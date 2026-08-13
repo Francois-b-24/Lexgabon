@@ -9,6 +9,7 @@ import pytest
 
 from src.rag.chunking import (
     build_chunks_from_text,
+    chunk_long_article,
     split_articles,
 )
 
@@ -144,3 +145,28 @@ def test_plain_articles_still_detected_after_prefix_support():
     """Non-régression : les formes usuelles restent reconnues."""
     segs = split_articles("Article 12 : Premier. Art. 13 — Second.")
     assert [s.numero for s in segs] == ["12", "13"]
+
+
+def test_long_article_chunks_start_on_word_boundary():
+    """Le recouvrement ne doit pas couper un mot en deux.
+
+    L'overlap repartait `overlap` caractères en arrière sans égard aux mots :
+    « …autorise le contracteur » devenait « orise le contracteur… ». Un chunk
+    commençant par un fragment illisible dégrade son propre embedding.
+    """
+    body = " ".join(f"definition numero {i} du terme technique concerne" for i in range(120))
+    parts = chunk_long_article(body, "9", max_chars=400)
+    assert len(parts) > 2
+    for p in parts[1:]:
+        payload = p.split("— ", 1)[-1]
+        first = payload.split(" ", 1)[0]
+        assert first in body.split(), f"chunk commence par un fragment : {first!r}"
+
+
+def test_long_article_keeps_article_number_on_every_part():
+    """Chaque morceau reste citable : le numéro d'article est conservé partout."""
+    body = "x. " * 900
+    parts = chunk_long_article(body, "42", max_chars=500)
+    assert len(parts) > 1
+    assert parts[0].startswith("Article 42 — ")
+    assert all(p.startswith("Article 42 (suite) — ") for p in parts[1:])
