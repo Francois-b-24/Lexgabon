@@ -1,0 +1,56 @@
+# Propositions d'alias pour corpus/lexique.yaml — À VALIDER À LA MAIN.
+#
+# Généré par scripts/propose_lexique_terms.py. Chaque terme vient d'une
+# question que le lexique ne reconnaissait pas, mais pour laquelle la
+# recherche vectorielle a ramené des passages cohérents.
+#
+# Pour valider : relire l'article justificatif, et si le terme est bien
+# caractéristique du domaine, le reporter dans corpus/lexique.yaml.
+# Ne JAMAIS copier ce fichier tel quel : c'est une liste de candidats,
+# pas une liste de termes validés.
+propositions:
+  hydrocarbures:
+  - terme: hydrocarbures
+    score: 44.04
+    domaine_confiance: 1.0
+    question: Quelles obligations s'imposent à un opérateur lors de l'abandon d'un puits d'hydrocarbures
+      ?
+    justification:
+      code: Code des hydrocarbures
+      article: '170'
+      extrait: Article 170 — Les dispositions des textes en vigueur fixant les obligations des personnes
+        physiques ou morales dans les matières objet du présent titre s’appliquent au secteur des Hydrocarbures.
+        Ces obligations portent n
+  - terme: abandon
+    score: 23.17
+    domaine_confiance: 1.0
+    question: Quelles obligations s'imposent à un opérateur lors de l'abandon d'un puits d'hydrocarbures
+      ?
+    justification:
+      code: Code des hydrocarbures
+      article: '170'
+      extrait: Article 170 — Les dispositions des textes en vigueur fixant les obligations des personnes
+        physiques ou morales dans les matières objet du présent titre s’appliquent au secteur des Hydrocarbures.
+        Ces obligations portent n
+  - terme: opérateur
+    score: 9.39
+    domaine_confiance: 1.0
+    question: Quelles obligations s'imposent à un opérateur lors de l'abandon d'un puits d'hydrocarbures
+      ?
+    justification:
+      code: Code des hydrocarbures
+      article: '87'
+      extrait: Article 87 — Dans le cas où une découverte d’un gisement d’hydrocarbures commercial ement
+        exploitable déborde sur une zone libre du domaine pétrolier, l’opérateur concerné est tenu d’adresser
+        à l’administration des hydro
+  - terme: obligations
+    score: 9.19
+    domaine_confiance: 1.0
+    question: Quelles obligations s'imposent à un opérateur lors de l'abandon d'un puits d'hydrocarbures
+      ?
+    justification:
+      code: Code des hydrocarbures
+      article: '170'
+      extrait: Article 170 — Les dispositions des textes en vigueur fixant les obligations des personnes
+        physiques ou morales dans les matières objet du présent titre s’appliquent au secteur des Hydrocarbures.
+        Ces obligations portent n

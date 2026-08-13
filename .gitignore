@@ -49,5 +49,14 @@ backend/data/chroma/
 backend/data/scraped_chunks.jsonl
 backend/data/articles_ingest.jsonl
 
+# collections Chroma temporaires du benchmark d'embeddings (~110 Mo, régénérables
+# par scripts/bench_embeddings.py)
+backend/data/chroma_bench/
+
+# sorties d'exécution
+logs/
+backend/data/attestation.txt
+docs/.Rhistory
+
 # reference / legacy (not typechecked — see tsconfig exclude)
 archive/

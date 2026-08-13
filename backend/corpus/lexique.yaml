@@ -1,0 +1,1246 @@
+# Lexique juridique LexGabon — vocabulaire de gating.
+#
+# Ce fichier est ÉDITABLE À LA MAIN par un juriste. Il pilote la décision de
+# couverture : ce que le corpus indexé sait traiter, et ce qu'il ne sait pas.
+#
+# Trois blocs :
+#   domaines            — vocabulaire POSITIF des 7 codes indexés. Amorcé par
+#                         scripts/bootstrap_lexique.py, complété d'alias métier.
+#                         Un terme en trop ici est bénin (il fait chercher).
+#   domaines_non_indexes— lexique NÉGATIF : marqueurs FORTS des matières absentes
+#                         du corpus. ATTENTION : un terme trop générique ici fait
+#                         REFUSER une question légitime. N'y mettre jamais un mot
+#                         du vocabulaire juridique commun (« contrat », « obligation »).
+#   codes / juridictions— textes nommément invoqués et juridictions étrangères.
+#
+# CEMAC n'est pas listé dans regionaux_non_indexes : le Code des douanes CEMAC
+# EST indexé.
+version: 1
+juridictions_etrangeres:
+- français
+- française
+- france
+- belge
+- belgique
+- suisse
+- sénégalais
+- sénégal
+- camerounais
+- cameroun
+- ivoirien
+- marocain
+- tunisien
+- canadien
+- québécois
+- européen
+- européenne
+regionaux_non_indexes:
+- ohada
+- acte uniforme
+- cima
+- cobac
+- cipres
+codes:
+- id: travail
+  indexed: true
+  libelle: Code du travail
+  formes:
+  - code du travail
+- id: impots
+  indexed: true
+  libelle: Code général des impôts
+  formes:
+  - code général des impôts
+  - cgi
+- id: douane
+  indexed: true
+  libelle: Code des douanes
+  formes:
+  - code des douanes
+- id: hydrocarbures
+  indexed: true
+  libelle: Code des hydrocarbures
+  formes:
+  - code des hydrocarbures
+- id: marche-public
+  indexed: true
+  libelle: Code du marché public
+  formes:
+  - code du marché public
+- id: sante
+  indexed: true
+  libelle: Code de la santé publique
+  formes:
+  - code de la santé publique
+- id: communication
+  indexed: true
+  libelle: Code de la communication
+  formes:
+  - code de la communication
+- id: civil
+  indexed: false
+  libelle: Code civil
+  formes:
+  - code civil
+  - droit civil
+- id: penal
+  indexed: false
+  libelle: Code pénal
+  formes:
+  - code pénal
+  - droit penal
+  - droit pénal
+- id: famille
+  indexed: false
+  libelle: Code de la famille
+  formes:
+  - code de la famille
+  - droit de la famille
+- id: fonction_publique
+  indexed: false
+  libelle: Statut général de la fonction publique
+  formes:
+  - droit de la fonction publique
+  - fonction publique
+  - statut général de la fonction publique
+- id: administratif
+  indexed: false
+  libelle: Droit administratif
+  formes:
+  - droit administratif
+- id: commercial
+  indexed: false
+  libelle: Actes uniformes OHADA
+  formes:
+  - actes uniformes ohada
+  - droit commercial
+  - droit comptable ohada
+domaines:
+  communication:
+    indexed: true
+    code: Code de la communication
+    slug: code-communication-2026
+    termes:
+    - accessible
+    - accessibles
+    - adaptation
+    - artificielle
+    - artistiques
+    - assimilé
+    - assujetties
+    - audiovisuelle
+    - audiovisuelles
+    - automatisé
+    - autrui
+    - biahodjow
+    - biais
+    - bonnes
+    - brice
+    - carte
+    - chère
+    - cinématographie
+    - cinématographique
+    - cinématographiques
+    - circulation
+    - citoyens
+    - clotaire
+    - cohésion
+    - communications
+    - conception
+    - consentement
+    - contenus
+    - correspondance
+    - culture
+    - dette
+    - dialogue
+    - diffusion
+    - diffusés
+    - dignité
+    - droit de rectification
+    - désinformation
+    - détection
+    - economie
+    - empêcher
+    - esprit
+    - exigences
+    - expression
+    - fcfa
+    - germain
+    - graphique
+    - généré
+    - générés
+    - honneur
+    - humains
+    - hébergeur
+    - illicite
+    - illicites
+    - image
+    - images
+    - indépendance
+    - intelligence
+    - internet
+    - journaliste
+    - manquement
+    - marquage
+    - messages
+    - mineur
+    - minko
+    - mobilier
+    - média
+    - médias
+    - métier
+    - mœurs
+    - nguema
+    - nomination
+    - numérique
+    - numériques
+    - oligui
+    - opinions
+    - parentale
+    - participations
+    - partis
+    - parution
+    - pensée
+    - permanent
+    - plateforme
+    - plateformes
+    - presse
+    - presse en ligne
+    - processus
+    - profil
+    - publications
+    - publicité
+    - puni
+    - reposant
+    - référentiel
+    - référés
+    - réorganisation
+    - réseau
+    - réseaux
+    - réseaux sociaux
+    - seize
+    - signalement
+    - site
+    - sons
+    - support
+    - texte
+    - thierry
+    - travers
+    - téléphone
+    - utilisateurs
+    - vidéo
+    - véhiculés
+    - ysique
+    - éditeur
+    - éditeurs
+    - édition
+    - électronique
+    - électroniques
+    - œuvres
+  douane:
+    indexed: true
+    code: Code des douanes
+    slug: code-douane
+    termes:
+    - abandonnées
+    - acheteur
+    - acquit
+    - acquits
+    - admission
+    - ajustement
+    - ajustée
+    - apurement
+    - auront
+    - aéronefs
+    - bord
+    - bureau
+    - bureaux
+    - caution
+    - chiffres
+    - classe
+    - colis
+    - commandant
+    - commandants
+    - commissionnaire
+    - commissionnaires
+    - compensateurs
+    - concessionnaire
+    - conduites
+    - confiscation
+    - confisqués
+    - contrainte
+    - contraventions
+    - contrebande
+    - coûts
+    - cémac
+    - design
+    - devraient
+    - devrait
+    - différences
+    - différente
+    - douane
+    - douanes
+    - douanier
+    - douaniers
+    - douanières
+    - drawback
+    - débarquement
+    - déclarant
+    - déclarations
+    - dédouanement
+    - déficits
+    - entrepôt
+    - entrepôt douanier
+    - envois
+    - exemple
+    - exonération
+    - exportation
+    - exportées
+    - exportés
+    - expéditions
+    - expédiées
+    - exécutif
+    - facteur
+    - fleuves
+    - fonder
+    - fondera
+    - fortement
+    - franchise
+    - fraude
+    - frontière
+    - frontières
+    - identiques
+    - impor
+    - importateur
+    - importation
+    - importée
+    - importées
+    - influencé
+    - instance
+    - irrégularité
+    - jauge
+    - jugement
+    - juges
+    - justifications
+    - liquidés
+    - magasins
+    - manifeste
+    - marchan
+    - marchandise
+    - marchandises
+    - maritime
+    - navire
+    - navires
+    - oeuvre
+    - officier
+    - originaires
+    - ouvraison
+    - paragraphes
+    - passavant
+    - passavants
+    - passif
+    - payé
+    - perfectionnement
+    - poids
+    - port
+    - pourra
+    - pourront
+    - producteur
+    - prohibitions
+    - prohibée
+    - prohibées
+    - prohibés
+    - propriétaires
+    - provenance
+    - prévenu
+    - prévenus
+    - rayon
+    - recouvrement
+    - redevables
+    - route
+    - réexportation
+    - référera
+    - saisies
+    - saisis
+    - secrétariat
+    - sensiblement
+    - sommation
+    - souplesse
+    - spécial
+    - séjourner
+    - tarif
+    - taxées
+    - tonneaux
+    - transactionnelle
+    - transit
+    - transporteurs
+    - transportées
+    - ueac
+    - unitaire
+    - unités
+    - uéac
+    - valeur en douane
+    - vendeur
+    - vendues
+    - ventes
+    - verbaux
+    - vivres
+    - écoutilles
+    - élevée
+    - élément
+    - énonciations
+    - équipage
+    - états
+    - évaluer
+  hydrocarbures:
+    indexed: true
+    code: Code des hydrocarbures
+    slug: code-hydrocarbures-2019
+    termes:
+    - abandon
+    - abandon de puits
+    - additivation
+    - agrocarburant
+    - alable
+    - amont
+    - amélioration
+    - approbation
+    - associé
+    - atmosphérique
+    - autochtones
+    - aval
+    - bekale
+    - biocarburant
+    - blocs
+    - bonus
+    - budgétisation
+    - cadastre
+    - carburants
+    - centraliser
+    - champs
+    - commercialement
+    - commercialité
+    - commissaire
+    - commissariat
+    - comp
+    - comptage
+    - contract
+    - contracteur
+    - contracteurs
+    - contractualisation
+    - contrat de partage
+    - contribuer
+    - contributions
+    - conventionnelle
+    - coûts
+    - curage
+    - dotations
+    - douanes
+    - durées
+    - déchets
+    - découverte
+    - découvertes
+    - délimitée
+    - economie
+    - entreprendre
+    - environnementale
+    - environnementales
+    - essentielles
+    - exploitable
+    - exploration
+    - filiales
+    - fiscal
+    - formulation
+    - fossiles
+    - gazeux
+    - gaziers
+    - gisement
+    - gisements
+    - géosciences
+    - gérer
+    - haut
+    - huiles
+    - hydrocarbures
+    - hygiène
+    - importation
+    - importations
+    - impôt
+    - intersession
+    - investissements
+    - julien
+    - liquides
+    - lits
+    - lubrifiants
+    - marginale
+    - marginales
+    - marginaux
+    - matures
+    - mesurage
+    - mfpra
+    - milieux
+    - minière
+    - modificatifs
+    - naturel
+    - nettoiement
+    - nkoghe
+    - négociation
+    - offshore
+    - parlementaire
+    - partage de production
+    - permis
+    - perspectives
+    - phases
+    - plages
+    - pollutions
+    - priorité
+    - profonde
+    - promouvoir
+    - proportionnelle
+    - prospection
+    - provision
+    - préemption
+    - présidence
+    - pénalité
+    - périmètre
+    - péréquation
+    - pétrochimie
+    - pétrole
+    - pétrolier
+    - pétroliers
+    - pétrolière
+    - pétrolières
+    - quote
+    - raffinage
+    - recouvrement
+    - redevance
+    - redevance minière
+    - rentrent
+    - ressortissants
+    - restante
+    - rivières
+    - rues
+    - règlementation
+    - réhabilitation
+    - répression
+    - résidus
+    - salubrité
+    - schémas
+    - semi
+    - sites
+    - sortes
+    - spécifications
+    - stratégiques
+    - superficiaire
+    - sureté
+    - surface
+    - susvisée
+    - tarifaire
+    - torchage
+    - torché
+    - traitance
+    - traitants
+    - très
+    - types
+    - unitisation
+    - usagées
+    - valorisation
+    - viole
+    - volumes
+    - ydrocarbures
+    - élaborer
+    - étents
+    - évaluations
+  impots:
+    indexed: true
+    code: Code général des impôts
+    slug: code-general-impots-2009
+    termes:
+    - abrogés
+    - absorbée
+    - ambulant
+    - amortissement
+    - amortissements
+    - annexe
+    - apports
+    - artisanale
+    - assiette
+    - assujettis
+    - auront
+    - avion
+    - bail
+    - bateaux
+    - baux
+    - billets
+    - bois
+    - boissons
+    - bourse
+    - bvmac
+    - bâties
+    - bénéfice net imposable
+    - capitaux
+    - centre
+    - chiffre
+    - classe
+    - coiffeur
+    - contribuable
+    - contribuables
+    - cote
+    - créances
+    - dancing
+    - donataires
+    - débet
+    - déclarations
+    - déclaratives
+    - décès
+    - déductibles
+    - déduction
+    - dégrèvement
+    - dépendent
+    - employant
+    - exempt
+    - exercices
+    - exigibilité
+    - exonération
+    - extraits
+    - fcfa
+    - fermage
+    - fiscal
+    - fiscale
+    - fonciers
+    - foncière
+    - forestier
+    - forestiers
+    - forestières
+    - fourni
+    - fraction
+    - greffiers
+    - hors
+    - huissiers
+    - hypothèque
+    - héritiers
+    - immatriculation
+    - immeuble
+    - immeubles
+    - immobiliers
+    - immobilisations
+    - immobilière
+    - immobilières
+    - imposable
+    - imposables
+    - imposition
+    - impositions
+    - imprimé
+    - impôt
+    - impôt sur les sociétés
+    - indemnités
+    - irpp
+    - jouissance
+    - livraisons
+    - location
+    - locations
+    - locative
+    - loyers
+    - légataires
+    - marchandises
+    - meubles
+    - mobilières
+    - municipaux
+    - mutation
+    - mutations
+    - notaires
+    - option
+    - papier
+    - partages
+    - parts
+    - patente
+    - patentes
+    - pensions
+    - perception
+    - permis
+    - perçu
+    - porteur
+    - prescription fiscale
+    - professions
+    - proportionnel
+    - propriétés
+    - précompte
+    - précédent
+    - prélèvement
+    - quittance
+    - quittances
+    - recette
+    - receveur
+    - recouvrement
+    - redevable
+    - redevables
+    - redevance
+    - rentes
+    - revenu
+    - revenus
+    - salaires
+    - seing
+    - somme
+    - spontanément
+    - stable
+    - succession
+    - tarif
+    - taxe
+    - terrain
+    - terrains
+    - territorialement
+    - timbre
+    - timbres
+    - timbré
+    - trésor
+    - tva
+    - usufruit
+    - valant
+    - valeurs
+    - values
+    - vendant
+    - ventes
+    - viagères
+    - vifs
+    - voir
+    - véhicules
+    - écritures
+    - élevage
+    - épargne
+    - époux
+  marche-public:
+    indexed: true
+    code: Code du marché public
+    slug: code-marche-public-2018
+    termes:
+    - achèvement
+    - acompte
+    - acomptes
+    - agréments
+    - ajournement
+    - ajustements
+    - allotissement
+    - analyse
+    - annuel
+    - anormalement
+    - appel d'offres
+    - apporter
+    - approbation
+    - attributaire
+    - attribués
+    - audits
+    - avance
+    - avance de démarrage
+    - avances
+    - avenant
+    - bancaire
+    - bordereau
+    - budgétaire
+    - cadres
+    - cahier
+    - cahiers
+    - calendaires
+    - calendrier
+    - candidat
+    - candidats
+    - candidatures
+    - capacités
+    - ccag
+    - ccap
+    - cellule
+    - central
+    - cessibilité
+    - classés
+    - clientèle
+    - cocontractant
+    - commande
+    - commandes
+    - complexité
+    - compose
+    - conception
+    - conditionnelles
+    - confiée
+    - constitutionnelles
+    - consultant
+    - consultants
+    - continuation
+    - continuer
+    - contractante
+    - contractantes
+    - cotations
+    - cpmp
+    - créance
+    - créancier
+    - crédits
+    - disante
+    - divergence
+    - dossier
+    - décaissements
+    - délibérative
+    - délégué
+    - démembrements
+    - entente
+    - entente directe
+    - entrepreneur
+    - enveloppe
+    - evaluation
+    - exceptionnellement
+    - exprimés
+    - exécutés
+    - ferme
+    - fournisseur
+    - fournitures
+    - groupement
+    - groupements
+    - gré à gré
+    - imprévisibles
+    - infructueux
+    - inistère
+    - intellectuelles
+    - introduire
+    - invités
+    - lancement
+    - location
+    - lots
+    - mandataire
+    - marches
+    - marchés
+    - maîtres
+    - maîtrise
+    - mixte
+    - monétaires
+    - motifs
+    - moyennes
+    - nanti
+    - nantissement
+    - négociations
+    - observateur
+    - ouvrables
+    - ouvrage
+    - ouvrages
+    - passation
+    - passés
+    - performance
+    - petites
+    - plis
+    - prestataire
+    - prestataires
+    - propositions
+    - provinciale
+    - préparation
+    - présélectionné
+    - présélectionnés
+    - prévisionnel
+    - qualifications
+    - qualifiés
+    - rapporteur
+    - ressortissants
+    - restreint
+    - restreinte
+    - retenue
+    - référence
+    - régie
+    - régionaux
+    - résiliation
+    - révision
+    - scores
+    - seuils
+    - simplifiés
+    - soumission
+    - soumissionnaire
+    - soumissionnaires
+    - spécialistes
+    - spécifications
+    - stipulations
+    - substantielles
+    - séance
+    - sélection
+    - traitance
+    - traitants
+    - tranche
+    - tranches
+    - unique
+    - unitaires
+    - version
+    - voix
+    - élaborés
+    - électronique
+    - étapes
+  sante:
+    indexed: true
+    code: Code de la santé publique
+    slug: code-sante-2026
+    termes:
+    - affections
+    - alimentaire
+    - alimentaires
+    - analyses
+    - animales
+    - assainissement
+    - assistée
+    - biologie
+    - biologique
+    - biologiques
+    - biologiste
+    - biomédicale
+    - biomédicales
+    - biomédicaux
+    - carnet
+    - cellules
+    - centres
+    - chirurgien
+    - chirurgiens
+    - clinique
+    - cliniques
+    - comité
+    - consentement
+    - contact
+    - corporelle
+    - dentaire
+    - dentiste
+    - dentistes
+    - diagnostic
+    - diplôme
+    - disciplinaire
+    - dispensation
+    - don d'organes
+    - donneur
+    - donneurs
+    - déchets
+    - déontologie
+    - département
+    - désinfection
+    - embryons
+    - examens
+    - fcfa
+    - femme
+    - femmes
+    - formations
+    - gamètes
+    - gros
+    - grossesse
+    - handicapées
+    - homme
+    - hospitaliers
+    - humain
+    - humaine
+    - hygiène
+    - hémovigilance
+    - illégal
+    - importation
+    - indésirables
+    - infantile
+    - infirmiers
+    - infirmière
+    - labiles
+    - laboratoire
+    - malade
+    - malades
+    - maladie
+    - maladies
+    - maternelle
+    - menace
+    - mental
+    - mentale
+    - mentaux
+    - milieu
+    - morgues
+    - médecin
+    - médecine
+    - médecins
+    - médical
+    - médicale
+    - médicalement
+    - médicales
+    - médicament
+    - médicaments
+    - médicaux
+    - nomenclature
+    - officine
+    - officines
+    - paramédicales
+    - paramédicaux
+    - parentale
+    - patient
+    - patients
+    - pesticides
+    - pharmaceutique
+    - pharmaceutiques
+    - pharmacie
+    - pharmacien
+    - pharmaciens
+    - pharmacopée
+    - plantes
+    - population
+    - populations
+    - poubelles
+    - praticien
+    - praticiens
+    - pratiquer
+    - prescripteur
+    - procréation
+    - profession
+    - professions
+    - promoteur
+    - protocole
+    - protocoles
+    - prélèvement
+    - prélèvement d'organes
+    - préparateur
+    - préparation
+    - prévention
+    - psychotropes
+    - puni
+    - périmés
+    - receveur
+    - règlementaire
+    - réservés
+    - salles
+    - salubres
+    - sang
+    - sanguine
+    - sanguins
+    - sanitaire
+    - sanitaires
+    - secret médical
+    - soins
+    - stupéfiants
+    - systématique
+    - tableau
+    - thérapeutique
+    - thérapeutiques
+    - tissus
+    - traditionnelle
+    - traditionnels
+    - transfusion
+    - transmissibles
+    - tuteur
+    - usurpation
+    - vaccination
+    - vaccinations
+    - vivante
+    - vénéneuses
+    - élimination
+    - éthique
+  travail:
+    indexed: true
+    code: Code du travail
+    slug: code-travail-2021
+    termes:
+    - accouchement
+    - accueil
+    - adaptation
+    - allocation
+    - alternance
+    - amiable
+    - ancienneté
+    - apprenti
+    - apprentis
+    - apprentissage
+    - aptitudes
+    - assesseurs
+    - branche
+    - branches
+    - bulletin
+    - bureau
+    - cents
+    - cesser
+    - choisis
+    - collectif
+    - collectifs
+    - collective
+    - collectives
+    - comité
+    - comités
+    - compensatrice
+    - concertation
+    - conciliation
+    - conflit
+    - conflits
+    - confédérations
+    - congé
+    - congé de maternité
+    - congés
+    - consultatif
+    - consultative
+    - convocation
+    - cursus
+    - cycle
+    - demandeurs
+    - dossier
+    - délégué
+    - délégué du personnel
+    - délégués
+    - démission
+    - déplacement
+    - effectif
+    - embauche
+    - emplois
+    - employeur
+    - employeurs
+    - essai
+    - faute lourde
+    - femme
+    - fédérations
+    - grossesse
+    - grève
+    - handicap
+    - harcèlement
+    - hebdomadaire
+    - horaire
+    - horaires
+    - hygiène
+    - indemnités
+    - indéterminée
+    - inspecteur
+    - inspecteurs
+    - inspection
+    - intermittent
+    - interprofessionnel
+    - intérim
+    - intérimaire
+    - journalier
+    - journaliers
+    - jugement
+    - librement
+    - licenciement
+    - licenciements
+    - licencié
+    - licenciés
+    - lock
+    - longue
+    - lourde
+    - maladie
+    - maternité
+    - mille
+    - million
+    - millions
+    - mobilité
+    - moral
+    - médaille
+    - médecin
+    - médecins
+    - médiateur
+    - médiation
+    - médical
+    - médicale
+    - nuit
+    - organisations
+    - ouvrables
+    - permanent
+    - permanents
+    - poste
+    - postnatal
+    - professionnalisation
+    - professionnelles
+    - prononcé
+    - préavis
+    - prévoir
+    - périodes
+    - reconversion
+    - recrutement
+    - repos
+    - représentatives
+    - représentativité
+    - ressort
+    - retraite
+    - retrouve
+    - rotation
+    - rupture
+    - résiliation
+    - saisonnier
+    - salaire
+    - salaire minimum
+    - salaires
+    - sectorielles
+    - semaine
+    - smic
+    - smig
+    - stagiaire
+    - statut
+    - suppléant
+    - suppléants
+    - syndical
+    - syndicale
+    - syndicales
+    - syndicat
+    - syndicats
+    - syndicaux
+    - théorique
+    - transactionnel
+    - travailleur
+    - travailleurs
+    - travailsection
+    - travailsous
+    - tronc
+    - télétravail
+    - utilisatrice
+    - vivant
+    - économat
+    - élève
+    - équivalente
+    - étudiant
+domaines_non_indexes:
+  civil:
+    libelle: Droit civil gabonais
+    termes:
+    - bail d'habitation
+    - bailleur
+    - curatelle
+    - dommages et intérêts
+    - locataire
+    - preneur
+    - responsabilité civile
+    - servitude
+    - testament
+    - tutelle
+    - vice du consentement
+  penal:
+    libelle: Droit pénal gabonais
+    termes:
+    - homicide
+    - meurtre
+    - assassinat
+    - vol qualifié
+    - escroquerie
+    - peine privative
+    - réclusion
+    - récidive
+    - complicité
+    - délit
+    - infraction pénale
+  famille:
+    libelle: Droit de la famille
+    termes:
+    - adopter
+    - adoptif
+    - adoption
+    - divorce
+    - garde des enfants
+    - mariage
+    - pension alimentaire
+    - régime matrimonial
+    - répudiation
+  fonction_publique:
+    libelle: Fonction publique
+    termes:
+    - titularisation
+    - fonctionnaire
+    - concours administratif
+    - avancement d'échelon
+    - statut général
+    - agent public
+    - stagiaire administratif
+  administratif:
+    libelle: Droit administratif
+    termes:
+    - recours pour excès de pouvoir
+    - acte administratif unilatéral
+    - contentieux administratif
+  commercial:
+    libelle: Droit commercial / OHADA
+    termes:
+    - acte uniforme
+    - registre du commerce
+    - société anonyme
+    - bilan comptable
+    - droit comptable
