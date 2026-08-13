@@ -21,6 +21,7 @@ from src.agent.schemas import (
     ChatRequest,
     ChatResponse,
     Quality,
+    RetrievalDecision,
     SourceItem,
     StructuredAnswer,
     StructuredCitation,
@@ -41,6 +42,27 @@ def _client_ip(request: Request) -> str:
     if request.client:
         return request.client.host or "local"
     return "local"
+
+
+def _retrieval_decision(decision: Any, n_sources: int) -> RetrievalDecision | None:
+    """Convertit la décision du gate en modèle exposé par l'API.
+
+    `indexed` reprend la propriété de la décision plutôt que `not blocking`
+    recalculé ici : c'est le gate qui définit ce que « couvert » veut dire.
+    """
+    if decision is None:
+        return None
+    return RetrievalDecision(
+        reason=decision.reason.value,
+        indexed=decision.indexed,
+        matched_domaines=list(decision.matched_domaines),
+        matched_terms=list(decision.matched_terms),
+        invoked_code=decision.invoked_code,
+        invoked_code_label=decision.invoked_code_label,
+        detected_year=decision.detected_year,
+        indexed_domains=list(decision.indexed_domains),
+        n_passages=n_sources,
+    )
 
 
 def _prepare_history(body: ChatRequest) -> list[dict[str, str]]:
@@ -206,4 +228,5 @@ async def api_chat(request: Request, body: ChatRequest):
         source_stats={"count": len(sources)},
         citations=citations,
         structured=structured,
+        retrieval=_retrieval_decision(out.decision, len(sources)),
     )

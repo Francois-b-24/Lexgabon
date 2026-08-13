@@ -38,6 +38,42 @@ class Quality(BaseModel):
     has_disclaimer: bool = False
 
 
+class RetrievalDecision(BaseModel):
+    """Décision du gate lexical, exposée telle quelle au client.
+
+    Le refus n'est pas une phrase à reconnaître dans `answer` : c'est un champ
+    typé, décidé avant l'appel au LLM et de façon déterministe. Le front peut
+    donc s'y fier pour distinguer une réponse sourcée d'un refus motivé, ce que
+    l'inspection du texte ne permettait pas.
+
+    `matched_terms` porte les formes exactes qui ont déclenché la décision —
+    c'est la trace auditable : on peut montrer *pourquoi* le système a répondu
+    que le sujet n'était pas couvert.
+    """
+
+    reason: Literal[
+        "covered",
+        "out_of_jurisdiction",
+        "regional_not_indexed",
+        "code_not_indexed",
+        "outdated_reference",
+        "domain_not_indexed",
+        "no_term_recognized",
+    ] = "covered"
+    # False uniquement quand le corpus ne couvre pas la question : c'est le
+    # signal que le front doit matérialiser.
+    indexed: bool = True
+    matched_domaines: list[str] = Field(default_factory=list)
+    matched_terms: list[str] = Field(default_factory=list)
+    invoked_code: str | None = None
+    invoked_code_label: str | None = None
+    detected_year: int | None = None
+    # Les matières réellement couvertes par l'index, pour que le client puisse
+    # les afficher sans les recoder en dur.
+    indexed_domains: list[str] = Field(default_factory=list)
+    n_passages: int = 0
+
+
 class StructuredCitation(BaseModel):
     citation: str
     text: str
@@ -81,3 +117,5 @@ class ChatResponse(BaseModel):
     source_stats: dict | None = None
     citations: list[StructuredCitation] | None = None
     structured: StructuredAnswer | None = None
+    # Optionnel : les clients antérieurs au gate continuent de fonctionner.
+    retrieval: RetrievalDecision | None = None

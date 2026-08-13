@@ -50,6 +50,16 @@ class Settings(BaseSettings):
     # scripts/eval_retrieval.py (sinon on coupe des résultats pertinents).
     rag_min_score: float = 0.30
 
+    # Taille du pool candidat remis au cross-encoder.
+    #   rag_fetch_pool  : chunks récupérés depuis Chroma (rappel brut)
+    #   rag_rerank_pool : chunks conservés par le re-score hybride, donc vus
+    #                     par le reranker. Tout ce qui est coupé ici est perdu
+    #                     avant le composant le plus précis du pipeline.
+    # Mesurés sur le gold set (questions à annotation saine) : voir la note
+    # « étape 8 » de evals/history.md avant de les modifier.
+    rag_fetch_pool: int = 24
+    rag_rerank_pool: int = 12
+
     # Allowlist domaines pour les scripts d'ingestion (fetch_official_sources, ingest_pdfs).
     corpus_sources_yaml: str = "./corpus/sources.yaml"
 

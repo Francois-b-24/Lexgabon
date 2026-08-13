@@ -7,11 +7,16 @@ import { useLegalAgentSession } from "@/hooks/use-legal-agent-session";
 import { useUserProfile } from "@/hooks/use-user-profile";
 import { SourceList } from "@/components/chatbot/source-list";
 import { LegalNoteRenderer } from "@/components/chatbot/legal-note-renderer";
+import { CoverageNotice } from "@/components/chatbot/coverage-notice";
 import { QuestionSuggestions } from "@/components/chatbot/question-suggestions";
 import { ThemeSelector } from "@/components/chatbot/theme-selector";
 import { ProfileSwitcher } from "@/components/layout/profile-switcher";
 import type { SuggestionDomaine } from "@/lib/amaia-suggestions";
-import type { ChatSource, StructuredAnswer } from "@/lib/chatbot-types";
+import type {
+  ChatSource,
+  RetrievalDecision,
+  StructuredAnswer,
+} from "@/lib/chatbot-types";
 
 type Role = "user" | "assistant";
 type ChatMsg = {
@@ -19,6 +24,7 @@ type ChatMsg = {
   content: string;
   sources?: ChatSource[];
   structured?: StructuredAnswer | null;
+  retrieval?: RetrievalDecision | null;
 };
 type BackendChatPayload = {
   answer?: string;
@@ -26,6 +32,7 @@ type BackendChatPayload = {
   sources?: ChatSource[];
   session_id?: string;
   structured?: StructuredAnswer | null;
+  retrieval?: RetrievalDecision | null;
   detail?: string | { msg?: string }[];
 };
 
@@ -241,6 +248,7 @@ export default function ChatbotPanel({ welcome }: { welcome: string }) {
           content: payload.answer?.trim() ? payload.answer : t("noAnswer"),
           sources: payload.sources ?? [],
           structured: payload.structured ?? null,
+          retrieval: payload.retrieval ?? null,
         },
       ]);
     } catch (err) {
@@ -309,6 +317,9 @@ export default function ChatbotPanel({ welcome }: { welcome: string }) {
               <span className="text-[10px] uppercase tracking-wider text-white/30">
                 {m.role === "user" ? t("you") : t("bot")}
               </span>
+              {m.role === "assistant" && m.retrieval ? (
+                <CoverageNotice decision={m.retrieval} />
+              ) : null}
               {m.role === "user" ? (
                 <div className="self-end max-w-[85%] rounded-lg border border-lg-gold/25 bg-lg-gold/10 px-3.5 py-2.5 text-[15px] leading-relaxed text-white">
                   <p className="whitespace-pre-wrap [overflow-wrap:anywhere]">{m.content}</p>

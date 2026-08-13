@@ -282,8 +282,12 @@ def search_main(
     k = k or s.rag_top_k
     col = _get_collection()
     if s.use_hybrid_rag and s.use_cross_encoder:
-        n_fetch = max(24, k * 2)
-        k_hybrid = max(12, k)
+        # Le pool remis au cross-encoder est le vrai levier de rappel : tout
+        # candidat coupé ici ne sera jamais vu par le reranker, qui est
+        # pourtant le composant le plus précis du pipeline. D'où deux réglages
+        # explicites plutôt que des constantes enfouies.
+        n_fetch = max(int(getattr(s, "rag_fetch_pool", 24)), k * 2)
+        k_hybrid = max(int(getattr(s, "rag_rerank_pool", 12)), k)
     elif s.use_hybrid_rag:
         n_fetch = k * 2
         k_hybrid = k
@@ -317,6 +321,11 @@ def _domaine_filter(domaine: str | None) -> dict[str, Any] | None:
     absent de l'index (le filtre renverrait toujours 0 et forcerait un fallback
     inutile). Les valeurs proviennent des métadonnées peuplées à l'ingestion
     (manifest.yaml → champ `domaine`).
+
+    Le refus des domaines non indexés n'est PAS traité ici : il appartient au
+    gate lexical (`src/rag/gate.py`), qui décide avant la recherche et sur le
+    texte de la question. Le faire ici ne couvrirait que le cas où l'utilisateur
+    a renseigné le sélecteur front — soit une minorité des requêtes réelles.
     """
     d = (domaine or "").strip()
     if not d or d == "general":
@@ -429,6 +438,11 @@ def search_expanded(
     merged = _maybe_rerank_overlap(merged, query, k_eff)
 
     if s.use_cross_encoder and len(merged) > 1:
+        # `top_k_llm = 6` n'est pas un plafond arbitraire : mesuré, élargir la
+        # sortie du reranker à 12 fait CHUTER le Recall@5 de 0.429 à 0.292. Le
+        # cross-encoder réordonne alors le top-5, et son classement y est moins
+        # bon que le score hybride. Ne pas « corriger » sans re-mesurer — voir la
+        # note « étape 9 » de evals/history.md.
         from src.rag.reranker import rerank
         top_k_llm = max(6, s.rag_top_k // 2)
         merged = rerank(query, merged, top_k=top_k_llm)

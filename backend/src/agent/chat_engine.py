@@ -14,6 +14,7 @@ from src.agent.prompts import (
     strip_meta_rag_paragraphs,
 )
 from src.rag import retriever
+from src.rag.gate import GateDecision, GateReason, evaluate as gate_evaluate
 
 
 # Capture les marqueurs de citation article dans la réponse LLM.
@@ -94,9 +95,70 @@ def _filter_sources_to_cited(
 class ChatAnswer:
     text: str
     sources: list[dict[str, Any]] = field(default_factory=list)
+    # Décision du gate lexical, remontée jusqu'à la route pour être exposée
+    # dans la réponse API : le refus est un champ typé, pas une phrase à parser.
+    decision: GateDecision | None = None
 
 
-def _format_rag_block(rows: list[dict[str, Any]]) -> str:
+def _domain_labels(decision: GateDecision) -> str:
+    """Libellés lisibles des domaines couverts, pour l'utilisateur."""
+    from src.rag.lexique import get_lexique
+
+    lex = get_lexique()
+    labels: list[str] = []
+    for dom_id in decision.indexed_domains:
+        d = lex.domain(dom_id)
+        labels.append(d.code if d and d.code else dom_id)
+    return ", ".join(labels)
+
+
+def _refusal_block(decision: GateDecision) -> str:
+    """Bloc directif quand le gate a prouvé que le corpus ne couvre pas la question.
+
+    Le prompt cesse ici d'être le décideur : la décision est déjà prise, de façon
+    déterministe et auditable, et le LLM n'a plus qu'à l'énoncer. C'est ce qui
+    rend le refus reproductible — auparavant il dépendait du jugement du modèle
+    sur des extraits hors-sujet qu'on lui envoyait quand même.
+    """
+    couverts = _domain_labels(decision)
+    motif = {
+        GateReason.OUT_OF_JURISDICTION: (
+            "la question porte sur le droit d'un autre pays que le Gabon"
+        ),
+        GateReason.REGIONAL_NOT_INDEXED: (
+            "la question porte sur une norme régionale qui n'est pas dans le corpus indexé"
+        ),
+        GateReason.CODE_NOT_INDEXED: (
+            f"le texte invoqué ({decision.invoked_code_label or 'ce code'}) "
+            "ne fait pas partie des textes indexés"
+        ),
+        GateReason.OUTDATED_REFERENCE: (
+            f"la question vise une édition antérieure ({decision.detected_year}) "
+            "du texte, alors que le corpus porte l'édition en vigueur"
+        ),
+        GateReason.DOMAIN_NOT_INDEXED: (
+            "la matière juridique concernée n'est pas encore indexée"
+        ),
+    }.get(decision.reason, "le corpus indexé ne couvre pas cette question")
+
+    return (
+        "Décision du système (déjà prise, ne pas la rediscuter) : "
+        f"{motif}.\n\n"
+        "Instructions impératives :\n"
+        "— Indique-le à l'utilisateur en une ou deux phrases sobres, à la première personne.\n"
+        f"— Précise les matières que tu peux traiter : {couverts}.\n"
+        "— Si le sujet de sa question relève de l'une de ces matières, invite-le à "
+        "reformuler sans référence au texte non indexé.\n"
+        "— N'invente aucun article, aucune date, aucune référence. Ne cite aucune source.\n"
+        "— Ne mentionne ni la base documentaire, ni l'index, ni le moteur de recherche, "
+        "ni les passages consultés : parle de ce que tu peux traiter, pas de la technique.\n"
+        "— Ajoute l'avertissement final obligatoire."
+    )
+
+
+def _format_rag_block(rows: list[dict[str, Any]], decision: GateDecision | None = None) -> str:
+    if decision is not None and decision.blocking:
+        return _refusal_block(decision)
     if not rows:
         return (
             "Contexte indexé LexGabon : aucun passage n'a été retourné pour cette requête.\n\n"
@@ -130,14 +192,24 @@ def run_chat(
     *,
     profile: str | None = None,
 ) -> ChatAnswer:
-    """Récupère top-k Chroma puis un seul appel LLM (texte uniquement)."""
-    cite_intent = question_seeks_citations(question.strip())
-    rows = retriever.search(
-        question.strip(),
-        domaine=domaine,
-        citation_intent=cite_intent,
-    )
-    rag_block = _format_rag_block(rows)
+    """Récupère top-k Chroma puis un seul appel LLM (texte uniquement).
+
+    Le gate lexical tranche AVANT la recherche : quand il prouve que le corpus
+    ne couvre pas la question, on n'interroge pas Chroma du tout. Cela évite
+    d'envoyer au LLM des extraits hors-sujet en comptant sur lui pour ne pas les
+    citer — ce qui était l'ancien fonctionnement, et ce qui laissait passer 8
+    questions hors-périmètre sur 8.
+    """
+    q = question.strip()
+    decision = gate_evaluate(q, domaine)
+
+    if decision.blocking:
+        rows: list[dict[str, Any]] = []
+    else:
+        cite_intent = question_seeks_citations(q)
+        rows = retriever.search(q, domaine=domaine, citation_intent=cite_intent)
+
+    rag_block = _format_rag_block(rows, decision)
 
     messages = _anthropic_messages_from_history(hist)
     if not messages or messages[-1].get("role") != "user":
@@ -171,4 +243,4 @@ def run_chat(
     # — pas de « Sources citées » trompeuses sous la réponse.
     cited = _cited_article_numbers(text)
     sources = _filter_sources_to_cited(sources, cited)
-    return ChatAnswer(text=text, sources=sources)
+    return ChatAnswer(text=text, sources=sources, decision=decision)
